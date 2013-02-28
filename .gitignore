@@ -40,7 +40,7 @@ local.properties
 *.suo
 *.user
 *.sln.docstates
-App.Config
+App.config
 # Build results
 
 [Dd]ebug/
