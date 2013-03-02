@@ -231,7 +231,7 @@ namespace azurecopy
                     // read blob
                     var blob = inputHandler.ReadBlob(url, fileName);
 
-                    var outputUrl = GenerateOutputUrl(_outputUrl, _inputUrl);
+                    var outputUrl = GenerateOutputUrl(_outputUrl, url);
 
                     // write blob
                     outputHandler.WriteBlob(outputUrl, blob);
