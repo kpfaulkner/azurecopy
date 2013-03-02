@@ -29,7 +29,7 @@ namespace azurecopy.Helpers
 
     public static class ConfigHelper
     {
-        public static string AzureConnectionString { get; set; }
+        public static string AzureAccountKey { get; set; }
         public static string AWSAccessKeyID {get;set;}
         public static string AWSSecretAccessKeyID { get; set; }
 
@@ -51,7 +51,7 @@ namespace azurecopy.Helpers
 
         public static void ReadConfig()
         {
-            AzureConnectionString = GetConfigValue<string>("AzureConnectionString", "UseDevelopmentStorage=true");
+            AzureAccountKey = GetConfigValue<string>("AzureAccountKey", "");
             AWSAccessKeyID = GetConfigValue<string>("AWSAccessKeyID", "");
             AWSSecretAccessKeyID = GetConfigValue<string>("AWSSecretAccessKeyID", "");
         }

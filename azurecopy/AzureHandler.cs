@@ -40,7 +40,7 @@ namespace azurecopy
         {
             Blob blob = null;
 
-            var client = AzureHelper.GetCloudBlobClient();
+            var client = AzureHelper.GetCloudBlobClient( url );
             var containerName = AzureHelper.GetContainerFromUrl(url);
         
             var container = client.GetContainerReference(containerName);
@@ -125,7 +125,7 @@ namespace azurecopy
 
             try
             {
-                var client = AzureHelper.GetCloudBlobClient();
+                var client = AzureHelper.GetCloudBlobClient(url);
 
                 var containerName = AzureHelper.GetContainerFromUrl(url);
                 var blobName = AzureHelper.GetBlobFromUrl(url);
@@ -192,7 +192,7 @@ namespace azurecopy
         {
             var blobList = new List<string>();
 
-            var client = AzureHelper.GetCloudBlobClient();
+            var client = AzureHelper.GetCloudBlobClient(baseUrl);
 
             var containerName = AzureHelper.GetContainerFromUrl(baseUrl);
             var blobName = AzureHelper.GetBlobFromUrl(baseUrl);

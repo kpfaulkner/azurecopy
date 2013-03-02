@@ -36,19 +36,37 @@ namespace azurecopy.Utils
         static string DevAzureDetection = "127.0.0.1";
         
 
+        /*
         // look up connection string from app.config
         public static CloudBlobClient GetCloudBlobClient()
         {
-            AzureStorageConnectionString = ConfigHelper.AzureConnectionString;
+            //AzureStorageConnectionString = ConfigHelper.AzureConnectionString;
+            //return GetCloudBlobClient(AzureStorageConnectionString);
 
-            return GetCloudBlobClient(AzureStorageConnectionString);
+            throw new NotImplementedException();
         }
 
         public static CloudBlobClient GetCloudBlobClient(string azureStorageConnectionString)
         {
             CloudStorageAccount azureStorageAccount = CloudStorageAccount.Parse(azureStorageConnectionString);
             return azureStorageAccount.CreateCloudBlobClient();
+        }
+        */
+        public static CloudBlobClient GetCloudBlobClient(string accountName, string accountKey)
+        {
+            var credentials = new Microsoft.WindowsAzure.Storage.Auth.StorageCredentials(accountName, accountKey);
+            CloudStorageAccount azureStorageAccount = new CloudStorageAccount(credentials, true);
+            return azureStorageAccount.CreateCloudBlobClient();
+        }
 
+        public static CloudBlobClient GetCloudBlobClient(string url )
+        {
+            var accountName = GetAccountNameFromUrl(url);
+            var accountKey = ConfigHelper.AzureAccountKey;
+
+            var credentials = new Microsoft.WindowsAzure.Storage.Auth.StorageCredentials(accountName, accountKey);
+            CloudStorageAccount azureStorageAccount = new CloudStorageAccount(credentials, true);
+            return azureStorageAccount.CreateCloudBlobClient();
         }
 
 
@@ -85,6 +103,16 @@ namespace azurecopy.Utils
             blobName = url.Segments[url.Segments.Length - 1];
 
             return blobName;
+        }
+
+        public static string GetAccountNameFromUrl(string blobUrl)
+        {
+            Uri url = new Uri(blobUrl);
+            var blobName = "";
+            var account = url.Host.Split('.')[0];
+
+
+            return account;
         }
 
         public static bool MatchHandler(string url)

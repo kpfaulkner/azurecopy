@@ -34,7 +34,7 @@ namespace azurecopy
         public static void StartCopy(string sourceUrl, string DestinationUrl)
         {
 
-            var client = AzureHelper.GetCloudBlobClient();
+            var client = AzureHelper.GetCloudBlobClient( sourceUrl );
 
             var containerName = AzureHelper.GetContainerFromUrl( DestinationUrl);
             var blobName = AzureHelper.GetBlobFromUrl( DestinationUrl );

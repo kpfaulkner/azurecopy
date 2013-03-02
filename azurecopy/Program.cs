@@ -14,8 +14,9 @@
 //    limitations under the License.
 // </copyright>
 //-----------------------------------------------------------------------
- 
- using azurecopy.Utils;
+
+using azurecopy.Helpers;
+using azurecopy.Utils;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -40,6 +41,9 @@ namespace azurecopy
         const string DownloadFlag = "-d";
         const string BlobCopyFlag = "-blobcopy";
         const string ListContainerFlag = "-list";
+        const string AzureAccountKeyFlag = "-azurekey";
+        const string AWSAccessKeyIDFlag = "-s3accesskey";
+        const string AWSSecretAccessKeyIDFlag = "-s3secretkey";
 
         static UrlType _inputUrlType;
         static UrlType _outputUrlType;
@@ -52,6 +56,9 @@ namespace azurecopy
         static bool _useBlobCopy = false;
         static bool _listContainer = false;
         static Action _action = Action.None;
+        static string _azureKey = String.Empty;
+        static string _s3AccessKey = String.Empty;
+        static string _s3SecretKey = String.Empty;
 
         static string GetArgument(string[] args, int i)
         {
@@ -109,6 +116,26 @@ namespace azurecopy
                             _inputUrlType = GetUrlType(_inputUrl);
                             _listContainer = true;
                             _action = Action.List;
+
+                            break;
+
+                        case AzureAccountKeyFlag:
+                            i++;
+                            _azureKey = GetArgument(args, i);
+                            ConfigHelper.AzureAccountKey = _azureKey;
+                            break;
+
+                        case AWSAccessKeyIDFlag:
+                            i++;
+                            _s3AccessKey = GetArgument(args, i);
+                            ConfigHelper.AWSAccessKeyID = _s3AccessKey;
+
+                            break;
+
+                        case AWSSecretAccessKeyIDFlag:
+                            i++;
+                            _s3SecretKey = GetArgument(args, i);
+                            ConfigHelper.AWSSecretAccessKeyID = _s3SecretKey;
 
                             break;
 
@@ -207,17 +234,23 @@ namespace azurecopy
                     var outputUrl = GenerateOutputUrl(_outputUrl, _inputUrl);
 
                     // write blob
-                    outputHandler.WriteBlob(_outputUrl, blob);
+                    outputHandler.WriteBlob(outputUrl, blob);
                 }
 
             }
           
         }
 
-        private static object GenerateOutputUrl(string baseOutputUrl, string inputUrl)
+        private static string GenerateOutputUrl(string baseOutputUrl, string inputUrl)
         {
-            //var blobName = CommonHelper.get..............
-            throw new NotImplementedException();
+            var u = new Uri(inputUrl);
+            var blobName = "";
+            blobName = u.Segments[u.Segments.Length - 1];
+
+            var outputPath = Path.Combine(baseOutputUrl, blobName);
+
+            return outputPath;
+
         }
 
         private static List<string> GetSourceBlobList(IBlobHandler inputHandler, string url)
