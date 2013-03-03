@@ -34,39 +34,40 @@ namespace azurecopy.Utils
 
         static string AzureDetection = "windows.net";
         static string DevAzureDetection = "127.0.0.1";
-        
+        static CloudBlobClient BlobClient { get; set; }
 
-        /*
-        // look up connection string from app.config
-        public static CloudBlobClient GetCloudBlobClient()
+        static AzureHelper()
         {
-            //AzureStorageConnectionString = ConfigHelper.AzureConnectionString;
-            //return GetCloudBlobClient(AzureStorageConnectionString);
-
-            throw new NotImplementedException();
+            BlobClient = null;
         }
 
-        public static CloudBlobClient GetCloudBlobClient(string azureStorageConnectionString)
-        {
-            CloudStorageAccount azureStorageAccount = CloudStorageAccount.Parse(azureStorageConnectionString);
-            return azureStorageAccount.CreateCloudBlobClient();
-        }
-        */
+
         public static CloudBlobClient GetCloudBlobClient(string accountName, string accountKey)
         {
-            var credentials = new Microsoft.WindowsAzure.Storage.Auth.StorageCredentials(accountName, accountKey);
-            CloudStorageAccount azureStorageAccount = new CloudStorageAccount(credentials, true);
-            return azureStorageAccount.CreateCloudBlobClient();
+            if (BlobClient == null)
+            {
+
+                var credentials = new Microsoft.WindowsAzure.Storage.Auth.StorageCredentials(accountName, accountKey);
+                CloudStorageAccount azureStorageAccount = new CloudStorageAccount(credentials, true);
+                BlobClient = azureStorageAccount.CreateCloudBlobClient();
+            }
+
+            return BlobClient;
         }
 
         public static CloudBlobClient GetCloudBlobClient(string url )
         {
-            var accountName = GetAccountNameFromUrl(url);
-            var accountKey = ConfigHelper.AzureAccountKey;
+            if (BlobClient == null)
+            {
+                var accountName = GetAccountNameFromUrl(url);
+                var accountKey = ConfigHelper.AzureAccountKey;
 
-            var credentials = new Microsoft.WindowsAzure.Storage.Auth.StorageCredentials(accountName, accountKey);
-            CloudStorageAccount azureStorageAccount = new CloudStorageAccount(credentials, true);
-            return azureStorageAccount.CreateCloudBlobClient();
+                var credentials = new Microsoft.WindowsAzure.Storage.Auth.StorageCredentials(accountName, accountKey);
+                CloudStorageAccount azureStorageAccount = new CloudStorageAccount(credentials, true);
+                BlobClient = azureStorageAccount.CreateCloudBlobClient();
+            }
+
+            return BlobClient;
         }
 
 

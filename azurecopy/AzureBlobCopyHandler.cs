@@ -34,7 +34,7 @@ namespace azurecopy
         public static void StartCopy(string sourceUrl, string DestinationUrl)
         {
 
-            var client = AzureHelper.GetCloudBlobClient( sourceUrl );
+            var client = AzureHelper.GetCloudBlobClient(DestinationUrl);
 
             var containerName = AzureHelper.GetContainerFromUrl( DestinationUrl);
             var blobName = AzureHelper.GetBlobFromUrl( DestinationUrl );
@@ -44,10 +44,17 @@ namespace azurecopy
 
             var blob = container.GetBlockBlobReference(blobName);
 
-            //var blob = client.GetBlobReferenceFromServer(new Uri(DestinationUrl));
+            var url = sourceUrl;
+            // if S3, then generate signed url.
+            if (S3Helper.MatchHandler(sourceUrl))
+            {
+                var bucket = S3Helper.GetBucketFromUrl(sourceUrl);
+                var key = S3Helper.GetKeyFromUrl(sourceUrl);
+                url = S3Helper.GeneratePreSignedUrl(bucket, key);
+            }
 
             // starts the copying process....
-            var res = blob.StartCopyFromBlob( new Uri( sourceUrl ));
+            var res = blob.StartCopyFromBlob(new Uri(url));
             var a = res;
         }
 

@@ -6,8 +6,10 @@
 + Azure upload in parallel
 + S3 upload in parallel.
 + Handle Azure Short Access Signatures.
-+ Handle S3 signatures
-+ wildcards for source address (copy multiple files).
+* Handle S3 signed urls.
+* Handle S3 signatures
+* wildcards for source address (copy multiple files).
 + list of blobs to copy read from a file.
+* blobcopy can handle wildcards (multi copy)
 + use blobcopy API: http://blogs.msdn.com/b/windowsazurestorage/archive/2012/06/12/introducing-asynchronous-cross-account-copy-blob.aspx
 + monitor blob copy progress.

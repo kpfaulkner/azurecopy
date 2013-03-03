@@ -24,6 +24,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
+using Amazon.S3.Model;
+using Amazon.S3;
 
 namespace azurecopy.Utils
 {
@@ -55,6 +57,19 @@ namespace azurecopy.Utils
             return url.Contains(AmazonDetection);
         }
 
+        public static string GeneratePreSignedUrl( string bucket, string key, int timeout=30 )
+        {
 
+            GetPreSignedUrlRequest request = new GetPreSignedUrlRequest()
+                .WithBucketName(bucket)
+                .WithKey(key)
+                .WithExpires(DateTime.Now.AddMinutes(32))
+                .WithProtocol(Protocol.HTTPS);
+            using (AmazonS3 client = Amazon.AWSClientFactory.CreateAmazonS3Client(ConfigHelper.AWSAccessKeyID, ConfigHelper.AWSSecretAccessKeyID))
+            {
+                string url = client.GetPreSignedURL(request);
+                return url;
+            }
+        }
     }
 }

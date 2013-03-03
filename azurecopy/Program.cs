@@ -221,20 +221,30 @@ namespace azurecopy
 
                 foreach (var url in sourceBlobList)
                 {
-
                     var fileName = "";
                     if (_amDownloading)
                     {
                         fileName = GenerateFileName(_downloadDirectory, url);
                     }
 
-                    // read blob
-                    var blob = inputHandler.ReadBlob(url, fileName);
-
                     var outputUrl = GenerateOutputUrl(_outputUrl, url);
 
-                    // write blob
-                    outputHandler.WriteBlob(outputUrl, blob);
+                    if (!_useBlobCopy)
+                    {
+
+                        // read blob
+                        var blob = inputHandler.ReadBlob(url, fileName);
+
+                        // write blob
+                        outputHandler.WriteBlob(outputUrl, blob);
+                    }
+                    else
+                    {
+                        Console.WriteLine("using blob copy {0} to {1}", url, outputUrl);
+                        AzureBlobCopyHandler.StartCopy(url, outputUrl);
+                    }
+
+
                 }
 
             }
@@ -296,12 +306,9 @@ namespace azurecopy
                 case Action.List:
                     DoList();
                     break;
-                
-                case Action.BlobCopy:
-                    DoBlobCopy();
-                    break;
-
+              
                 case Action.NormalCopy:
+                case Action.BlobCopy:
                     DoNormalCopy();
                     break;
 
