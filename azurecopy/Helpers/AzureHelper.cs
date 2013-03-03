@@ -55,12 +55,34 @@ namespace azurecopy.Utils
             return BlobClient;
         }
 
-        public static CloudBlobClient GetCloudBlobClient(string url )
+        public static CloudBlobClient GetSourceCloudBlobClient(string url)
+        {
+            return GetCloudBlobClient(url, true);
+        }
+
+
+        public static CloudBlobClient GetTargetCloudBlobClient(string url)
+        {
+            return GetCloudBlobClient(url, false);
+
+        }
+
+
+        public static CloudBlobClient GetCloudBlobClient(string url, bool isSrc )
         {
             if (BlobClient == null)
             {
                 var accountName = GetAccountNameFromUrl(url);
-                var accountKey = ConfigHelper.AzureAccountKey;
+                string accountKey = ConfigHelper.AzureAccountKey;
+
+                if (isSrc)
+                {
+                    accountKey = ConfigHelper.SrcAzureAccountKey;
+                }
+                else
+                {
+                    accountKey = ConfigHelper.TargetAzureAccountKey;
+                }
 
                 var credentials = new Microsoft.WindowsAzure.Storage.Auth.StorageCredentials(accountName, accountKey);
                 CloudStorageAccount azureStorageAccount = new CloudStorageAccount(credentials, true);

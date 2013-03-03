@@ -41,9 +41,35 @@ namespace azurecopy
         const string DownloadFlag = "-d";
         const string BlobCopyFlag = "-blobcopy";
         const string ListContainerFlag = "-list";
+
+
+        // default access keys.
+        const string AzureAccountKeyShortFlag = "-ak";
+        const string AWSAccessKeyIDShortFlag = "-s3k";
+        const string AWSSecretAccessKeyIDShortFlag = "-s3sk";
+
         const string AzureAccountKeyFlag = "-azurekey";
         const string AWSAccessKeyIDFlag = "-s3accesskey";
         const string AWSSecretAccessKeyIDFlag = "-s3secretkey";
+
+        // source access keys
+        const string SourceAzureAccountKeyShortFlag = "-sak";
+        const string SourceAWSAccessKeyIDShortFlag = "-ss3k";
+        const string SourceAWSSecretAccessKeyIDShortFlag = "-ss3sk";
+
+        const string SourceAzureAccountKeyFlag = "-srcazurekey";
+        const string SourceAWSAccessKeyIDFlag = "-srcs3accesskey";
+        const string SourceAWSSecretAccessKeyIDFlag = "-srcs3secretkey";
+
+        // target access keys
+        const string TargetAzureAccountKeyShortFlag = "-tak";
+        const string TargetAWSAccessKeyIDShortFlag = "-ts3k";
+        const string TargetAWSSecretAccessKeyIDShortFlag = "-ts3sk";
+
+        const string TargetAzureAccountKeyFlag = "-targetazurekey";
+        const string TargetAWSAccessKeyIDFlag = "-targets3accesskey";
+        const string TargetAWSSecretAccessKeyIDFlag = "-targets3secretkey";
+
 
         static UrlType _inputUrlType;
         static UrlType _outputUrlType;
@@ -56,9 +82,23 @@ namespace azurecopy
         static bool _useBlobCopy = false;
         static bool _listContainer = false;
         static Action _action = Action.None;
+
+        /*
+        // defaults
         static string _azureKey = String.Empty;
         static string _s3AccessKey = String.Empty;
         static string _s3SecretKey = String.Empty;
+
+        // source
+        static string _srcAzureKey = String.Empty;
+        static string _srcS3AccessKey = String.Empty;
+        static string _srcS3SecretKey = String.Empty;
+
+        // target
+        static string _targetAzureKey = String.Empty;
+        static string _targetS3AccessKey = String.Empty;
+        static string _targetS3SecretKey = String.Empty;
+        */
 
         static string GetArgument(string[] args, int i)
         {
@@ -120,22 +160,79 @@ namespace azurecopy
                             break;
 
                         case AzureAccountKeyFlag:
+                        case AzureAccountKeyShortFlag:
                             i++;
-                            _azureKey = GetArgument(args, i);
-                            ConfigHelper.AzureAccountKey = _azureKey;
+                            var azureKey = GetArgument(args, i);
+                            ConfigHelper.AzureAccountKey = azureKey;
+                            ConfigHelper.SrcAzureAccountKey = azureKey;
+                            ConfigHelper.TargetAzureAccountKey = azureKey;
                             break;
 
                         case AWSAccessKeyIDFlag:
-                            i++;
-                            _s3AccessKey = GetArgument(args, i);
-                            ConfigHelper.AWSAccessKeyID = _s3AccessKey;
+                        case AWSAccessKeyIDShortFlag:
 
+                            i++;
+                            var s3AccessKey = GetArgument(args, i);
+                            ConfigHelper.AWSAccessKeyID = s3AccessKey;
+                            ConfigHelper.SrcAWSAccessKeyID = s3AccessKey;
+                            ConfigHelper.TargetAWSAccessKeyID = s3AccessKey;
                             break;
 
                         case AWSSecretAccessKeyIDFlag:
+                        case AWSSecretAccessKeyIDShortFlag:
                             i++;
-                            _s3SecretKey = GetArgument(args, i);
-                            ConfigHelper.AWSSecretAccessKeyID = _s3SecretKey;
+                            var s3SecretKey = GetArgument(args, i);
+                            ConfigHelper.AWSSecretAccessKeyID = s3SecretKey;
+                            ConfigHelper.SrcAWSSecretAccessKeyID = s3SecretKey;
+                            ConfigHelper.TargetAWSSecretAccessKeyID = s3SecretKey;
+
+                            break;
+
+                        case SourceAzureAccountKeyFlag:
+                        case SourceAzureAccountKeyShortFlag:
+                            i++;
+                            var srcAzureKey = GetArgument(args, i);
+                            ConfigHelper.SrcAzureAccountKey = srcAzureKey;
+                            break;
+
+                        case SourceAWSAccessKeyIDFlag:
+                        case SourceAWSAccessKeyIDShortFlag:
+
+                            i++;
+                            var srcS3AccessKey = GetArgument(args, i);
+                            ConfigHelper.SrcAWSAccessKeyID = srcS3AccessKey;
+
+                            break;
+
+                        case SourceAWSSecretAccessKeyIDFlag:
+                        case SourceAWSSecretAccessKeyIDShortFlag:
+                            i++;
+                            var srcS3SecretKey = GetArgument(args, i);
+                            ConfigHelper.SrcAWSSecretAccessKeyID = srcS3SecretKey;
+
+                            break;
+
+                        case TargetAzureAccountKeyFlag:
+                        case TargetAzureAccountKeyShortFlag:
+                            i++;
+                            var targetAzureKey = GetArgument(args, i);
+                            ConfigHelper.TargetAzureAccountKey = targetAzureKey;
+                            break;
+
+                        case TargetAWSAccessKeyIDFlag:
+                        case TargetAWSAccessKeyIDShortFlag:
+
+                            i++;
+                            var targetS3AccessKey = GetArgument(args, i);
+                            ConfigHelper.TargetAWSAccessKeyID = targetS3AccessKey;
+
+                            break;
+
+                        case TargetAWSSecretAccessKeyIDFlag:
+                        case TargetAWSSecretAccessKeyIDShortFlag:
+                            i++;
+                            var targetS3SecretKey = GetArgument(args, i);
+                            ConfigHelper.TargetAWSSecretAccessKeyID = targetS3SecretKey;
 
                             break;
 

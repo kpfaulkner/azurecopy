@@ -57,6 +57,8 @@ namespace azurecopy.Utils
             return url.Contains(AmazonDetection);
         }
 
+        // Assumption that we only need this when the source is S3.
+        // Therefore use SourceAWS.
         public static string GeneratePreSignedUrl( string bucket, string key, int timeout=30 )
         {
 
@@ -65,7 +67,7 @@ namespace azurecopy.Utils
                 .WithKey(key)
                 .WithExpires(DateTime.Now.AddMinutes(32))
                 .WithProtocol(Protocol.HTTPS);
-            using (AmazonS3 client = Amazon.AWSClientFactory.CreateAmazonS3Client(ConfigHelper.AWSAccessKeyID, ConfigHelper.AWSSecretAccessKeyID))
+            using (AmazonS3 client = Amazon.AWSClientFactory.CreateAmazonS3Client(ConfigHelper.SrcAWSAccessKeyID, ConfigHelper.SrcAWSSecretAccessKeyID))
             {
                 string url = client.GetPreSignedURL(request);
                 return url;

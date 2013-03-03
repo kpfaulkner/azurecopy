@@ -29,9 +29,19 @@ namespace azurecopy.Helpers
 
     public static class ConfigHelper
     {
+        // default values read from config.
         public static string AzureAccountKey { get; set; }
         public static string AWSAccessKeyID {get;set;}
         public static string AWSSecretAccessKeyID { get; set; }
+
+        public static string SrcAzureAccountKey { get; set; }
+        public static string SrcAWSAccessKeyID { get; set; }
+        public static string SrcAWSSecretAccessKeyID { get; set; }
+
+        public static string TargetAzureAccountKey { get; set; }
+        public static string TargetAWSAccessKeyID { get; set; }
+        public static string TargetAWSSecretAccessKeyID { get; set; }
+
 
         static ConfigHelper()
         {
@@ -49,11 +59,21 @@ namespace azurecopy.Helpers
             return defaultValue;
         }
 
+        // populates src and target values IF there is a default set.
         public static void ReadConfig()
         {
             AzureAccountKey = GetConfigValue<string>("AzureAccountKey", "");
             AWSAccessKeyID = GetConfigValue<string>("AWSAccessKeyID", "");
             AWSSecretAccessKeyID = GetConfigValue<string>("AWSSecretAccessKeyID", "");
+
+            SrcAzureAccountKey = GetConfigValue<string>("SrcAzureAccountKey", AzureAccountKey);
+            SrcAWSAccessKeyID = GetConfigValue<string>("SrcAWSAccessKeyID", AWSAccessKeyID);
+            SrcAWSSecretAccessKeyID = GetConfigValue<string>("SrcAWSSecretAccessKeyID", AWSSecretAccessKeyID);
+
+            TargetAzureAccountKey = GetConfigValue<string>("TargetAzureAccountKey", AzureAccountKey);
+            TargetAWSAccessKeyID = GetConfigValue<string>("TargetAWSAccessKeyID", AWSAccessKeyID);
+            TargetAWSSecretAccessKeyID = GetConfigValue<string>("TargetAWSSecretAccessKeyID", AWSSecretAccessKeyID);
+
         }
 
     }

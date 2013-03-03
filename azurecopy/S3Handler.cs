@@ -31,13 +31,10 @@ namespace azurecopy
 {
     class S3Handler : IBlobHandler
     {
-
-
         private void Authenticate()
         {
 
         }
-
 
         /// <summary>
         /// Basic in memory copy...   just a starting point.
@@ -55,7 +52,7 @@ namespace azurecopy
             blob.BlobSavedToFile = !string.IsNullOrEmpty(fileName);
             blob.FilePath = fileName;
 
-            using (AmazonS3 client = Amazon.AWSClientFactory.CreateAmazonS3Client(ConfigHelper.AWSAccessKeyID, ConfigHelper.AWSSecretAccessKeyID))
+            using (AmazonS3 client = Amazon.AWSClientFactory.CreateAmazonS3Client(ConfigHelper.SrcAWSAccessKeyID, ConfigHelper.SrcAWSSecretAccessKeyID))
             {
                 GetObjectRequest getObjectRequest = new GetObjectRequest().WithBucketName(bucket).WithKey(key);
 
@@ -100,7 +97,7 @@ namespace azurecopy
             var bucket = S3Helper.GetBucketFromUrl(url);
             var key = S3Helper.GetKeyFromUrl(url);
 
-            using (AmazonS3 client = Amazon.AWSClientFactory.CreateAmazonS3Client(ConfigHelper.AWSAccessKeyID, ConfigHelper.AWSSecretAccessKeyID))
+            using (AmazonS3 client = Amazon.AWSClientFactory.CreateAmazonS3Client(ConfigHelper.TargetAWSAccessKeyID, ConfigHelper.TargetAWSSecretAccessKeyID))
             {
 
                 using (var ms = new MemoryStream( blob.Data) )
@@ -129,7 +126,7 @@ namespace azurecopy
             var bucket = S3Helper.GetBucketFromUrl( baseUrl );
             var blobList = new List<string>();
 
-            using (AmazonS3 client = Amazon.AWSClientFactory.CreateAmazonS3Client(ConfigHelper.AWSAccessKeyID, ConfigHelper.AWSSecretAccessKeyID))
+            using (AmazonS3 client = Amazon.AWSClientFactory.CreateAmazonS3Client(ConfigHelper.SrcAWSAccessKeyID, ConfigHelper.SrcAWSSecretAccessKeyID))
             {
                 ListObjectsRequest listObjectRequest = new ListObjectsRequest();
                 var request = new ListObjectsRequest();
