@@ -64,6 +64,8 @@ namespace azurecopy
             return blob;
         }
 
+
+
         private Blob ReadBlockBlob(ICloudBlob blobRef, string fileName = "" )
         {
             var blob = new Blob();

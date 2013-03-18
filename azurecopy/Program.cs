@@ -22,6 +22,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace azurecopy
@@ -32,7 +33,7 @@ namespace azurecopy
 
     class Program
     {
-        const string UsageString = "Usage: azurecopy -blobcopy -v -d <download directory> -i <inputUrl> -o <outputUrl> -list <inputUrl>\n    -list : Lists all blobs in given container/bucket\n    -blobcopy : Copy between input URL and output URL where output url HAS to be Azure\n    -v : verbose";
+        const string UsageString = "Usage: azurecopy -m -blobcopy -v -d <download directory> -i <inputUrl> -o <outputUrl> -list <inputUrl>\n    -list : Lists all blobs in given container/bucket\n    -blobcopy : Copy between input URL and output URL where output url HAS to be Azure\n    -v : verbose\n    -m: monitor blob copy. Waits until all pending copies completed";
      
         const string LocalDetection = "???";
         const string VerboseFlag = "-v";
@@ -41,7 +42,7 @@ namespace azurecopy
         const string DownloadFlag = "-d";
         const string BlobCopyFlag = "-blobcopy";
         const string ListContainerFlag = "-list";
-
+        const string MonitorBlobCopyFlag = "-m";
 
         // default access keys.
         const string AzureAccountKeyShortFlag = "-ak";
@@ -82,23 +83,7 @@ namespace azurecopy
         static bool _useBlobCopy = false;
         static bool _listContainer = false;
         static Action _action = Action.None;
-
-        /*
-        // defaults
-        static string _azureKey = String.Empty;
-        static string _s3AccessKey = String.Empty;
-        static string _s3SecretKey = String.Empty;
-
-        // source
-        static string _srcAzureKey = String.Empty;
-        static string _srcS3AccessKey = String.Empty;
-        static string _srcS3SecretKey = String.Empty;
-
-        // target
-        static string _targetAzureKey = String.Empty;
-        static string _targetS3AccessKey = String.Empty;
-        static string _targetS3SecretKey = String.Empty;
-        */
+        static bool _monitorBlobCopy = false;
 
         static string GetArgument(string[] args, int i)
         {
@@ -144,11 +129,14 @@ namespace azurecopy
                             _verbose = true;
                             break;
 
+                        case MonitorBlobCopyFlag:
+                            _monitorBlobCopy = true;
+                            break;
+
                         case BlobCopyFlag:
                             _useBlobCopy = true;
                             _action = Action.BlobCopy;
                             break;
-
 
                         case ListContainerFlag:
                             i++;
@@ -341,7 +329,12 @@ namespace azurecopy
                         AzureBlobCopyHandler.StartCopy(url, outputUrl);
                     }
 
+                }
 
+                // if blob copy and monitoring
+                if (_useBlobCopy && _monitorBlobCopy)
+                {
+                    AzureBlobCopyHandler.MonitorBlobCopy(_outputUrl);
                 }
 
             }

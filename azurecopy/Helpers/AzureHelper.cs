@@ -32,8 +32,8 @@ namespace azurecopy.Utils
 
         public static string AzureStorageConnectionString { get; set; }
 
-        static string AzureDetection = "windows.net";
-        static string DevAzureDetection = "127.0.0.1";
+        const string AzureDetection = "windows.net";
+        const string DevAzureDetection = "127.0.0.1";
         static CloudBlobClient BlobClient { get; set; }
 
         static AzureHelper()
@@ -116,6 +116,25 @@ namespace azurecopy.Utils
 
             container = container.TrimEnd('/');
             return container;
+        }
+
+
+        public static IEnumerable<IListBlobItem> ListBlobsInContainer(string containerUrl)
+        {
+            var client = AzureHelper.GetSourceCloudBlobClient(containerUrl);
+            var containerName = AzureHelper.GetContainerFromUrl(containerUrl);
+
+            var container = client.GetContainerReference(containerName);
+            var blobList = container.ListBlobs( useFlatBlobListing:true, blobListingDetails:BlobListingDetails.Copy);
+            return blobList;
+        }
+
+        public static List<string> ListBlobsInContainer(string containerUrl, CopyStatus copyStatusFilter)
+        {   
+            var blobList = ListBlobsInContainer(containerUrl);
+
+            var filteredBlobList = (from b in blobList where (((ICloudBlob)b).CopyState != null) && (((ICloudBlob)b).CopyState.Status == copyStatusFilter) select b.Uri.AbsolutePath).ToList<string>();
+            return filteredBlobList;
         }
 
         public static string GetBlobFromUrl(string blobUrl)

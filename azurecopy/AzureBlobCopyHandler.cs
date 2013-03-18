@@ -23,6 +23,7 @@ using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 using azurecopy.Utils;
+using System.Threading;
 
 namespace azurecopy
 {
@@ -40,7 +41,7 @@ namespace azurecopy
             var blobName = AzureHelper.GetBlobFromUrl( DestinationUrl );
 
             var container = client.GetContainerReference( containerName );
-            container.CreateIfNotExists();
+            //container.CreateIfNotExists();
 
             var blob = container.GetBlockBlobReference(blobName);
 
@@ -58,13 +59,38 @@ namespace azurecopy
             var a = res;
         }
 
-        // Monitor progress of copy.
-        public static void MonitorCopy( string DestinationUrl )
+        public static void MonitorBlobCopy(string destinationUrl)
         {
+            var copyComplete = false;
+            while (!copyComplete)
+            {
 
+                var failedBlobList = AzureHelper.ListBlobsInContainer(destinationUrl, Microsoft.WindowsAzure.Storage.Blob.CopyStatus.Failed);
+                var abortedBlobList = AzureHelper.ListBlobsInContainer(destinationUrl, Microsoft.WindowsAzure.Storage.Blob.CopyStatus.Aborted);
+                var pendingBlobList = AzureHelper.ListBlobsInContainer(destinationUrl, Microsoft.WindowsAzure.Storage.Blob.CopyStatus.Pending);
+
+                Console.WriteLine("\n\nFailed:");
+                foreach (var b in failedBlobList) { Console.WriteLine(b); }
+
+                Console.WriteLine("Aborted:");
+                foreach (var b in abortedBlobList) { Console.WriteLine(b); }
+
+                Console.WriteLine("Pending:");
+                foreach (var b in pendingBlobList) { Console.WriteLine(b); }
+
+                if (pendingBlobList.Count == 0)
+                {
+                    copyComplete = true;
+                }
+                else
+                {
+                    Thread.Sleep(1000);
+                }
+
+            };
+
+            Console.WriteLine("Copy complete");
         }
-
-
 
     }
 }
