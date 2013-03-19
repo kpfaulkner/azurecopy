@@ -28,7 +28,9 @@ Simply add "-blobcopy" into the command.
 	eg.
 	azurecopy.exe -blobcopy -i "https://testurl.s3-us-west-2.amazonaws.com/myfile.txt" -o "https://azuretest.blob.core.windows.net/test/"
 
-	This is still in early development.
+	This version monitors the blob copy and waits until there are no pending copies left.
+	azurecopy.exe -m -blobcopy -i "https://testurl.s3-us-west-2.amazonaws.com/myfile.txt" -o "https://azuretest.blob.core.windows.net/test/"
+
 
 
 You can list blobs in a container/bucket.
