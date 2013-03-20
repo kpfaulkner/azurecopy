@@ -23,7 +23,9 @@ using System.Threading.Tasks;
 
 namespace azurecopy
 {
-    class Blob
+    public enum DestinationBlobType { Unknown, Block, Page };
+
+    public class Blob
     {
 
         // name.
@@ -45,13 +47,14 @@ namespace azurecopy
         public Dictionary<string, string> MetaData { get; set; }
 
         // page or block blob (for Azure)
-        public bool IsBlockBlob { get; set; }
+        public DestinationBlobType BlobType { get; set; }
 
 
         public Blob()
         {
             BlobSavedToFile = false;
-            IsBlockBlob = true;
+            BlobType = DestinationBlobType.Unknown;
+
         }
 
     }

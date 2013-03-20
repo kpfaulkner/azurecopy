@@ -46,5 +46,26 @@ You *can* have the Azure Account Key, S3 Access Key and S3 Access Key secret in 
 	azurecopy.exe -i "https://testurl.s3-us-west-2.amazonaws.com/myfile.txt" -o "https://azuretest.blob.core.windows.net/test/" -azurekey "myazurekey" -s3accesskey "mys3accesskey" -s3secretkey "mys3secretkey"
 
 
+
+Complete list of command line arguments:
+
+	-v : verbose
+	-i : input url
+	-o : output url
+	-d : download to filesystem before uploading to output url. (use for big blobs)
+	-blobcopy : use blobcopy API for when Azure is output url.
+	-list : list blobs in bucket/container. Use in conjunction with -i
+	-m : Monitor progress of copy when in "blobcopy" mode (ie -blobcopy flag was used). Program will not exit until all pending copies are complete.
+	-destblobtype page|block : Destination blob type. Used when destination url is Azure and input url was NOT azure. eg S3 to Azure. 
+	-ak | -azurekey : Azure account key.
+	-s3k | -s3accesskey : S3 access key.
+	-s3sk | -s3secretkey : S3 access key secret.
+	-sak | -srcazurekey : input url Azure account key.
+	-ss3k | -srcs3accesskey : input url S3 access key.
+	-ss3sk | -srcs3secretkey : input url S3 access key secret.
+	-tak | -targetazurekey : output url Azure account key.
+	-ts3k | -targets3accesskey : output url S3 access key.
+	-ts3sk | -targets3secretkey : output url S3 access key secret.
+
 Please see TODO.txt for planned changes/enhancements.
 

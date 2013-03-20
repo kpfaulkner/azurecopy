@@ -71,8 +71,8 @@ namespace azurecopy
             var blob = new Blob();
             blob.BlobSavedToFile = !string.IsNullOrEmpty(fileName);
             blob.Name = blobRef.Name;
-            blob.IsBlockBlob = true;
             blob.FilePath = fileName;
+            blob.BlobType = DestinationBlobType.Block;
 
             var blockBlob = blobRef as CloudBlockBlob;
 
@@ -98,17 +98,17 @@ namespace azurecopy
             var blob = new Blob();
             blob.BlobSavedToFile = !string.IsNullOrEmpty(fileName);
             blob.Name = blobRef.Name;
-            blob.IsBlockBlob = false;
             blob.FilePath = fileName;
+            blob.BlobType = DestinationBlobType.Page;
 
-            var blockBlob = blobRef as CloudBlockBlob;
+            var pageBlob = blobRef as CloudPageBlob;
 
             // get stream to store.
             using (var stream = CommonHelper.GetStream(fileName))
             {
 
                 // no parallel yet.
-                blockBlob.DownloadToStream(stream);
+                pageBlob.DownloadToStream(stream);
 
                 if (!blob.BlobSavedToFile)
                 {
@@ -146,20 +146,26 @@ namespace azurecopy
                     stream = new MemoryStream(blob.Data);
                 }
 
-                if (blob.IsBlockBlob)
+                if (blob.BlobType == DestinationBlobType.Block)
                 {
                     WriteBlockBlob(stream, blob, container);   
                 }
-                else
+                else if (blob.BlobType == DestinationBlobType.Page)
                 {
                     WritePageBlob(stream, blob, container);
                 }
+                else
+                {
+                    throw new NotImplementedException("Have not implemented page type other than block or page");
+                }
+
 
             }
             catch (ArgumentException ex)
             {
                 // probably bad container.
                 Console.WriteLine("Argument Exception " + ex.ToString());
+                Console.WriteLine("Please try block blobs instead");
             }
             finally
             {

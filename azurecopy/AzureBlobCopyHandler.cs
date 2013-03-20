@@ -32,19 +32,21 @@ namespace azurecopy
     {
 
         // Copy from complete URL (assume URL is complete at this stage) to destination blob.
-        public static void StartCopy(string sourceUrl, string DestinationUrl)
+        public static void StartCopy(string sourceUrl, string DestinationUrl, DestinationBlobType destBlobType)
         {
 
             var client = AzureHelper.GetTargetCloudBlobClient(DestinationUrl);
+
+            var opt = client.GetServiceProperties();
 
             var containerName = AzureHelper.GetContainerFromUrl( DestinationUrl);
             var blobName = AzureHelper.GetBlobFromUrl( DestinationUrl );
 
             var container = client.GetContainerReference( containerName );
-            //container.CreateIfNotExists();
+            container.CreateIfNotExists();
 
-            var blob = container.GetBlockBlobReference(blobName);
-
+            ICloudBlob blob = null;
+            
             var url = sourceUrl;
             // if S3, then generate signed url.
             if (S3Helper.MatchHandler(sourceUrl))
@@ -54,9 +56,24 @@ namespace azurecopy
                 url = S3Helper.GeneratePreSignedUrl(bucket, key);
             }
 
-            // starts the copying process....
-            var res = blob.StartCopyFromBlob(new Uri(url));
-            var a = res;
+            if (destBlobType == DestinationBlobType.Block)
+            {
+                blob = container.GetBlockBlobReference(blobName);
+                
+            } else if (destBlobType == DestinationBlobType.Page)
+            {
+                blob = container.GetPageBlobReference(blobName);
+            }
+
+            if (blob != null)
+            {
+                var res = blob.StartCopyFromBlob(new Uri(url));
+            }
+            else
+            {
+                throw new NotImplementedException("Cannot copy blobs that are not block or page");
+            }
+
         }
 
         public static void MonitorBlobCopy(string destinationUrl)

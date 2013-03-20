@@ -29,8 +29,7 @@ namespace azurecopy
 {
     public enum UrlType { Azure, S3, Local };
     public enum Action { None, NormalCopy, BlobCopy, List }
-
-
+    
     class Program
     {
         const string UsageString = "Usage: azurecopy -m -blobcopy -v -d <download directory> -i <inputUrl> -o <outputUrl> -list <inputUrl>\n    -list : Lists all blobs in given container/bucket\n    -blobcopy : Copy between input URL and output URL where output url HAS to be Azure\n    -v : verbose\n    -m: monitor blob copy. Waits until all pending copies completed";
@@ -43,6 +42,9 @@ namespace azurecopy
         const string BlobCopyFlag = "-blobcopy";
         const string ListContainerFlag = "-list";
         const string MonitorBlobCopyFlag = "-m";
+
+        // only makes sense for azure destination.
+        const string DestBlobType = "-destblobtype";
 
         // default access keys.
         const string AzureAccountKeyShortFlag = "-ak";
@@ -85,6 +87,9 @@ namespace azurecopy
         static Action _action = Action.None;
         static bool _monitorBlobCopy = false;
 
+        // destination blob...  can only assign if source is NOT azure and destination IS azure.
+        static DestinationBlobType _destinationBlobType = DestinationBlobType.Unknown;
+
         static string GetArgument(string[] args, int i)
         {
             if (i < args.Length)
@@ -126,6 +131,21 @@ namespace azurecopy
                     switch (args[i])
                     {
                         case VerboseFlag:
+                            _verbose = true;
+                            break;
+
+                        case DestBlobType:
+                            i++;
+                            var destType = GetArgument(args, i);
+                            if (destType == "page")
+                            {
+                                _destinationBlobType = DestinationBlobType.Page;
+                            }
+                            else if (destType == "block")
+                            {
+                                _destinationBlobType = DestinationBlobType.Block;
+                            }
+
                             _verbose = true;
                             break;
 
@@ -320,13 +340,27 @@ namespace azurecopy
                         // read blob
                         var blob = inputHandler.ReadBlob(url, fileName);
 
+                        // if blob is marked with type "Unknown" then set it to what was passed in on command line.
+                        // if nothing was passed in, then default to block?
+                        if (blob.BlobType == DestinationBlobType.Unknown)
+                        {
+                            if (_destinationBlobType != DestinationBlobType.Unknown)
+                            {
+                                blob.BlobType = _destinationBlobType;
+                            }
+                            else
+                            {
+                                blob.BlobType = DestinationBlobType.Block;
+                            }
+                        }
+
                         // write blob
                         outputHandler.WriteBlob(outputUrl, blob);
                     }
                     else
                     {
-                        Console.WriteLine("using blob copy {0} to {1}", url, outputUrl);
-                        AzureBlobCopyHandler.StartCopy(url, outputUrl);
+                        Console.WriteLine("using blob copy {0} to {1} of type {2}", url, outputUrl, _destinationBlobType);
+                        AzureBlobCopyHandler.StartCopy(url, outputUrl, _destinationBlobType);
                     }
 
                 }
@@ -373,7 +407,7 @@ namespace azurecopy
         static void DoBlobCopy()
         {
 
-            AzureBlobCopyHandler.StartCopy(_inputUrl, _outputUrl);
+            AzureBlobCopyHandler.StartCopy(_inputUrl, _outputUrl, _destinationBlobType);
 
         }
 
