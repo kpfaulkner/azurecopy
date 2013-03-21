@@ -1,10 +1,14 @@
 ﻿TODO:
 
 + Add retry logic to any Azure/S3 comms
-+ Azure Download in parallel.
-+ S3 Download in parallel
-+ Azure upload in parallel
-+ S3 upload in parallel.
++ Azure Download in parallel for single blob.
++ S3 Download in parallel for single blob.
++ Azure upload in parallel for single blob.
++ S3 upload in parallel for single blob.
++ Azure Download in parallel for multiple blob.
++ S3 Download in parallel for multiple blob.
++ Azure upload in parallel for multiple blob.
++ S3 upload in parallel for multiple blob.
 * Handle multiple S3/Azure accounts at once.
 + Handle Azure Short Access Signatures.
 * Handle S3 signed urls.
@@ -13,4 +17,4 @@
 + list of blobs to copy read from a file.
 * blobcopy can handle wildcards (multi copy)
 * use blobcopy API: http://blogs.msdn.com/b/windowsazurestorage/archive/2012/06/12/introducing-asynchronous-cross-account-copy-blob.aspx
-+ monitor blob copy progress.
+* monitor blob copy progress.

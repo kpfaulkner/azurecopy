@@ -61,6 +61,7 @@ namespace azurecopy
          
             }
 
+            blob.BlobOriginType = UrlType.Azure;
             return blob;
         }
 
@@ -73,7 +74,7 @@ namespace azurecopy
             blob.Name = blobRef.Name;
             blob.FilePath = fileName;
             blob.BlobType = DestinationBlobType.Block;
-
+            
             var blockBlob = blobRef as CloudBlockBlob;
 
             // get stream to store.
@@ -100,7 +101,6 @@ namespace azurecopy
             blob.Name = blobRef.Name;
             blob.FilePath = fileName;
             blob.BlobType = DestinationBlobType.Page;
-
             var pageBlob = blobRef as CloudPageBlob;
 
             // get stream to store.

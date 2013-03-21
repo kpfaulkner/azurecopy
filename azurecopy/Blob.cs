@@ -24,7 +24,7 @@ using System.Threading.Tasks;
 namespace azurecopy
 {
     public enum DestinationBlobType { Unknown, Block, Page };
-
+    public enum UrlType { Azure, S3, Local, Other };
     public class Blob
     {
 
@@ -49,6 +49,8 @@ namespace azurecopy
         // page or block blob (for Azure)
         public DestinationBlobType BlobType { get; set; }
 
+        // origin of blob. S3, Azure, local filesystem... other?
+        public UrlType BlobOriginType { get; set; }
 
         public Blob()
         {

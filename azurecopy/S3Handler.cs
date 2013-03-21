@@ -51,6 +51,7 @@ namespace azurecopy
 
             blob.BlobSavedToFile = !string.IsNullOrEmpty(fileName);
             blob.FilePath = fileName;
+            blob.BlobOriginType = UrlType.S3;
 
             using (AmazonS3 client = Amazon.AWSClientFactory.CreateAmazonS3Client(ConfigHelper.SrcAWSAccessKeyID, ConfigHelper.SrcAWSSecretAccessKeyID))
             {

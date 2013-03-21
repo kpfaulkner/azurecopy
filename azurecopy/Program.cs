@@ -19,6 +19,7 @@ using azurecopy.Helpers;
 using azurecopy.Utils;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -27,13 +28,34 @@ using System.Threading.Tasks;
 
 namespace azurecopy
 {
-    public enum UrlType { Azure, S3, Local };
+
     public enum Action { None, NormalCopy, BlobCopy, List }
     
     class Program
     {
-        const string UsageString = "Usage: azurecopy -m -blobcopy -v -d <download directory> -i <inputUrl> -o <outputUrl> -list <inputUrl>\n    -list : Lists all blobs in given container/bucket\n    -blobcopy : Copy between input URL and output URL where output url HAS to be Azure\n    -v : verbose\n    -m: monitor blob copy. Waits until all pending copies completed";
-     
+        const string UsageString = 
+           @"Usage: azurecopy
+                -v : verbose
+	            -i : input url
+	            -o : output url
+	            -d : download to filesystem before uploading to output url. (use for big blobs)
+	            -blobcopy : use blobcopy API for when Azure is output url.
+	            -list : list blobs in bucket/container. Use in conjunction with -i
+	            -m : Monitor progress of copy when in 'blobcopy' mode (ie -blobcopy flag was used). Program will not exit until all pending copies are complete.
+	            -destblobtype page|block : Destination blob type. Used when destination url is Azure and input url was NOT azure. eg S3 to Azure. 
+	            -ak | -azurekey : Azure account key.
+	            -s3k | -s3accesskey : S3 access key.
+	            -s3sk | -s3secretkey : S3 access key secret.
+	            -sak | -srcazurekey : input url Azure account key.
+	            -ss3k | -srcs3accesskey : input url S3 access key.
+	            -ss3sk | -srcs3secretkey : input url S3 access key secret.
+	            -tak | -targetazurekey : output url Azure account key.
+	            -ts3k | -targets3accesskey : output url S3 access key.
+	            -ts3sk | -targets3secretkey : output url S3 access key secret.
+
+                Note: Remember when local file system is destination/output do NOT end the directory with a \";
+
+            
         const string LocalDetection = "???";
         const string VerboseFlag = "-v";
         const string InputUrlFlag = "-i";
@@ -112,9 +134,13 @@ namespace azurecopy
             {
                 urlType = UrlType.Azure;
             }
-            else if ( S3Helper.MatchHandler(url))
+            else if (S3Helper.MatchHandler(url))
             {
                 urlType = UrlType.S3;
+            }
+            else
+            {
+                urlType = UrlType.Local;  // local filesystem.
             }
 
             return urlType;
@@ -300,6 +326,10 @@ namespace azurecopy
                     blobHandler = new S3Handler();
                     break;
 
+                case UrlType.Local:
+                    blobHandler = new FileSystemHandler();
+                    break;
+
                 default:
                     blobHandler = new FileSystemHandler();
                     break;
@@ -324,6 +354,8 @@ namespace azurecopy
                 //currently sequentially.
                 var sourceBlobList = GetSourceBlobList(inputHandler, _inputUrl);
 
+                // currently sequential.
+                // TODO: make concurrent.
                 foreach (var url in sourceBlobList)
                 {
                     var fileName = "";
@@ -457,7 +489,12 @@ namespace azurecopy
         static void Main(string[] args)
         {
             ParseArguments(args);
+
+            var sw = new Stopwatch();
+            sw.Start();
             Process();
+            sw.Stop();
+            Console.WriteLine("Operation took {0} ms", sw.ElapsedMilliseconds);
         }
 
     }

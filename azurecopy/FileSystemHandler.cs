@@ -14,9 +14,10 @@
 //    limitations under the License.
 // </copyright>
 //-----------------------------------------------------------------------
- 
- using System;
+
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -26,14 +27,59 @@ namespace azurecopy
     class FileSystemHandler : IBlobHandler
     {
 
-        public Blob ReadBlob(string url, string filePath = "")
+        // we will NOT be using the cachedFilePath (since we're just reading the file from the local 
+        // filesystem anyway).
+        // We will reference the file in the blob, but will make sure that the blob url type is set to local
+        // this will mean that any future cleaning of the cache will NOT try and erase the original file.
+        public Blob ReadBlob(string localFilePath, string cachedFilePath = "")
         {
-            throw new NotImplementedException();
+
+            var blob = new Blob();
+            blob.BlobSavedToFile = false;
+            blob.BlobType = DestinationBlobType.Unknown;
+            blob.FilePath = localFilePath;
+            blob.BlobOriginType = UrlType.Local;
+            blob.BlobSavedToFile = true;
+
+            return blob;
         }
 
 
-        public void WriteBlob(string url, Blob blob)
+        public void WriteBlob(string localFilePath, Blob blob)
         {
+            Stream stream = null;
+
+            try
+            {
+                
+                // get stream to data.
+                if (blob.BlobSavedToFile)
+                {
+                    stream = new FileStream(blob.FilePath, FileMode.Open);
+                }
+                else
+                {
+                    stream = new MemoryStream(blob.Data);
+                }
+
+                using (var writeStream = new FileStream(localFilePath, FileMode.Create))
+                {
+                    stream.CopyTo(writeStream);
+                }
+
+            }
+            catch (ArgumentException ex)
+            {
+                Console.WriteLine("Writing to local filesystem failed: " + ex.ToString());
+                throw;
+            }
+            finally
+            {
+                if (stream != null)
+                {
+                    stream.Close();
+                }
+            }
 
         }
 
