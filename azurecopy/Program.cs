@@ -41,6 +41,8 @@ namespace azurecopy
 	            -d : download to filesystem before uploading to output url. (use for big blobs)
 	            -blobcopy : use blobcopy API for when Azure is output url.
 	            -list : list blobs in bucket/container. Use in conjunction with -i
+                -pu : parallel upload
+                -cs : chunk size used for parallel upload (in MB).
 	            -m : Monitor progress of copy when in 'blobcopy' mode (ie -blobcopy flag was used). Program will not exit until all pending copies are complete.
 	            -destblobtype page|block : Destination blob type. Used when destination url is Azure and input url was NOT azure. eg S3 to Azure. 
 	            -ak | -azurekey : Azure account key.
@@ -52,7 +54,8 @@ namespace azurecopy
 	            -tak | -targetazurekey : output url Azure account key.
 	            -ts3k | -targets3accesskey : output url S3 access key.
 	            -ts3sk | -targets3secretkey : output url S3 access key secret.
-
+                -rd : Retry delay in seconds used when communicating with cloud storage environments.
+                -mr : Maximum number of retries for a given operation.
                 Note: Remember when local file system is destination/output do NOT end the directory with a \";
 
             
@@ -64,7 +67,11 @@ namespace azurecopy
         const string BlobCopyFlag = "-blobcopy";
         const string ListContainerFlag = "-list";
         const string MonitorBlobCopyFlag = "-m";
-
+        const string ParallelUploadFlag = "-pu";
+        const string ChunkSizeFlag = "-cs";
+        const string RetryAttemptDelayInSecondsFlag = "-rd";
+        const string MaxRetryAttemptsFlag = "-mr";
+       
         // only makes sense for azure destination.
         const string DestBlobType = "-destblobtype";
 
@@ -108,6 +115,8 @@ namespace azurecopy
         static bool _listContainer = false;
         static Action _action = Action.None;
         static bool _monitorBlobCopy = false;
+        static int _parallelFactor = 1;
+        static int _chunkSizeInMB = 2;
 
         // destination blob...  can only assign if source is NOT azure and destination IS azure.
         static DestinationBlobType _destinationBlobType = DestinationBlobType.Unknown;
@@ -122,7 +131,6 @@ namespace azurecopy
             {
                 throw new ArgumentException("Invalid parameters...");
             }
-
         }
 
         static UrlType GetUrlType(string url)
@@ -159,6 +167,29 @@ namespace azurecopy
                         case VerboseFlag:
                             _verbose = true;
                             break;
+
+                        case ParallelUploadFlag:
+                            i++;
+                            _parallelFactor = Convert.ToInt32(GetArgument(args, i));
+                            
+                            break;
+
+                        case RetryAttemptDelayInSecondsFlag:
+                            i++;
+                            ConfigHelper.RetryAttemptDelayInSeconds = Convert.ToInt32(GetArgument(args, i));
+                            break;
+
+                        case MaxRetryAttemptsFlag:
+                            i++;
+                            ConfigHelper.MaxRetryAttempts = Convert.ToInt32(GetArgument(args, i));
+                            break;
+
+                        case ChunkSizeFlag:
+                            i++;
+                            _chunkSizeInMB = Convert.ToInt32(GetArgument(args, i));
+
+                            break;
+
 
                         case DestBlobType:
                             i++;
@@ -387,14 +418,13 @@ namespace azurecopy
                         }
 
                         // write blob
-                        outputHandler.WriteBlob(outputUrl, blob);
+                        outputHandler.WriteBlob(outputUrl, blob, _parallelFactor, _chunkSizeInMB);
                     }
                     else
                     {
                         Console.WriteLine("using blob copy {0} to {1} of type {2}", url, outputUrl, _destinationBlobType);
                         AzureBlobCopyHandler.StartCopy(url, outputUrl, _destinationBlobType);
                     }
-
                 }
 
                 // if blob copy and monitoring
@@ -402,9 +432,7 @@ namespace azurecopy
                 {
                     AzureBlobCopyHandler.MonitorBlobCopy(_outputUrl);
                 }
-
             }
-          
         }
 
         private static string GenerateOutputUrl(string baseOutputUrl, string inputUrl)

@@ -121,7 +121,7 @@ namespace azurecopy
         }
 
 
-        public void WriteBlob(string url, Blob blob)
+        public void WriteBlob(string url, Blob blob,   int parallelUploadFactor=1, int chunkSizeInMB=4)
         {
             Stream stream = null;
 
@@ -148,7 +148,7 @@ namespace azurecopy
 
                 if (blob.BlobType == DestinationBlobType.Block)
                 {
-                    WriteBlockBlob(stream, blob, container);   
+                    WriteBlockBlob(stream, blob, container, parallelUploadFactor, chunkSizeInMB);   
                 }
                 else if (blob.BlobType == DestinationBlobType.Page)
                 {
@@ -165,7 +165,6 @@ namespace azurecopy
             {
                 // probably bad container.
                 Console.WriteLine("Argument Exception " + ex.ToString());
-                Console.WriteLine("Please try block blobs instead");
             }
             finally
             {
@@ -178,17 +177,86 @@ namespace azurecopy
 
         }
 
-        // can make this concurrent... soonish. :)
-        private void WriteBlockBlob(Stream stream, Blob blob, CloudBlobContainer container)
+        // NOTE: need to check if we need to modify  blob.ServiceClient.ParallelOperationThreadCount
+        private void ParallelWriteBlockBlob(Stream stream, CloudBlockBlob blob, int parallelFactor, int chunkSizeInMB)
         {
+            int chunkSize = chunkSizeInMB * 1024*1024;
+            var length = stream.Length;
+            var numberOfBlocks = (length / chunkSize ) +1 ;
+            var blockIdList = new string[numberOfBlocks];
+            var chunkSizeList = new int[numberOfBlocks];
+            var taskList = new List<Task>();
 
-            var blobRef = container.GetBlockBlobReference(blob.Name);
+            var count = numberOfBlocks - 1;
 
-            blobRef.UploadFromStream(stream);
+            // read the data...  spawn a task to launch... then wait for all.
+            while (count >= 0) 
+            {
+                while (count >= 0 && taskList.Count < parallelFactor)
+                {
+                    var index = (numberOfBlocks - count -  1);
 
+                    var chunkSizeToUpload = (int)Math.Min(chunkSize, length - (index * chunkSize));
+                    chunkSizeList[index] = chunkSizeToUpload;
+                    var dataBuffer = new byte[chunkSizeToUpload];
+                    stream.Seek(index * chunkSize, SeekOrigin.Begin);
+                    stream.Read(dataBuffer, 0, chunkSizeToUpload);
+
+                    var t = Task.Factory.StartNew(() =>
+                    {
+                        var tempCount = index;
+                        var uploadSize = chunkSizeList[tempCount];
+
+                        var newBuffer = new byte[uploadSize];
+                        Array.Copy(dataBuffer, newBuffer, dataBuffer.Length);
+                        
+                        var blockId = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
+
+                        using (var memStream = new MemoryStream(newBuffer, 0, uploadSize))
+                        {
+                            blob.PutBlock(blockId, memStream, null);
+                        }
+                        blockIdList[tempCount] = blockId;
+
+                    });
+
+                    taskList.Add(t);
+                    count--;
+
+                    
+                }
+
+                var waitedIndex = Task.WaitAny(taskList.ToArray());
+                taskList.RemoveAt(waitedIndex);
+            }
+
+
+            Task.WaitAll(taskList.ToArray());
+
+            blob.PutBlockList(blockIdList);
         }
 
-        private void WritePageBlob(Stream stream, Blob blob, CloudBlobContainer container)
+        // can make this concurrent... soonish. :)
+        private void WriteBlockBlob(Stream stream, Blob blob, CloudBlobContainer container,int parallelFactor=1, int chunkSizeInMB=2)
+        {
+            var blobRef = container.GetBlockBlobReference(blob.Name);
+            blobRef.DeleteIfExists();
+
+            // use "parallel" option even if parallelfactor == 1.
+            // This is because I've found that blobRef.UploadFromStream to be unreliable.
+            // Unsure if its a timeout issue or some other cause. (huge stacktrace/exception thrown from within
+            // the client lib code.
+            if (parallelFactor > 0)
+            {
+                ParallelWriteBlockBlob(stream, blobRef, parallelFactor, chunkSizeInMB);
+            }
+            else
+            {
+                blobRef.UploadFromStream(stream);
+            }
+        }
+
+        private void WritePageBlob(Stream stream, Blob blob, CloudBlobContainer container,int parallelFactor=1, int chunkSizeInMB=2)
         {
             var blobRef = container.GetPageBlobReference(blob.Name);
             blobRef.UploadFromStream(stream);

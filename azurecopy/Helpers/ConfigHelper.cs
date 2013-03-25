@@ -42,6 +42,10 @@ namespace azurecopy.Helpers
         public static string TargetAWSAccessKeyID { get; set; }
         public static string TargetAWSSecretAccessKeyID { get; set; }
 
+        // retry attempt details
+        public static int RetryAttemptDelayInSeconds {get;set;}
+        public static int MaxRetryAttempts { get; set; }
+
 
         static ConfigHelper()
         {
@@ -73,6 +77,11 @@ namespace azurecopy.Helpers
             TargetAzureAccountKey = GetConfigValue<string>("TargetAzureAccountKey", AzureAccountKey);
             TargetAWSAccessKeyID = GetConfigValue<string>("TargetAWSAccessKeyID", AWSAccessKeyID);
             TargetAWSSecretAccessKeyID = GetConfigValue<string>("TargetAWSSecretAccessKeyID", AWSSecretAccessKeyID);
+
+            // retry policies.
+            // can be used in both Azure and AWS (eventually).
+            RetryAttemptDelayInSeconds = GetConfigValue<int>("RetryAttemptDelayInSeconds", 2);
+            MaxRetryAttempts = GetConfigValue<int>("MaxRetryAttempts", 10);
 
         }
 

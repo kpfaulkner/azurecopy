@@ -93,7 +93,7 @@ namespace azurecopy
 
         }
 
-        public void WriteBlob(string url, Blob blob)
+        public void WriteBlob(string url, Blob blob,   int parallelUploadFactor=1, int chunkSizeInMB=4)
         {
             var bucket = S3Helper.GetBucketFromUrl(url);
             var key = S3Helper.GetKeyFromUrl(url);

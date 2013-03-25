@@ -45,7 +45,7 @@ namespace azurecopy
         }
 
 
-        public void WriteBlob(string localFilePath, Blob blob)
+        public void WriteBlob(string localFilePath, Blob blob,   int parallelUploadFactor=1, int chunkSizeInMB=4)
         {
             Stream stream = null;
 

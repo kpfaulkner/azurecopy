@@ -24,6 +24,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
+using Microsoft.WindowsAzure.Storage.RetryPolicies;
 
 namespace azurecopy.Utils
 {
@@ -72,33 +73,56 @@ namespace azurecopy.Utils
         {
             if (BlobClient == null)
             {
-                var accountName = GetAccountNameFromUrl(url);
-                string accountKey = ConfigHelper.AzureAccountKey;
-
-                if (isSrc)
+                if (IsDevUrl(url))
                 {
-                    accountKey = ConfigHelper.SrcAzureAccountKey;
+                   
+                    CloudStorageAccount storageAccount = CloudStorageAccount.DevelopmentStorageAccount;
+                    BlobClient = storageAccount.CreateCloudBlobClient();
+              
                 }
                 else
                 {
-                    accountKey = ConfigHelper.TargetAzureAccountKey;
+                    var accountName = GetAccountNameFromUrl(url);
+                    string accountKey = ConfigHelper.AzureAccountKey;
+
+                    if (isSrc)
+                    {
+                        accountKey = ConfigHelper.SrcAzureAccountKey;
+                    }
+                    else
+                    {
+                        accountKey = ConfigHelper.TargetAzureAccountKey;
+                    }
+
+                    var credentials = new Microsoft.WindowsAzure.Storage.Auth.StorageCredentials(accountName, accountKey);
+                    CloudStorageAccount azureStorageAccount = new CloudStorageAccount(credentials, true);
+                    BlobClient = azureStorageAccount.CreateCloudBlobClient();
+
+                    // retry policy.
+                    // could do with a little work.
+                    IRetryPolicy linearRetryPolicy = new LinearRetry( TimeSpan.FromSeconds( ConfigHelper.RetryAttemptDelayInSeconds), ConfigHelper.MaxRetryAttempts);
+                    BlobClient.RetryPolicy = linearRetryPolicy;
+
                 }
 
-                var credentials = new Microsoft.WindowsAzure.Storage.Auth.StorageCredentials(accountName, accountKey);
-                CloudStorageAccount azureStorageAccount = new CloudStorageAccount(credentials, true);
-                BlobClient = azureStorageAccount.CreateCloudBlobClient();
             }
 
             return BlobClient;
         }
 
 
+        private static bool IsDevUrl(string url)
+        {
+            return (url.Contains(DevAzureDetection));
+        }
+
         // container lives in different part of url depending on dev or real.
-        // if url ends in / then we assume its 
+        // if the url ends with a /  then assuming the url doesn't mention the blob.
         public static string GetContainerFromUrl(string blobUrl)
         {
             var url = new Uri( blobUrl );
             string container = "";  // there may be no container.
+
 
             if (blobUrl.EndsWith("/"))
             {
