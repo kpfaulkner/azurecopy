@@ -46,6 +46,18 @@ namespace azurecopy.Helpers
         public static int RetryAttemptDelayInSeconds {get;set;}
         public static int MaxRetryAttempts { get; set; }
 
+        // misc params
+        public static string DownloadDirectory  { get; set; }
+        public static bool Verbose  { get; set; }
+        public static bool AmDownloading  { get; set; }
+        public static bool UseBlobCopy  { get; set; }
+        public static bool ListContainer  { get; set; }
+        public static bool MonitorBlobCopy  { get; set; }
+        public static int ParallelFactor  { get; set; }
+        public static int ChunkSizeInMB  { get; set; }
+
+        // destination blob...  can only assign if source is NOT azure and destination IS azure.
+        public static DestinationBlobType DestinationBlobTypeSelected {get;set;}
 
         static ConfigHelper()
         {
@@ -83,7 +95,17 @@ namespace azurecopy.Helpers
             RetryAttemptDelayInSeconds = GetConfigValue<int>("RetryAttemptDelayInSeconds", 2);
             MaxRetryAttempts = GetConfigValue<int>("MaxRetryAttempts", 10);
 
-        }
 
+            DownloadDirectory = GetConfigValue<string>("DownloadDirectory", "c:\\temp");
+            Verbose = GetConfigValue<bool>("Verbose", false);
+            AmDownloading = GetConfigValue<bool>("AmDownloading", false);
+            UseBlobCopy = GetConfigValue<bool>("UseBlobCopy", false);
+            ListContainer = GetConfigValue<bool>("ListContainer", false);
+            MonitorBlobCopy = GetConfigValue<bool>("MonitorBlobCopy", false);
+            ParallelFactor = GetConfigValue<int>("ParallelFactor", 1);
+            ChunkSizeInMB = GetConfigValue<int>("ChunkSizeInMB", 2);
+
+            DestinationBlobTypeSelected = GetConfigValue<DestinationBlobType>("DestinationBlobTypeSelected", DestinationBlobType.Unknown);
+        }
     }
 }

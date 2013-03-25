@@ -107,16 +107,9 @@ namespace azurecopy
         static UrlType _outputUrlType;
 
         static string _inputUrl;
-        static string _outputUrl;
-        static string _downloadDirectory;
-        static bool _verbose = false;
-        static bool _amDownloading = false;
-        static bool _useBlobCopy = false;
-        static bool _listContainer = false;
+        static string _outputUrl;   
         static Action _action = Action.None;
-        static bool _monitorBlobCopy = false;
-        static int _parallelFactor = 1;
-        static int _chunkSizeInMB = 2;
+        static bool _listContainer = false;
 
         // destination blob...  can only assign if source is NOT azure and destination IS azure.
         static DestinationBlobType _destinationBlobType = DestinationBlobType.Unknown;
@@ -165,12 +158,12 @@ namespace azurecopy
                     switch (args[i])
                     {
                         case VerboseFlag:
-                            _verbose = true;
+                            ConfigHelper.Verbose = true;
                             break;
 
                         case ParallelUploadFlag:
                             i++;
-                            _parallelFactor = Convert.ToInt32(GetArgument(args, i));
+                            ConfigHelper.ParallelFactor = Convert.ToInt32(GetArgument(args, i));
                             
                             break;
 
@@ -186,7 +179,7 @@ namespace azurecopy
 
                         case ChunkSizeFlag:
                             i++;
-                            _chunkSizeInMB = Convert.ToInt32(GetArgument(args, i));
+                            ConfigHelper.ChunkSizeInMB = Convert.ToInt32(GetArgument(args, i));
 
                             break;
 
@@ -196,22 +189,21 @@ namespace azurecopy
                             var destType = GetArgument(args, i);
                             if (destType == "page")
                             {
-                                _destinationBlobType = DestinationBlobType.Page;
+                              ConfigHelper.DestinationBlobTypeSelected = DestinationBlobType.Page;
                             }
                             else if (destType == "block")
                             {
-                                _destinationBlobType = DestinationBlobType.Block;
+                                ConfigHelper.DestinationBlobTypeSelected = DestinationBlobType.Block;
                             }
 
-                            _verbose = true;
                             break;
 
                         case MonitorBlobCopyFlag:
-                            _monitorBlobCopy = true;
+                            ConfigHelper.MonitorBlobCopy = true;
                             break;
 
                         case BlobCopyFlag:
-                            _useBlobCopy = true;
+                            ConfigHelper.UseBlobCopy = true;
                             _action = Action.BlobCopy;
                             break;
 
@@ -323,8 +315,8 @@ namespace azurecopy
 
                         case DownloadFlag:
                             i++;
-                            _downloadDirectory = GetArgument(args, i);
-                            _amDownloading = true;
+                            ConfigHelper.DownloadDirectory = GetArgument(args, i);
+                            ConfigHelper.AmDownloading  = true;
                             break;
 
                         default:
@@ -390,14 +382,14 @@ namespace azurecopy
                 foreach (var url in sourceBlobList)
                 {
                     var fileName = "";
-                    if (_amDownloading)
+                    if ( ConfigHelper.AmDownloading)
                     {
-                        fileName = GenerateFileName(_downloadDirectory, url);
+                        fileName = GenerateFileName(ConfigHelper.DownloadDirectory, url);
                     }
 
                     var outputUrl = GenerateOutputUrl(_outputUrl, url);
 
-                    if (!_useBlobCopy)
+                    if (!ConfigHelper.UseBlobCopy)
                     {
 
                         // read blob
@@ -418,7 +410,7 @@ namespace azurecopy
                         }
 
                         // write blob
-                        outputHandler.WriteBlob(outputUrl, blob, _parallelFactor, _chunkSizeInMB);
+                        outputHandler.WriteBlob(outputUrl, blob, ConfigHelper.ParallelFactor, ConfigHelper.ChunkSizeInMB);
                     }
                     else
                     {
@@ -428,7 +420,7 @@ namespace azurecopy
                 }
 
                 // if blob copy and monitoring
-                if (_useBlobCopy && _monitorBlobCopy)
+                if (ConfigHelper.UseBlobCopy && ConfigHelper.MonitorBlobCopy)
                 {
                     AzureBlobCopyHandler.MonitorBlobCopy(_outputUrl);
                 }
