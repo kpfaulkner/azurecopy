@@ -109,11 +109,13 @@
     <Compile Include="Helpers\ConfigHelper.cs" />
     <Compile Include="Helpers\CommonHelper.cs" />
     <Compile Include="Helpers\S3Helper.cs" />
+    <Compile Include="Helpers\SkyDriveHelper.cs" />
     <Compile Include="IBlobHandler.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="S3Handler.cs" />
     <Compile Include="Helpers\AzureHelper.cs" />
+    <Compile Include="SkyDriveHandler.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

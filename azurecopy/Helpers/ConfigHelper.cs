@@ -59,6 +59,10 @@ namespace azurecopy.Helpers
         // destination blob...  can only assign if source is NOT azure and destination IS azure.
         public static DestinationBlobType DestinationBlobTypeSelected {get;set;}
 
+        public static string SkyDriveCode { get; set; }
+        public static string SkyDriveRefreshToken { get; set; }
+        public static string SkyDriveAccessToken { get; set; }
+
         static ConfigHelper()
         {
             ReadConfig();
@@ -106,6 +110,10 @@ namespace azurecopy.Helpers
             ChunkSizeInMB = GetConfigValue<int>("ChunkSizeInMB", 2);
 
             DestinationBlobTypeSelected = GetConfigValue<DestinationBlobType>("DestinationBlobTypeSelected", DestinationBlobType.Unknown);
+
+            SkyDriveCode = GetConfigValue<string>("SkyDriveCode", "");
+            SkyDriveRefreshToken = GetConfigValue<string>("SkyDriveRefreshToken", "");
+
         }
     }
 }
