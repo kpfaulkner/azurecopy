@@ -508,9 +508,8 @@ namespace azurecopy
 
         static void Main(string[] args)
         {
-            var sh = new SkyDriveHandler();
-            sh.ListBlobsInContainer("");
-
+            //var sh = new SkyDriveHandler();
+            //sh.ListBlobsInContainer("");
 
             ParseArguments(args);
 

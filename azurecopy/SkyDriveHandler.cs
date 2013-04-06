@@ -62,7 +62,7 @@ namespace azurecopy
             //throw new NotImplementedException();
 
             //var requestUriFile = new StringBuilder("https://apis.live.net/v5.0/me/skydrive");
-            var requestUriFile = new StringBuilder("https://apis.live.net/v5.0/me/folders");
+            var requestUriFile = new StringBuilder("https://apis.live.net/v5.0/me/skydrive/files");
             requestUriFile.AppendFormat("?access_token={0}", ConfigHelper.SkyDriveAccessToken);
 
             HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(requestUriFile.ToString());
@@ -70,8 +70,8 @@ namespace azurecopy
             HttpWebResponse response = (HttpWebResponse)request.GetResponse();
             var stream = response.GetResponseStream();
 
-            byte[] arr = new byte[2000];
-            stream.Read(arr, 0, 2000);
+            byte[] arr = new byte[10000];
+            stream.Read(arr, 0, 10000);
             var mystring = System.Text.Encoding.Default.GetString(arr);
 
             string returnString = response.StatusCode.ToString();
