@@ -24,7 +24,7 @@ using System.Threading.Tasks;
 namespace azurecopy
 {
     public enum DestinationBlobType { Unknown, Block, Page };
-    public enum UrlType { Azure, S3, Local, Other };
+    public enum UrlType { Azure, S3, SkyDrive, Local, Other };
     public class Blob
     {
 

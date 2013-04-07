@@ -105,6 +105,7 @@
     <Compile Include="AzureHandler.cs" />
     <Compile Include="Blob.cs" />
     <Compile Include="AzureBlobCopyHandler.cs" />
+    <Compile Include="Datatypes\SkyDriveDirectory.cs" />
     <Compile Include="FileSystemHandler.cs" />
     <Compile Include="Helpers\ConfigHelper.cs" />
     <Compile Include="Helpers\CommonHelper.cs" />

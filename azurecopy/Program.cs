@@ -33,7 +33,7 @@ namespace azurecopy
     
     class Program
     {
-        const string UsageString = 
+        const string UsageString =
            @"Usage: azurecopy
                 -v : verbose
 	            -i : input url
@@ -56,7 +56,9 @@ namespace azurecopy
 	            -ts3sk | -targets3secretkey : output url S3 access key secret.
                 -rd : Retry delay in seconds used when communicating with cloud storage environments.
                 -mr : Maximum number of retries for a given operation.
-                Note: Remember when local file system is destination/output do NOT end the directory with a \";
+                -skydrivecode : returned when accessing URL: https://login.live.com/oauth20_authorize.srf?client_id=00000000480EE365&scope=wl.offline_access,wl.skydrive,wl.skydrive_update&response_type=code&redirect_uri=http://kpfaulkner.com
+                Note: Remember when local file system is destination/output do NOT end the directory with a \
+                      When destination is Skydrive, use the url format  skydrive://directory/file";
 
             
         const string LocalDetection = "???";
@@ -102,6 +104,8 @@ namespace azurecopy
         const string TargetAWSAccessKeyIDFlag = "-targets3accesskey";
         const string TargetAWSSecretAccessKeyIDFlag = "-targets3secretkey";
 
+        // skydrive 
+        const string SkyDriveCodeFlag = "-skydrivecode";
 
         static UrlType _inputUrlType;
         static UrlType _outputUrlType;
@@ -138,6 +142,10 @@ namespace azurecopy
             else if (S3Helper.MatchHandler(url))
             {
                 urlType = UrlType.S3;
+            }
+            else if (SkyDriveHelper.MatchHandler(url))
+            {
+                urlType = UrlType.SkyDrive;
             }
             else
             {
@@ -181,6 +189,11 @@ namespace azurecopy
                             i++;
                             ConfigHelper.ChunkSizeInMB = Convert.ToInt32(GetArgument(args, i));
 
+                            break;
+
+                        case SkyDriveCodeFlag:
+                            i++;
+                            ConfigHelper.SkyDriveCode = GetArgument(args, i);
                             break;
 
 
@@ -347,6 +360,10 @@ namespace azurecopy
 
                 case UrlType.S3:
                     blobHandler = new S3Handler();
+                    break;
+
+                case UrlType.SkyDrive:
+                    blobHandler = new SkyDriveHandler();
                     break;
 
                 case UrlType.Local:

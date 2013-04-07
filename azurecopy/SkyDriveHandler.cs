@@ -24,31 +24,50 @@ namespace azurecopy
             throw new NotImplementedException();
         }
 
+        // url simply is <directory>/filename   format. NOT the entire/real url.
         public void WriteBlob(string url, Blob blob,  int parallelUploadFactor=1, int chunkSizeInMB=4)
         {
-            Stream stream = null;
+
+            var directoryName = GetDirectoryNameFromUrl( url );
+            var blobName = GetBlobNameFromUrl(url);
+
+            var directoryId = GetSkyDriveDirectoryId(directoryName);
+
+            var urlTemplate = @"https://apis.live.net/v5.0/{0}/files/{1}";
+            var requestUrl = string.Format(urlTemplate, directoryId, blobName);
+
+            var requestUriFile = new StringBuilder(requestUrl);
+            requestUriFile.AppendFormat("?access_token={0}", accessToken);
+ 
+            HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(requestUriFile.ToString());
+            request.Method = "PUT";
+            Stream dataStream = request.GetRequestStream();
+            Stream inputStream = null;
 
             // get stream to data.
             if (blob.BlobSavedToFile)
             {
-                stream = new FileStream(blob.FilePath, FileMode.Open);
+                inputStream = new FileStream(blob.FilePath, FileMode.Open);
             }
             else
             {
-                stream = new MemoryStream(blob.Data);
+                inputStream = new MemoryStream(blob.Data);
             }
 
-        
-            var requestUriFile =  new StringBuilder("https://apis.live.net/v5.0/folder.6bc852c8e2ff5fed/files/upload2.txt");
-            requestUriFile.AppendFormat("?access_token={0}", accessToken);
-
-            byte[] arr = System.IO.File.ReadAllBytes("C:\\temp\\upload.txt");
-            HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(requestUriFile.ToString());
-            request.Method = "PUT";
-            //request.ContentType = "text/plain";
-            request.ContentLength = arr.Length;
-            Stream dataStream = request.GetRequestStream();
-            dataStream.Write(arr, 0, arr.Length);
+            int bytesRead;
+            int readSize = 64000;
+            int totalSize = 0;
+            byte[] arr = new byte[readSize];
+            do
+            {
+                bytesRead = inputStream.Read( arr,0, readSize);
+                totalSize += bytesRead;
+                dataStream.Write(arr, 0, bytesRead);
+            }
+            while (  bytesRead > 0);
+         
+            request.ContentLength = totalSize;
+         
             dataStream.Close();
             HttpWebResponse response = (HttpWebResponse)request.GetResponse();
             string returnString = response.StatusCode.ToString();
@@ -56,27 +75,42 @@ namespace azurecopy
         }
 
 
-        public List<string> ListBlobsInContainer(string baseUrl)
+        // assuming only single dir.
+        // url == directory/blobname
+        private string GetBlobNameFromUrl(string url)
+        {
+            var sp = url.Split('/');
+            return sp[3];
+        }
+
+        // assuming only single dir.
+        // url == directory/blobname
+        private string GetDirectoryNameFromUrl(string url)
+        {
+            var sp = url.Split('/');
+            return sp[2];
+        }
+
+
+        public List<string> ListBlobsInContainer(string container)
         {
 
-            //throw new NotImplementedException();
+            var skydriveListing = SkyDriveHelper.ListSkyDriveDirectory(container);
 
-            //var requestUriFile = new StringBuilder("https://apis.live.net/v5.0/me/skydrive");
-            var requestUriFile = new StringBuilder("https://apis.live.net/v5.0/me/skydrive/files");
-            requestUriFile.AppendFormat("?access_token={0}", ConfigHelper.SkyDriveAccessToken);
+            // now just get list of names, and NOT the complete skydrive info.
+            var nameList = (from e in skydriveListing select e.DirectoryName).ToList();
+            return nameList;
 
-            HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(requestUriFile.ToString());
-            request.Method = "GET";
-            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-            var stream = response.GetResponseStream();
+        }
 
-            byte[] arr = new byte[10000];
-            stream.Read(arr, 0, 10000);
-            var mystring = System.Text.Encoding.Default.GetString(arr);
+        private string GetSkyDriveDirectoryId(string directoryName)
+        {
+            var skydriveListing = SkyDriveHelper.ListSkyDriveDirectory(directoryName);
 
-            string returnString = response.StatusCode.ToString();
+            var skydriveId = (from e in skydriveListing where e.DirectoryId == directoryName select e.DirectoryId).FirstOrDefault();
 
-            return null;
+            return skydriveId;
+
         }
 
 

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using azurecopy.Datatypes;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
@@ -14,6 +15,7 @@ namespace azurecopy.Helpers
         private static string skyDriveRedirectUri = @"http://kpfaulkner.com";
         private static string accessToken;
         private static string refreshToken;
+        const string SkyDriveDetection = "skydrive";
 
         // determines if this is the first time (and need access and refresh token)
         // or determines if we're just refreshing a refresh token.
@@ -160,6 +162,47 @@ namespace azurecopy.Helpers
             throw new NotImplementedException();
         }
 
+        public static List<SkyDriveDirectory> ListSkyDriveDirectory(string directory)
+        {
 
+            //throw new NotImplementedException();
+
+            //var requestUriFile = new StringBuilder("https://apis.live.net/v5.0/me/skydrive");
+            var urlTemplate = "https://apis.live.net/v5.0/me/skydrive{0}files";
+            var containerStr = "";
+            if (string.IsNullOrEmpty(directory))
+            {
+                containerStr = @"\";
+            }
+            else
+            {
+                containerStr = "\\" + directory + "\\";
+            }
+
+            var url = string.Format(urlTemplate, containerStr);
+
+            var requestUriFile = new StringBuilder(url);
+            requestUriFile.AppendFormat("?access_token={0}", ConfigHelper.SkyDriveAccessToken);
+
+            HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(requestUriFile.ToString());
+            request.Method = "GET";
+            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+            var stream = response.GetResponseStream();
+
+            byte[] arr = new byte[10000];
+            stream.Read(arr, 0, 10000);
+            var mystring = System.Text.Encoding.Default.GetString(arr);
+
+            string returnString = response.StatusCode.ToString();
+
+            return null;
+        }
+
+        public static bool MatchHandler(string url)
+        {
+            return url.Contains(SkyDriveDetection);
+        }
+
+   
     }
 }
