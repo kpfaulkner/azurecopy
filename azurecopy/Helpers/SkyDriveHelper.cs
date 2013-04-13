@@ -39,6 +39,7 @@ namespace azurecopy.Helpers
         public static void GetLiveAccessAndRefreshTokens( string code )
         {
             var urlTemplate = @"https://oauth.live.com/token?client_id={0}&redirect_uri={1}&code={2}&grant_type=authorization_code";
+                                https://oauth.live.com/token?client_id=00000000480EE365&redirect_uri=http://kpfaulkner.com&code=a71feee2-d543-0191-9427-1d3a96aa7621&grant_type=authorization_code
             var url = string.Format(urlTemplate, skyDriveClientId, skyDriveRedirectUri,code);
 
             HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create( url );
@@ -132,7 +133,8 @@ namespace azurecopy.Helpers
             System.Configuration.Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
 
             // Add an Application Setting.
-            config.AppSettings.Settings.Add("SkyDriveRefreshToken",  refreshToken);
+            config.AppSettings.Settings.Remove("SkyDriveRefreshToken");
+            config.AppSettings.Settings.Add("SkyDriveRefreshToken", refreshToken);
             
             // Save the changes in App.config file.
             config.Save(ConfigurationSaveMode.Modified);
@@ -162,6 +164,11 @@ namespace azurecopy.Helpers
             throw new NotImplementedException();
         }
 
+        public static List<SkyDriveDirectory> ListSkyDriveRootDirectories()
+        {
+            return ListSkyDriveDirectory("");
+        }
+
         public static List<SkyDriveDirectory> ListSkyDriveDirectory(string directory)
         {
 
@@ -172,11 +179,11 @@ namespace azurecopy.Helpers
             var containerStr = "";
             if (string.IsNullOrEmpty(directory))
             {
-                containerStr = @"\";
+                containerStr = @"/";
             }
             else
             {
-                containerStr = "\\" + directory + "\\";
+                containerStr = @"/" + directory + @"/";
             }
 
             var url = string.Format(urlTemplate, containerStr);
@@ -189,13 +196,24 @@ namespace azurecopy.Helpers
             HttpWebResponse response = (HttpWebResponse)request.GetResponse();
             var stream = response.GetResponseStream();
 
-            byte[] arr = new byte[10000];
-            stream.Read(arr, 0, 10000);
-            var mystring = System.Text.Encoding.Default.GetString(arr);
+            byte[] arr = new byte[20000];
+            var bytesRead = 0;
+            string responseString = "";
+            do
+            {
+                bytesRead = stream.Read(arr, 0, 20000);
+                if (bytesRead > 0)
+                {
+                    var mystring = System.Text.Encoding.Default.GetString(arr, 0, bytesRead);
+                   
+                    responseString += mystring;
+                }
+            }
+            while (bytesRead > 0);
 
-            string returnString = response.StatusCode.ToString();
+            var wrapperResponse = JsonHelper.DeserializeJsonToObject<Wrapper>(responseString);
 
-            return null;
+            return wrapperResponse.data;
         }
 
         public static bool MatchHandler(string url)

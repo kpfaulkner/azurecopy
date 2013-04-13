@@ -98,16 +98,16 @@ namespace azurecopy
             var skydriveListing = SkyDriveHelper.ListSkyDriveDirectory(container);
 
             // now just get list of names, and NOT the complete skydrive info.
-            var nameList = (from e in skydriveListing select e.DirectoryName).ToList();
+            var nameList = (from e in skydriveListing select e.Name.ToString()).ToList();
             return nameList;
 
         }
 
         private string GetSkyDriveDirectoryId(string directoryName)
         {
-            var skydriveListing = SkyDriveHelper.ListSkyDriveDirectory(directoryName);
+            var skydriveListing = SkyDriveHelper.ListSkyDriveRootDirectories();
 
-            var skydriveId = (from e in skydriveListing where e.DirectoryId == directoryName select e.DirectoryId).FirstOrDefault();
+            var skydriveId = (from e in skydriveListing where e.Name == directoryName select e.Id).FirstOrDefault();
 
             return skydriveId;
 
