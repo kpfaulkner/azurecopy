@@ -33,6 +33,12 @@ namespace azurecopy
 
             var directoryId = GetSkyDriveDirectoryId(directoryName);
 
+            if (directoryId == null)
+            {
+                SkyDriveHelper.CreateFolder(directoryName);
+                directoryId = GetSkyDriveDirectoryId(directoryName);
+            }
+
             var urlTemplate = @"https://apis.live.net/v5.0/{0}/files/{1}";
             var requestUrl = string.Format(urlTemplate, directoryId, blobName);
 
@@ -61,12 +67,15 @@ namespace azurecopy
             do
             {
                 bytesRead = inputStream.Read( arr,0, readSize);
-                totalSize += bytesRead;
-                dataStream.Write(arr, 0, bytesRead);
+                if (bytesRead > 0)
+                {
+                    totalSize += bytesRead;
+                    dataStream.Write(arr, 0, bytesRead);
+                }
             }
             while (  bytesRead > 0);
          
-            request.ContentLength = totalSize;
+            //request.ContentLength = totalSize;
          
             dataStream.Close();
             HttpWebResponse response = (HttpWebResponse)request.GetResponse();
