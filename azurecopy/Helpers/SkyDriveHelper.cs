@@ -185,25 +185,30 @@ namespace azurecopy.Helpers
 
             // root listing.
             skydriveListing = SkyDriveHelper.ListSkyDriveDirectory("");
-
+            var fileFound = false;
             var sp = fullPath.Split('/');
             var searchDir = "";
             foreach( var entry in sp)
             {
                 var foundEntry = (from e in skydriveListing where e.Name == entry select e).FirstOrDefault();
-                if ( foundEntry != null)
+                if ( foundEntry != null && foundEntry.Type == "folder"  )
                 {
-                    selectedEntry = foundEntry;
                     searchDir = foundEntry.Id + "/";
                     skydriveListing = ListSkyDriveDirectory(searchDir);
 
                 }
-                else
+                if (foundEntry != null && foundEntry.Type == "file")
                 {
-                    // failed... no luck. 
-                    return null;
+                    fileFound = true;
                 }
 
+                selectedEntry = foundEntry;
+
+            }
+
+            if (!fileFound)
+            {
+                selectedEntry = null;
             }
 
             return selectedEntry;
