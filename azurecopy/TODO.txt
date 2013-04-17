@@ -13,6 +13,10 @@
 + list of blobs to copy read from a file.
 + Upload to Skydrive
 + Download from Skydrive
++ Upload to DropBox
++ Download from DropBox
++ Upload to Sharepoint
++ Download from Sharepoint
 + Handle Azure Short Access Signatures.
 * Handle multiple S3/Azure accounts at once.
 * Handle S3 signed urls.
