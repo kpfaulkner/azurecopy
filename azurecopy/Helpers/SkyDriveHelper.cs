@@ -169,25 +169,76 @@ namespace azurecopy.Helpers
             return ListSkyDriveDirectory("");
         }
 
+
+        // fullPath is any number of directories then filename
+        // eg. dir1/dir2/dir3/myfile.txt
+        public static SkyDriveDirectory GetSkyDriveEntryByFileNameAndDirectory(string fullPath)
+        {
+            
+            if ( string.IsNullOrEmpty( fullPath ))
+            {
+                return null;
+            }
+
+            List<SkyDriveDirectory> skydriveListing;
+            SkyDriveDirectory selectedEntry = null;
+
+            // root listing.
+            skydriveListing = SkyDriveHelper.ListSkyDriveDirectory("");
+
+            var sp = fullPath.Split('/');
+            var searchDir = "";
+            foreach( var entry in sp)
+            {
+                var foundEntry = (from e in skydriveListing where e.Name == entry select e).FirstOrDefault();
+                if ( foundEntry != null)
+                {
+                    selectedEntry = foundEntry;
+                    searchDir = foundEntry.Id + "/";
+                    skydriveListing = ListSkyDriveDirectory(searchDir);
+
+                }
+                else
+                {
+                    // failed... no luck. 
+                    return null;
+                }
+
+            }
+
+            return selectedEntry;
+
+        }
+
         public static List<SkyDriveDirectory> ListSkyDriveDirectory(string directory)
         {
 
             //throw new NotImplementedException();
 
-            //var requestUriFile = new StringBuilder("https://apis.live.net/v5.0/me/skydrive");
-            var urlTemplate = "https://apis.live.net/v5.0/me/skydrive{0}files";
+            //var requestUriFile = new StringBuilder("https://apis.live.net/v5.0");
+            var urlTemplate = "https://apis.live.net/v5.0{0}files";
             var containerStr = "";
             if (string.IsNullOrEmpty(directory))
             {
-                containerStr = @"/";
+                containerStr = @"/me/skydrive/";
             }
             else
             {
-                containerStr = @"/" + directory + @"/";
+                containerStr = @"/" + directory;
+                if (!containerStr.EndsWith("/"))
+                {
+                    containerStr += "/";
+                }
+
             }
 
             var url = string.Format(urlTemplate, containerStr);
 
+            return ListSkyDriveDirectoryWithUrl(url);
+        }
+
+        public static List<SkyDriveDirectory> ListSkyDriveDirectoryWithUrl(string url)
+        {
             var requestUriFile = new StringBuilder(url);
             requestUriFile.AppendFormat("?access_token={0}", ConfigHelper.SkyDriveAccessToken);
 
@@ -205,7 +256,7 @@ namespace azurecopy.Helpers
                 if (bytesRead > 0)
                 {
                     var mystring = System.Text.Encoding.Default.GetString(arr, 0, bytesRead);
-                   
+
                     responseString += mystring;
                 }
             }

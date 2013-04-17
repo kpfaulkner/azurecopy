@@ -21,7 +21,33 @@ namespace azurecopy
 
         public Blob ReadBlob(string url, string filePath = "")
         {
-            throw new NotImplementedException();
+            Blob blob = null;
+
+
+            var skydriveDirectoryEntry = SkyDriveHelper.GetSkyDriveEntryByFileNameAndDirectory(url);
+            
+            var requestUriFile =  new StringBuilder("https://apis.live.net/v5.0/"+skydriveDirectoryEntry.Id);
+            requestUriFile.AppendFormat("?access_token={0}", accessToken);
+
+            //byte[] arr = System.IO.File.ReadAllBytes("C:\\temp\\upload.txt");
+            HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(requestUriFile.ToString());
+            request.Method = "GET";
+            //request.ContentType = "text/plain";
+            //request.ContentLength = arr.Length;
+            //Stream dataStream = request.GetRequestStream();
+            //dataStream.Write(arr, 0, arr.Length);
+            //dataStream.Close();
+            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+            var stream = response.GetResponseStream();
+
+            byte[] arr = new byte[2000];
+            stream.Read(arr, 0, 2000);
+            var mystring = System.Text.Encoding.Default.GetString(arr);
+
+            string returnString = response.StatusCode.ToString();
+
+            blob.BlobOriginType = UrlType.Azure;
+            return blob;
         }
 
         // url simply is <directory>/filename   format. NOT the entire/real url.
@@ -121,6 +147,8 @@ namespace azurecopy
             return skydriveId;
 
         }
+
+
 
 
     }
