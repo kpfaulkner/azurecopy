@@ -130,8 +130,8 @@ namespace azurecopy
                 var client = AzureHelper.GetTargetCloudBlobClient(url);
 
                 var containerName = AzureHelper.GetContainerFromUrl(url);
-                var blobName = AzureHelper.GetBlobFromUrl(url);
-                blob.Name = blobName;
+                //var blobName = AzureHelper.GetBlobFromUrl(url);
+                var blobName = blob.Name;
 
                 var container = client.GetContainerReference(containerName);
                 container.CreateIfNotExists();

@@ -40,7 +40,10 @@ namespace azurecopy
             blob.FilePath = localFilePath;
             blob.BlobOriginType = UrlType.Local;
             blob.BlobSavedToFile = true;
+            
+            var uri = new Uri(localFilePath);
 
+            blob.Name = uri.Segments[uri.Segments.Length - 1];
             return blob;
         }
 
@@ -51,7 +54,9 @@ namespace azurecopy
 
             try
             {
-                
+
+                var outFile = Path.Combine(localFilePath, blob.Name);
+
                 // get stream to data.
                 if (blob.BlobSavedToFile)
                 {
@@ -62,7 +67,7 @@ namespace azurecopy
                     stream = new MemoryStream(blob.Data);
                 }
 
-                using (var writeStream = new FileStream(localFilePath, FileMode.Create))
+                using (var writeStream = new FileStream(outFile, FileMode.Create))
                 {
                     stream.CopyTo(writeStream);
                 }

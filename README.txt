@@ -4,6 +4,16 @@ Azure Copy
 Allows easy copying between S3, Azure and local filesystem. 
 Only a few days old, so still in early development.
 
+UPDATE:
+
+Skydrive now has basic support (read/write blobs).
+To use Skydrive the prefix "sky://" needs to be appended to the URL. For example, if copying a file c:\temp\test.txt to a folder "temp" in my Skydrive account, then the
+command is:
+
+	azurecopy -i c:\temp\test.txt -o sky://temp
+
+See end of file for details regarding setting up of Skydrive configuration.
+
 Usage:
 
 azurecopy.exe -i inputurl -o outputurl
@@ -45,7 +55,9 @@ You *can* have the Azure Account Key, S3 Access Key and S3 Access Key secret in 
 	
 	azurecopy.exe -i "https://testurl.s3-us-west-2.amazonaws.com/myfile.txt" -o "https://azuretest.blob.core.windows.net/test/" -azurekey "myazurekey" -s3accesskey "mys3accesskey" -s3secretkey "mys3secretkey"
 
+To copy to Skydrive issue the command similar to:
 
+	azurecopy -i c:\temp\test.txt -o sky://temp
 
 Complete list of command line arguments:
 
@@ -69,3 +81,24 @@ Complete list of command line arguments:
 
 Please see TODO.txt for planned changes/enhancements.
 
+
+
+
+SkyDrive Configuration:
+
+Due to the OAuth authentication/authorisation for Skydrive the setup process is currently a little cumbersome. Hopefully this will change soon.
+Currently the steps required to setup Skydrive is as follows:
+
+	1) In your favourite browser, load the URL:  https://login.live.com/oauth20_authorize.srf?client_id=00000000480EE365&scope=wl.offline_access,wl.skydrive,wl.skydrive_update&response_type=code&redirect_uri=http://kpfaulkner.com  
+	2) Skydrive will ask you to login, allowing Azurecopy to access your Skydrive details. Please login.
+	3) You'll get redirected to a URL similar to: http://kpfaulkner.com/?code=a06e4364-bd1d-9f10-6b24-0d576c37a8a7
+	4) Copy/paste the code (after the = character) into an editor.
+	5) Open the azurecopy.exe.config file which came with the azurecopy zip file.
+	6) Modify the "SkyDriveCode" line in the config file, entering the code copied in step 4.
+
+		eg. The line should look like:
+
+		<add key="SkyDriveCode" value="a06e4364-bd1d-9f10-6b24-0d576c37a8a7"/>
+
+	7) Save the azurecopy.exe.config  
+	8) Profit $$$

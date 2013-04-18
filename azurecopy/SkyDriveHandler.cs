@@ -31,8 +31,6 @@ namespace azurecopy
             
             var requestUriFile =  new StringBuilder( skydriveFileEntry.Source);
             requestUriFile.AppendFormat("?access_token={0}", accessToken);
-
-            //byte[] arr = System.IO.File.ReadAllBytes("C:\\temp\\upload.txt");
             HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(requestUriFile.ToString());
             request.Method = "GET";
 
@@ -40,7 +38,7 @@ namespace azurecopy
             var s = response.GetResponseStream();
 
             // get stream to store.
-            using (var stream = CommonHelper.GetStream(""))
+            using (var stream = CommonHelper.GetStream(filePath))
             {
                 byte[] data = new byte[32768];
                 int bytesRead = 0;
@@ -59,27 +57,23 @@ namespace azurecopy
 
             }
 
+            var sp = url.Split('/');
+            blob.Name = sp[sp.Length - 1];
             blob.BlobOriginType = UrlType.SkyDrive;
             return blob;
         }
 
         // url simply is <directory>/filename   format. NOT the entire/real url.
+        // will make directories if they do not already exist.
         public void WriteBlob(string url, Blob blob,  int parallelUploadFactor=1, int chunkSizeInMB=4)
         {
+            url = url.Replace("sky://", "");
 
-            var directoryName = GetDirectoryNameFromUrl( url );
-            var blobName = GetBlobNameFromUrl(url);
-
-            var directoryId = GetSkyDriveDirectoryId(directoryName);
-
-            if (directoryId == null)
-            {
-                SkyDriveHelper.CreateFolder(directoryName);
-                directoryId = GetSkyDriveDirectoryId(directoryName);
-            }
+            var targetDirectory = SkyDriveHelper.CreateFolder(url);
+            var blobName = blob.Name;
 
             var urlTemplate = @"https://apis.live.net/v5.0/{0}/files/{1}";
-            var requestUrl = string.Format(urlTemplate, directoryId, blobName);
+            var requestUrl = string.Format(urlTemplate, targetDirectory.Id, blobName);
 
             var requestUriFile = new StringBuilder(requestUrl);
             requestUriFile.AppendFormat("?access_token={0}", accessToken);

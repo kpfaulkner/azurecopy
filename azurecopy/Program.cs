@@ -427,7 +427,7 @@ namespace azurecopy
                         }
 
                         // write blob
-                        outputHandler.WriteBlob(outputUrl, blob, ConfigHelper.ParallelFactor, ConfigHelper.ChunkSizeInMB);
+                        outputHandler.WriteBlob(_outputUrl, blob, ConfigHelper.ParallelFactor, ConfigHelper.ChunkSizeInMB);
                     }
                     else
                     {
@@ -525,6 +525,9 @@ namespace azurecopy
 
         static void Main(string[] args)
         {
+            //var sh = new SkyDriveHandler();
+            //SkyDriveHelper.CreateFolder("/temp/test1/test2");
+
             ParseArguments(args);
 
             var sw = new Stopwatch();

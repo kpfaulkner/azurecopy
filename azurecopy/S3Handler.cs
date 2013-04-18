@@ -96,7 +96,8 @@ namespace azurecopy
         public void WriteBlob(string url, Blob blob,   int parallelUploadFactor=1, int chunkSizeInMB=4)
         {
             var bucket = S3Helper.GetBucketFromUrl(url);
-            var key = S3Helper.GetKeyFromUrl(url);
+            //var key = S3Helper.GetKeyFromUrl(url);
+            var key = blob.Name;
 
             using (AmazonS3 client = Amazon.AWSClientFactory.CreateAmazonS3Client(ConfigHelper.TargetAWSAccessKeyID, ConfigHelper.TargetAWSSecretAccessKeyID))
             {

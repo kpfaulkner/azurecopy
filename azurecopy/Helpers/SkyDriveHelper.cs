@@ -15,7 +15,7 @@ namespace azurecopy.Helpers
         private static string skyDriveRedirectUri = @"http://kpfaulkner.com";
         private static string accessToken;
         private static string refreshToken;
-        const string SkyDriveDetection = "sky";
+        const string SkyDriveDetection = "sky://";
 
         // determines if this is the first time (and need access and refresh token)
         // or determines if we're just refreshing a refresh token.
@@ -141,11 +141,39 @@ namespace azurecopy.Helpers
 
         }
 
-        public static void CreateFolder(string folderName)
+        // complete path. eg,  /firstdir/seconddir/thirddir
+        public static SkyDriveDirectory CreateFolder(string folderPath)
         {
-            var newFolderData = "{\r\n  \"name\": \""+folderName+"\",\r\n  \"description\": \"Created by azurecopy\"\r\n}";
+            // getting root folder.
+            var rootList = ListSkyDriveDirectoryWithUrl("");
+            string parentId = rootList[0].ParentId;
 
-            var url = "https://apis.live.net/v5.0/me/skydrive?access_token=" + ConfigHelper.SkyDriveAccessToken;
+            var sp = folderPath.Split('/');
+            var directory = "";
+            SkyDriveDirectory latestDir = null;
+            foreach (var folder in sp.Where( x => x != ""))
+            {
+                directory += "/" + folder;
+                var dir = GetSkyDriveDirectory(directory);
+                if (dir == null && directory != "")
+                {
+                    CreateFolder(folder, parentId);
+                    dir = GetSkyDriveDirectory(directory);
+                }
+                parentId = dir.Id;
+                latestDir = dir;
+            }
+
+            return latestDir;
+        }
+
+
+        // folder and parent id
+        public static void CreateFolder(string folderName, string parentId)
+        {
+            var newFolderData = "{\r\n  \"name\": \"" + folderName + "\",\r\n  \"description\": \"Created by azurecopy\"\r\n}";
+
+            var url = "https://apis.live.net/v5.0/"+parentId+"?access_token=" + ConfigHelper.SkyDriveAccessToken;
             Byte[] arr = System.Text.Encoding.UTF8.GetBytes(newFolderData);
 
             HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(url.ToString());
@@ -158,6 +186,7 @@ namespace azurecopy.Helpers
             HttpWebResponse response = (HttpWebResponse)request.GetResponse();
         }
 
+
         public static string GetFolderId(string folderName)
         {
             throw new NotImplementedException();
@@ -168,6 +197,41 @@ namespace azurecopy.Helpers
             return ListSkyDriveDirectoryWithUrl("");
         }
 
+
+        public static SkyDriveDirectory GetSkyDriveDirectory(string fullPath)
+        {
+
+            if (string.IsNullOrEmpty(fullPath))
+            {
+                return null;
+            }
+
+            List<SkyDriveDirectory> skydriveListing;
+            SkyDriveDirectory selectedEntry = null;
+
+            // root listing.
+            skydriveListing = SkyDriveHelper.ListSkyDriveDirectoryWithUrl("");
+            var fileFound = false;
+            var sp = fullPath.Split('/');
+            var searchDir = "";
+            foreach (var entry in sp.Where( x => x != "") )
+            {
+                var foundEntry = (from e in skydriveListing where e.Name == entry select e).FirstOrDefault();
+                if (foundEntry != null && foundEntry.Type == "folder")
+                {
+                    searchDir = foundEntry.Id + "/";
+                    skydriveListing = ListSkyDriveDirectoryWithUrl(searchDir);
+                }
+                else
+                {
+                    return null;
+                }
+
+                selectedEntry = foundEntry;
+            }
+
+            return selectedEntry;
+        }
 
         // fullPath is any number of directories then filename
         // eg. dir1/dir2/dir3/myfile.txt
