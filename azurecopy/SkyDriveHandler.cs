@@ -1,4 +1,5 @@
 ﻿using azurecopy.Helpers;
+using azurecopy.Utils;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -21,32 +22,44 @@ namespace azurecopy
 
         public Blob ReadBlob(string url, string filePath = "")
         {
-            Blob blob = null;
+            Blob blob = new Blob();
 
+            url = url.Replace("sky://", "");
 
-            var skydriveDirectoryEntry = SkyDriveHelper.GetSkyDriveEntryByFileNameAndDirectory(url);
+            var skydriveFileEntry = SkyDriveHelper.GetSkyDriveEntryByFileNameAndDirectory(url);
             
-            var requestUriFile =  new StringBuilder("https://apis.live.net/v5.0/"+skydriveDirectoryEntry.Id);
+            
+            var requestUriFile =  new StringBuilder( skydriveFileEntry.Source);
             requestUriFile.AppendFormat("?access_token={0}", accessToken);
 
             //byte[] arr = System.IO.File.ReadAllBytes("C:\\temp\\upload.txt");
             HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(requestUriFile.ToString());
             request.Method = "GET";
-            //request.ContentType = "text/plain";
-            //request.ContentLength = arr.Length;
-            //Stream dataStream = request.GetRequestStream();
-            //dataStream.Write(arr, 0, arr.Length);
-            //dataStream.Close();
+
             HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-            var stream = response.GetResponseStream();
+            var s = response.GetResponseStream();
 
-            byte[] arr = new byte[2000];
-            stream.Read(arr, 0, 2000);
-            var mystring = System.Text.Encoding.Default.GetString(arr);
+            // get stream to store.
+            using (var stream = CommonHelper.GetStream(""))
+            {
+                byte[] data = new byte[32768];
+                int bytesRead = 0;
+                do
+                {
+                    bytesRead = s.Read(data, 0, data.Length);
+                    stream.Write(data, 0, bytesRead);
+                }
+                while (bytesRead > 0);
 
-            string returnString = response.StatusCode.ToString();
+                if (!blob.BlobSavedToFile)
+                {
+                    var ms = stream as MemoryStream;
+                    blob.Data = ms.ToArray();
+                }
 
-            blob.BlobOriginType = UrlType.Azure;
+            }
+
+            blob.BlobOriginType = UrlType.SkyDrive;
             return blob;
         }
 
@@ -130,7 +143,7 @@ namespace azurecopy
         public List<string> ListBlobsInContainer(string container)
         {
 
-            var skydriveListing = SkyDriveHelper.ListSkyDriveDirectory(container);
+            var skydriveListing = SkyDriveHelper.ListSkyDriveDirectoryWithUrl(container);
 
             // now just get list of names, and NOT the complete skydrive info.
             var nameList = (from e in skydriveListing select e.Name.ToString()).ToList();

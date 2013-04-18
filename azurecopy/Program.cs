@@ -525,11 +525,6 @@ namespace azurecopy
 
         static void Main(string[] args)
         {
-
-            var sh = new SkyDriveHandler();
-
-            sh.ReadBlob("temp/upload2.txt");
-
             ParseArguments(args);
 
             var sw = new Stopwatch();

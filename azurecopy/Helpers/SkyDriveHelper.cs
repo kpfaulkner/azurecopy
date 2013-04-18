@@ -15,7 +15,7 @@ namespace azurecopy.Helpers
         private static string skyDriveRedirectUri = @"http://kpfaulkner.com";
         private static string accessToken;
         private static string refreshToken;
-        const string SkyDriveDetection = "skydrive";
+        const string SkyDriveDetection = "sky";
 
         // determines if this is the first time (and need access and refresh token)
         // or determines if we're just refreshing a refresh token.
@@ -39,7 +39,6 @@ namespace azurecopy.Helpers
         public static void GetLiveAccessAndRefreshTokens( string code )
         {
             var urlTemplate = @"https://oauth.live.com/token?client_id={0}&redirect_uri={1}&code={2}&grant_type=authorization_code";
-                                https://oauth.live.com/token?client_id=00000000480EE365&redirect_uri=http://kpfaulkner.com&code=a71feee2-d543-0191-9427-1d3a96aa7621&grant_type=authorization_code
             var url = string.Format(urlTemplate, skyDriveClientId, skyDriveRedirectUri,code);
 
             HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create( url );
@@ -166,13 +165,13 @@ namespace azurecopy.Helpers
 
         public static List<SkyDriveDirectory> ListSkyDriveRootDirectories()
         {
-            return ListSkyDriveDirectory("");
+            return ListSkyDriveDirectoryWithUrl("");
         }
 
 
         // fullPath is any number of directories then filename
         // eg. dir1/dir2/dir3/myfile.txt
-        public static SkyDriveDirectory GetSkyDriveEntryByFileNameAndDirectory(string fullPath)
+        public static SkyDriveFile GetSkyDriveEntryByFileNameAndDirectory(string fullPath)
         {
             
             if ( string.IsNullOrEmpty( fullPath ))
@@ -182,9 +181,10 @@ namespace azurecopy.Helpers
 
             List<SkyDriveDirectory> skydriveListing;
             SkyDriveDirectory selectedEntry = null;
+            SkyDriveFile selectedFile = null;
 
             // root listing.
-            skydriveListing = SkyDriveHelper.ListSkyDriveDirectory("");
+            skydriveListing = SkyDriveHelper.ListSkyDriveDirectoryWithUrl("");
             var fileFound = false;
             var sp = fullPath.Split('/');
             var searchDir = "";
@@ -194,12 +194,17 @@ namespace azurecopy.Helpers
                 if ( foundEntry != null && foundEntry.Type == "folder"  )
                 {
                     searchDir = foundEntry.Id + "/";
-                    skydriveListing = ListSkyDriveDirectory(searchDir);
+                    skydriveListing = ListSkyDriveDirectoryWithUrl(searchDir);
 
                 }
                 if (foundEntry != null && foundEntry.Type == "file")
                 {
                     fileFound = true;
+                    var l = ListSkyDriveFileWithUrl(foundEntry.Id);
+                    if (l != null )
+                    {
+                        selectedFile = l;
+                    }
                 }
 
                 selectedEntry = foundEntry;
@@ -208,28 +213,37 @@ namespace azurecopy.Helpers
 
             if (!fileFound)
             {
-                selectedEntry = null;
+                selectedFile = null;
             }
 
-            return selectedEntry;
+            return selectedFile;
 
         }
 
-        public static List<SkyDriveDirectory> ListSkyDriveDirectory(string directory)
+        public static List<SkyDriveDirectory> ListSkyDriveEntry(string initialUrl)
+        {
+
+            var url = GenerateSkyDriveURL(initialUrl);
+
+            return ListSkyDriveDirectoryWithUrl(url);
+        }
+
+
+        public static string GenerateSkyDriveURL(string initialUrl, bool isFile=false)
         {
 
             //throw new NotImplementedException();
 
             //var requestUriFile = new StringBuilder("https://apis.live.net/v5.0");
-            var urlTemplate = "https://apis.live.net/v5.0{0}files";
+            var urlTemplate = "https://apis.live.net/v5.0{0}";
             var containerStr = "";
-            if (string.IsNullOrEmpty(directory))
+            if (string.IsNullOrEmpty(initialUrl))
             {
                 containerStr = @"/me/skydrive/";
             }
             else
             {
-                containerStr = @"/" + directory;
+                containerStr = @"/" + initialUrl;
                 if (!containerStr.EndsWith("/"))
                 {
                     containerStr += "/";
@@ -237,12 +251,35 @@ namespace azurecopy.Helpers
 
             }
 
+            if (!isFile)
+            {
+                urlTemplate += "files";
+            }
             var url = string.Format(urlTemplate, containerStr);
 
-            return ListSkyDriveDirectoryWithUrl(url);
+            return url;
         }
 
         public static List<SkyDriveDirectory> ListSkyDriveDirectoryWithUrl(string url)
+        {
+            var url2 = GenerateSkyDriveURL(url);
+            var directory = (Wrapper)ListSkyDriveWithUrl<Wrapper>(url2);
+            var results = directory.data;
+
+            return results;
+        }
+
+        public static SkyDriveFile ListSkyDriveFileWithUrl(string url)
+        {
+            var url2 = GenerateSkyDriveURL(url, true);
+            var file = (SkyDriveFile)ListSkyDriveWithUrl<SkyDriveFile>(url2);
+
+
+            return file;
+
+        }
+
+        public static ReturnType ListSkyDriveWithUrl<ReturnType>(string url)
         {
             var requestUriFile = new StringBuilder(url);
             requestUriFile.AppendFormat("?access_token={0}", ConfigHelper.SkyDriveAccessToken);
@@ -267,9 +304,9 @@ namespace azurecopy.Helpers
             }
             while (bytesRead > 0);
 
-            var wrapperResponse = JsonHelper.DeserializeJsonToObject<Wrapper>(responseString);
+            var wrapperResponse = (ReturnType) JsonHelper.DeserializeJsonToObject<ReturnType>(responseString);
 
-            return wrapperResponse.data;
+            return wrapperResponse;
         }
 
         public static bool MatchHandler(string url)
