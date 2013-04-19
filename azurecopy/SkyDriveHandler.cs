@@ -137,7 +137,7 @@ namespace azurecopy
         public List<string> ListBlobsInContainer(string container)
         {
 
-            var skydriveListing = SkyDriveHelper.ListSkyDriveDirectoryWithUrl(container);
+            var skydriveListing = SkyDriveHelper.ListSkyDriveDirectoryContent(container);
 
             // now just get list of names, and NOT the complete skydrive info.
             var nameList = (from e in skydriveListing select e.Name.ToString()).ToList();

@@ -197,6 +197,19 @@ namespace azurecopy.Helpers
             return ListSkyDriveDirectoryWithUrl("");
         }
 
+        public static List<SkyDriveDirectory> ListSkyDriveDirectoryContent(string dirPath)
+        {
+            dirPath = dirPath.Replace("sky://", "");
+            var skyId = "";
+            if (!string.IsNullOrEmpty(dirPath))
+            {
+                var skyDriveDirectory = GetSkyDriveDirectory(dirPath);
+                skyId = skyDriveDirectory.Id;
+            }
+            return ListSkyDriveDirectoryWithUrl(skyId);
+
+        }
+
 
         public static SkyDriveDirectory GetSkyDriveDirectory(string fullPath)
         {
