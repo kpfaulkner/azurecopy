@@ -83,15 +83,14 @@ Please see TODO.txt for planned changes/enhancements.
 
 
 
-
 SkyDrive Configuration:
 
 Due to the OAuth authentication/authorisation for Skydrive the setup process is currently a little cumbersome. Hopefully this will change soon.
 Currently the steps required to setup Skydrive is as follows:
 
-	1) In your favourite browser, load the URL:  https://login.live.com/oauth20_authorize.srf?client_id=00000000480EE365&scope=wl.offline_access,wl.skydrive,wl.skydrive_update&response_type=code&redirect_uri=http://kpfaulkner.com  
+	1) In your favourite browser, load the URL:  https://login.live.com/oauth20_authorize.srf?client_id=00000000480EE365&scope=wl.offline_access,wl.skydrive,wl.skydrive_update&response_type=code&redirect_uri=http://kpfaulkner.com/azurecopyoauth/
 	2) Skydrive will ask you to login, allowing Azurecopy to access your Skydrive details. Please login.
-	3) You'll get redirected to a URL similar to: http://kpfaulkner.com/?code=a06e4364-bd1d-9f10-6b24-0d576c37a8a7
+	3) You'll get redirected to a URL similar to: http://kpfaulkner.com/azurecopyoauth/?code=a06e4364-bd1d-9f10-6b24-0d576c37a8a7
 	4) Copy/paste the code (after the = character) into an editor.
 	5) Open the azurecopy.exe.config file which came with the azurecopy zip file.
 	6) Modify the "SkyDriveCode" line in the config file, entering the code copied in step 4.
