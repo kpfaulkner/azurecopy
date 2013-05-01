@@ -24,7 +24,7 @@ using System.Threading.Tasks;
 
 namespace azurecopy
 {
-    class FileSystemHandler : IBlobHandler
+    public class FileSystemHandler : IBlobHandler
     {
 
         // we will NOT be using the cachedFilePath (since we're just reading the file from the local 

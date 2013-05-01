@@ -27,7 +27,7 @@ using System.Threading.Tasks;
 
 namespace azurecopy
 {
-    class AzureHandler : IBlobHandler
+    public class AzureHandler : IBlobHandler
     {
         public AzureHandler()
         {

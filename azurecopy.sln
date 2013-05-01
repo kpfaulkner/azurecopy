@@ -9,6 +9,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.txt = README.txt
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "azurecopycommand", "azurecopycommand\azurecopycommand.csproj", "{CB9B7527-0AD4-48D4-BF59-8880F0AA9D6F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -19,6 +21,10 @@ Global
 		{3C3C55AC-5268-4850-BF1D-FF517DAFDCA4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3C3C55AC-5268-4850-BF1D-FF517DAFDCA4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3C3C55AC-5268-4850-BF1D-FF517DAFDCA4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CB9B7527-0AD4-48D4-BF59-8880F0AA9D6F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CB9B7527-0AD4-48D4-BF59-8880F0AA9D6F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CB9B7527-0AD4-48D4-BF59-8880F0AA9D6F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CB9B7527-0AD4-48D4-BF59-8880F0AA9D6F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -29,7 +29,7 @@ using System.Security.Cryptography;
 
 namespace azurecopy
 {
-    class S3Handler : IBlobHandler
+    public class S3Handler : IBlobHandler
     {
         private void Authenticate()
         {

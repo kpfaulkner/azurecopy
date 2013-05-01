@@ -30,7 +30,7 @@ namespace azurecopy
     /// of these tasks in parallel I'm guessing that we'll need to use the API's in a smart way
     /// and not just serial reads/writes...
     /// </summary>
-    interface IBlobHandler
+    public interface IBlobHandler
     {
         Blob ReadBlob(string url, string filePath = "");
 
