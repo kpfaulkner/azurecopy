@@ -146,7 +146,8 @@ namespace azurecopy
                     stream = new MemoryStream(blob.Data);
                 }
 
-                if (blob.BlobType == DestinationBlobType.Block)
+                // if unknown type, then will assume Block... for better or for worse.
+                if (blob.BlobType == DestinationBlobType.Block || blob.BlobType == DestinationBlobType.Unknown)
                 {
                     WriteBlockBlob(stream, blob, container, parallelUploadFactor, chunkSizeInMB);   
                 }
