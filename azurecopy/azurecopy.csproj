@@ -108,6 +108,8 @@
     <Compile Include="AzureHandler.cs" />
     <Compile Include="Blob.cs" />
     <Compile Include="AzureBlobCopyHandler.cs" />
+    <Compile Include="DropboxHandler.cs" />
+    <Compile Include="SharepointHandler.cs" />
     <Compile Include="Datatypes\SkyDriveFile.cs" />
     <Compile Include="Datatypes\SkyDriveDirectory.cs" />
     <Compile Include="FileSystemHandler.cs" />
