@@ -123,10 +123,10 @@ namespace azurecopy
         // lists all blobs (keys) in a bucket.
         // baseUrl for S3 would be something like https://testken123.s3-us-west-2.amazonaws.com/
         // and then we get all blobs in that bucket.
-        public List<string> ListBlobsInContainer(string baseUrl)
+        public List<BlobBase> ListBlobsInContainer(string baseUrl)
         {
             var bucket = S3Helper.GetBucketFromUrl( baseUrl );
-            var blobList = new List<string>();
+            var blobList = new List<BlobBase>();
 
             using (AmazonS3 client = Amazon.AWSClientFactory.CreateAmazonS3Client(ConfigHelper.SrcAWSAccessKeyID, ConfigHelper.SrcAWSSecretAccessKeyID))
             {
@@ -140,7 +140,12 @@ namespace azurecopy
                     foreach (var obj in response.S3Objects)
                     {
                         var fullPath = Path.Combine(baseUrl, obj.Key);
-                        blobList.Add(fullPath);
+                        var blob = new BlobBase();
+                        blob.Name = obj.Key;
+                        blob.Url = fullPath;
+                        blob.Container = bucket;
+
+                        blobList.Add(blob);
                     }
 
                     if (response.IsTruncated)

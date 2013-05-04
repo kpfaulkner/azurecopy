@@ -14,42 +14,36 @@
 //    limitations under the License.
 // </copyright>
 //-----------------------------------------------------------------------
-
- using azurecopy.Helpers;
-using azurecopy.Utils;
-using System;
+ 
+ using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Net;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace azurecopy
 {
-    public class DropboxHandler : IBlobHandler
+    public class Blob : BlobBase
     {
-        public DropboxHandler()
+        // indicator on where data is.
+        public bool BlobSavedToFile { get; set; }
+
+        // file on local filesystem (if required).
+        public string FilePath { get; set; }
+
+        // actual data..... if we're just storing in memory.
+        public byte[] Data { get; set; }
+
+        // page or block blob (for Azure)
+        public DestinationBlobType BlobType { get; set; }
+
+        // origin of blob. S3, Azure, local filesystem... other?
+        public UrlType BlobOriginType { get; set; }
+
+        public Blob():base()
         {
-        
-        }
-
-        public Blob ReadBlob(string url, string filePath = "")
-        {
-            throw new NotImplementedException("Dropbox not implemented yet");
-            
-        }
-
-        public void WriteBlob(string url, Blob blob,  int parallelUploadFactor=1, int chunkSizeInMB=4)
-        {
-            throw new NotImplementedException("Dropbox not implemented yet");
-           
-
-        }
-
-        public List<BlobBase> ListBlobsInContainer(string container)
-        {
-            throw new NotImplementedException("Dropbox not implemented yet");
-
+            BlobSavedToFile = false;
+            BlobType = DestinationBlobType.Unknown;
         }
 
     }

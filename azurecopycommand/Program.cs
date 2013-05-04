@@ -467,7 +467,7 @@ namespace azurecopycommand
             }
             else
             {
-                blobList = inputHandler.ListBlobsInContainer(url);
+                blobList = inputHandler.ListBlobsInContainer(url).Select(b => b.Url).ToList();
             }
 
 
@@ -488,7 +488,7 @@ namespace azurecopycommand
 
             foreach (var blob in blobList)
             {
-                Console.WriteLine(blob);
+                Console.WriteLine(blob.Url);
             }
 
         }

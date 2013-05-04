@@ -151,14 +151,20 @@ namespace azurecopy
         }
 
 
-        public List<string> ListBlobsInContainer(string container)
+        public List<BlobBase> ListBlobsInContainer(string container)
         {
+            var blobList = new List<BlobBase>();
 
             var skydriveListing = SkyDriveHelper.ListSkyDriveDirectoryContent(container);
-
-            // now just get list of names, and NOT the complete skydrive info.
-            var nameList = (from e in skydriveListing select e.Name.ToString()).ToList();
-            return nameList;
+            foreach (var skyDriveEntry in skydriveListing)
+            {
+                var blob = new BlobBase();
+                blob.Name = skyDriveEntry.Name;
+                blob.Container = container;
+                blob.Url = skyDriveEntry.Link;
+                blobList.Add( blob );
+            }
+            return blobList;
 
         }
 

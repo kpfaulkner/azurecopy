@@ -25,38 +25,27 @@ namespace azurecopy
 {
     public enum DestinationBlobType { Unknown, Block, Page };
     public enum UrlType { Azure, S3, SkyDrive, Local, Other };
-    public class Blob
+    public class BlobBase
     {
 
         // name.
         public string Name { get; set; }
 
+        // container for blob. Can mean different things to different 
+        // cloud providers. For S3 it would be bucket. For Azure it would be container. etc.
+        // Once I get around to sharepoint it will probably be parent directory.
+        public string Container { get; set; }
+
         // original url.
         public string Url { get; set; }
-
-        // indicator on where data is.
-        public bool BlobSavedToFile { get; set; }
-
-        // file on local filesystem (if required).
-        public string FilePath { get; set; }
-
-        // actual data..... if we're just storing in memory.
-        public byte[] Data { get; set; }
 
         // metadata/properties. Blob information that is NOT part of the core blob itself.
         public Dictionary<string, string> MetaData { get; set; }
 
-        // page or block blob (for Azure)
-        public DestinationBlobType BlobType { get; set; }
 
-        // origin of blob. S3, Azure, local filesystem... other?
-        public UrlType BlobOriginType { get; set; }
-
-        public Blob()
+        public BlobBase()
         {
-            BlobSavedToFile = false;
-            BlobType = DestinationBlobType.Unknown;
-
+        
         }
 
     }

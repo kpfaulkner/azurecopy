@@ -265,9 +265,9 @@ namespace azurecopy
         }
 
 
-        public List<string> ListBlobsInContainer(string baseUrl)
+        public List<BlobBase> ListBlobsInContainer(string baseUrl)
         {
-            var blobList = new List<string>();
+            var blobList = new List<BlobBase>();
 
             var client = AzureHelper.GetSourceCloudBlobClient(baseUrl);
 
@@ -279,7 +279,11 @@ namespace azurecopy
             var azureBlobList = container.ListBlobs();
             foreach (var blob in azureBlobList)
             {
-                blobList.Add(blob.Uri.AbsoluteUri);
+                var b = new BlobBase();
+                b.Name = AzureHelper.GetBlobFromUrl(blob.Uri.AbsoluteUri);
+                b.Container = blob.Container.Name;
+                b.Url = blob.Uri.AbsoluteUri;
+                blobList.Add(b);
             }
 
             return blobList;

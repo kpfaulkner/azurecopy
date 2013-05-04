@@ -106,8 +106,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AzureHandler.cs" />
-    <Compile Include="Blob.cs" />
+    <Compile Include="Datatypes\Blob.cs" />
     <Compile Include="AzureBlobCopyHandler.cs" />
+    <Compile Include="Datatypes\BlobBase.cs" />
     <Compile Include="DropboxHandler.cs" />
     <Compile Include="SharepointHandler.cs" />
     <Compile Include="Datatypes\SkyDriveFile.cs" />
