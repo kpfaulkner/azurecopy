@@ -172,10 +172,14 @@ namespace azurecopy.Utils
 
         public static string GetAccountNameFromUrl(string blobUrl)
         {
-            Uri url = new Uri(blobUrl);
-            var blobName = "";
-            var account = url.Host.Split('.')[0];
+            var account = "";
 
+            if (!string.IsNullOrEmpty(blobUrl))
+            {
+                Uri url = new Uri(blobUrl);
+                var blobName = "";
+                account = url.Host.Split('.')[0];
+            }
 
             return account;
         }
