@@ -118,13 +118,12 @@ namespace azurecopy.Utils
 
         // container lives in different part of url depending on dev or real.
         // if the url ends with a /  then assuming the url doesn't mention the blob.
-        public static string GetContainerFromUrl(string blobUrl)
+        public static string GetContainerFromUrl(string blobUrl, bool assumeNoBlob = false)
         {
             var url = new Uri( blobUrl );
             string container = "";  // there may be no container.
 
-
-            if (blobUrl.EndsWith("/"))
+            if (blobUrl.EndsWith("/") || assumeNoBlob)
             {
                 container = url.Segments[url.Segments.Length - 1];
             }

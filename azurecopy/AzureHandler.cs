@@ -271,7 +271,7 @@ namespace azurecopy
 
             var client = AzureHelper.GetSourceCloudBlobClient(baseUrl);
 
-            var containerName = AzureHelper.GetContainerFromUrl(baseUrl);
+            var containerName = AzureHelper.GetContainerFromUrl(baseUrl, true);
             var blobName = AzureHelper.GetBlobFromUrl(baseUrl);
 
             IEnumerable<IListBlobItem> azureBlobList;
@@ -280,6 +280,18 @@ namespace azurecopy
             if (string.IsNullOrEmpty(containerName))
             {
                 container = client.GetRootContainerReference();
+
+                // add container.
+                var containerList = client.ListContainers();
+                foreach (var cont in containerList)
+                {
+                    var b = new BasicBlobContainer();
+                    b.Name = cont.Name;
+                    b.Container = "";
+                    b.Url = cont.Uri.AbsoluteUri;
+                    b.BlobType = BlobEntryType.Container;
+                    blobList.Add(b);
+                }
 
             }
             else
@@ -290,18 +302,6 @@ namespace azurecopy
 
             container.CreateIfNotExists();
             
-            // add container.
-            var containerList = client.ListContainers();
-            foreach (var cont in containerList)
-            {
-                var b = new BasicBlobContainer();
-                b.Name = cont.Name;
-                b.Container = "";
-                b.Url = cont.Uri.AbsoluteUri;
-                b.BlobType = BlobEntryType.Container;
-                blobList.Add(b);
-            }
-
             // add blobs
             azureBlobList = container.ListBlobs();
             foreach (var blob in azureBlobList)
