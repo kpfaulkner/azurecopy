@@ -273,10 +273,15 @@ namespace azurecopy
 
             var containerName = AzureHelper.GetContainerFromUrl(baseUrl);
             var blobName = AzureHelper.GetBlobFromUrl(baseUrl);
-        
-            var container = client.GetContainerReference(containerName);
 
-            var azureBlobList = container.ListBlobs();
+            IEnumerable<IListBlobItem> azureBlobList;
+            CloudBlobContainer container = string.IsNullOrEmpty(containerName)
+                            ? client.GetRootContainerReference()
+                            : client.GetContainerReference(containerName);
+
+            container.CreateIfNotExists();
+            azureBlobList = container.ListBlobs();
+           
             foreach (var blob in azureBlobList)
             {
                 var b = new BlobBase();
@@ -287,12 +292,6 @@ namespace azurecopy
             }
 
             return blobList;
-
-
-
         }
-
-
-
     }
 }
