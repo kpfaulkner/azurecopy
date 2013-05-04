@@ -187,5 +187,17 @@ namespace azurecopy.Utils
         }
 
 
+        public static BasicBlobContainer AzureContainerToBasicBlobContainer(CloudBlobContainer container)
+        {
+            var basicBlob = new BasicBlobContainer()
+            {
+                Name = container.Name,
+                Url = container.Uri.AbsoluteUri,
+                Container = null, 
+                BlobType = BlobEntryType.Container
+            };
+
+            return basicBlob;
+        }
     }
 }

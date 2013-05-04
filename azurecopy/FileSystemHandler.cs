@@ -88,7 +88,7 @@ namespace azurecopy
 
         }
 
-        public List<BlobBase> ListBlobsInContainer(string baseUrl)
+        public List<BasicBlobContainer> ListBlobsInContainer(string baseUrl)
         {
             throw new NotImplementedException();
         }

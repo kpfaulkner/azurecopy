@@ -25,6 +25,33 @@ namespace azurecopy
 {
     public enum DestinationBlobType { Unknown, Block, Page };
     public enum UrlType { Azure, S3, SkyDrive, Local, Other };
+
+    public enum BlobEntryType
+    {
+        Blob,
+        Container,
+        Unknown
+    };
+
+    // basic blob version.
+    // purely used for listing blobs.
+    public class BasicBlobContainer
+    {
+        // name.
+        public string Name { get; set; }
+
+        // container for blob. Can mean different things to different 
+        // cloud providers. For S3 it would be bucket. For Azure it would be container. etc.
+        // Once I get around to sharepoint it will probably be parent directory.
+        public string Container { get; set; }
+
+        // original url.
+        public string Url { get; set; }
+
+        public BlobEntryType BlobType { get; set; }
+
+    }
+
     public class BlobBase
     {
 
@@ -41,7 +68,6 @@ namespace azurecopy
 
         // metadata/properties. Blob information that is NOT part of the core blob itself.
         public Dictionary<string, string> MetaData { get; set; }
-
 
         public BlobBase()
         {

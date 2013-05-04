@@ -151,14 +151,14 @@ namespace azurecopy
         }
 
 
-        public List<BlobBase> ListBlobsInContainer(string container)
+        public List<BasicBlobContainer> ListBlobsInContainer(string container)
         {
-            var blobList = new List<BlobBase>();
+            var blobList = new List<BasicBlobContainer>();
 
             var skydriveListing = SkyDriveHelper.ListSkyDriveDirectoryContent(container);
             foreach (var skyDriveEntry in skydriveListing)
             {
-                var blob = new BlobBase();
+                var blob = new BasicBlobContainer();
                 blob.Name = skyDriveEntry.Name;
                 blob.Container = container;
                 blob.Url = skyDriveEntry.Link;

@@ -265,9 +265,9 @@ namespace azurecopy
         }
 
 
-        public List<BlobBase> ListBlobsInContainer(string baseUrl)
+        public List<BasicBlobContainer> ListBlobsInContainer(string baseUrl)
         {
-            var blobList = new List<BlobBase>();
+            var blobList = new List<BasicBlobContainer>();
 
             var client = AzureHelper.GetSourceCloudBlobClient(baseUrl);
 
@@ -275,19 +275,42 @@ namespace azurecopy
             var blobName = AzureHelper.GetBlobFromUrl(baseUrl);
 
             IEnumerable<IListBlobItem> azureBlobList;
-            CloudBlobContainer container = string.IsNullOrEmpty(containerName)
-                            ? client.GetRootContainerReference()
-                            : client.GetContainerReference(containerName);
+            CloudBlobContainer container;
+
+            if (string.IsNullOrEmpty(containerName))
+            {
+                container = client.GetRootContainerReference();
+
+            }
+            else
+            {
+                container = client.GetContainerReference(containerName);
+
+            }
 
             container.CreateIfNotExists();
-            azureBlobList = container.ListBlobs();
-           
-            foreach (var blob in azureBlobList)
+            
+            // add container.
+            var containerList = client.ListContainers();
+            foreach (var cont in containerList)
             {
-                var b = new BlobBase();
+                var b = new BasicBlobContainer();
+                b.Name = cont.Name;
+                b.Container = "";
+                b.Url = cont.Uri.AbsoluteUri;
+                b.BlobType = BlobEntryType.Container;
+                blobList.Add(b);
+            }
+
+            // add blobs
+            azureBlobList = container.ListBlobs();
+            foreach (var blob in azureBlobList)
+            {   
+                var b = new BasicBlobContainer();
                 b.Name = AzureHelper.GetBlobFromUrl(blob.Uri.AbsoluteUri);
                 b.Container = blob.Container.Name;
                 b.Url = blob.Uri.AbsoluteUri;
+                b.BlobType = BlobEntryType.Blob;
                 blobList.Add(b);
             }
 

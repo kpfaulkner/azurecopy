@@ -36,6 +36,6 @@ namespace azurecopy
 
         void WriteBlob(string url, Blob blob,  int parallelUploadFactor=1, int chunkSizeInMB=4);
 
-        List<BlobBase> ListBlobsInContainer(string baseUrl);
+        List<BasicBlobContainer> ListBlobsInContainer(string baseUrl);
     }
 }

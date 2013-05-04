@@ -46,7 +46,7 @@ namespace azurecopy
 
         }
 
-        public List<BlobBase> ListBlobsInContainer(string container)
+        public List<BasicBlobContainer> ListBlobsInContainer(string container)
         {
             throw new NotImplementedException("Sharepoint not implemented yet");
 
