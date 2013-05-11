@@ -37,5 +37,13 @@ namespace azurecopy
         void WriteBlob(string url, Blob blob,  int parallelUploadFactor=1, int chunkSizeInMB=4);
 
         List<BasicBlobContainer> ListBlobsInContainer(string baseUrl);
+
+        // core URL used for this handler.
+        // could be the Azure url for a given account, or the bucket/S3 url.
+        // This is purely so once a url has been used to establish a handler we can still
+        // reference it for the copy methods.
+        // ideally the copy methods would access this automatically (and not require urls in params)
+        // but this modification will probably happen slowly.
+        string GetBaseUrl();
     }
 }

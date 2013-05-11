@@ -29,11 +29,17 @@ namespace azurecopy
 {
     public class AzureHandler : IBlobHandler
     {
-        public AzureHandler()
+        private string baseUrl = null;
+        
+        public AzureHandler(string url = null)
         {
-
+            baseUrl = url;
         }
 
+        public string GetBaseUrl()
+        {
+            return baseUrl;
+        }
         // default is no filepath.
         // make parallel download later.
         public Blob ReadBlob(string url, string filePath = "")

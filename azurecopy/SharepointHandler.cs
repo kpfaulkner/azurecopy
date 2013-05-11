@@ -28,9 +28,16 @@ namespace azurecopy
 {
     public class SharepointHandler : IBlobHandler
     {
+        private string baseUrl = null;
+
         public SharepointHandler()
         {
         
+        }
+
+        public string GetBaseUrl()
+        {
+            return baseUrl;
         }
 
         public Blob ReadBlob(string url, string filePath = "")

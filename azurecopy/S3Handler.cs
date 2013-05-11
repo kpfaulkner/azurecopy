@@ -31,9 +31,21 @@ namespace azurecopy
 {
     public class S3Handler : IBlobHandler
     {
+        private string baseUrl = null;
+
+        public S3Handler(string url = null)
+        {
+            baseUrl = url;
+        }
+
         private void Authenticate()
         {
 
+        }
+
+        public string GetBaseUrl()
+        {
+            return baseUrl;
         }
 
         /// <summary>
@@ -123,6 +135,8 @@ namespace azurecopy
         // lists all blobs (keys) in a bucket.
         // baseUrl for S3 would be something like https://testken123.s3-us-west-2.amazonaws.com/
         // and then we get all blobs in that bucket.
+        // Am NOT going to return "fake" directories etc as some apps do. Will be returning the real results and
+        // will be relying on the caller to interpret as they see fit.
         public List<BasicBlobContainer> ListBlobsInContainer(string baseUrl)
         {
             var bucket = S3Helper.GetBucketFromUrl( baseUrl );

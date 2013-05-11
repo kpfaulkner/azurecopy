@@ -28,9 +28,16 @@ namespace azurecopy
 {
     public class DropboxHandler : IBlobHandler
     {
-        public DropboxHandler()
+        private string baseUrl = null;
+
+        public DropboxHandler(string url=null)
         {
-        
+            baseUrl = url;
+        }
+
+        public string GetBaseUrl()
+        {
+            return baseUrl;
         }
 
         public Blob ReadBlob(string url, string filePath = "")

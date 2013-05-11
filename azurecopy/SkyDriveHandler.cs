@@ -30,11 +30,17 @@ namespace azurecopy
     {
 
         private string accessToken;
+        private string baseUrl = "";
 
-        public SkyDriveHandler()
+        public SkyDriveHandler( string url=null)
         {
             accessToken = SkyDriveHelper.GetAccessToken();
+            baseUrl = url;
+        }
 
+        public string GetBaseUrl()
+        {
+            return baseUrl;
         }
 
         public Blob ReadBlob(string url, string filePath = "")
