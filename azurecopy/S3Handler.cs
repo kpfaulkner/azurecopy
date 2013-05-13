@@ -177,6 +177,43 @@ namespace azurecopy
             return blobList;
         }
 
+        // not passing url. Url will be generated behind the scenes.
+        // S3 doesn't really have containers. Do I just concat these together still?
+        public Blob ReadBlobSimple(string container, string blobName, string filePath = "")
+        {
+            if (baseUrl == null)
+            {
+                throw new ArgumentNullException("Constructor needs base url passed");
+            }
+
+            var url = baseUrl + "/" + container + "/" + blobName;
+            return ReadBlob(url, filePath);
+        }
+
+        // not passing url.
+        public void WriteBlobSimple(string container, Blob blob, int parallelUploadFactor = 1, int chunkSizeInMB = 4)
+        {
+            if (baseUrl == null)
+            {
+                throw new ArgumentNullException("Constructor needs base url passed");
+            }
+
+            var url = baseUrl + "/" + container + "/";
+            WriteBlob(url, blob, parallelUploadFactor, chunkSizeInMB);
+        }
+
+        // not required to pass full url.
+        public List<BasicBlobContainer> ListBlobsInContainerSimple(string container)
+        {
+            if (baseUrl == null)
+            {
+                throw new ArgumentNullException("Constructor needs base url passed");
+            }
+
+            var url = baseUrl + "/" + container + "/";
+            return ListBlobsInContainer(url);
+        }
+
 
 
     }

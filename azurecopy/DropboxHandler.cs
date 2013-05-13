@@ -59,5 +59,26 @@ namespace azurecopy
 
         }
 
+        // not passing url. Url will be generated behind the scenes.
+        public Blob ReadBlobSimple(string container, string blobName, string filePath = "")
+        {
+            throw new NotImplementedException("Dropbox not implemented yet");
+
+        }
+
+        // not passing url.
+        public void WriteBlobSimple(string container, Blob blob, int parallelUploadFactor = 1, int chunkSizeInMB = 4)
+        {
+            throw new NotImplementedException("Dropbox not implemented yet");
+
+        }
+
+        // not required to pass full url.
+        public List<BasicBlobContainer> ListBlobsInContainerSimple(string containerName)
+        {
+            throw new NotImplementedException("Dropbox not implemented yet");
+
+        }
+
     }
 }
