@@ -116,30 +116,7 @@ namespace azurecopy.Utils
             return (url.Contains(DevAzureDetection));
         }
 
-        // container lives in different part of url depending on dev or real.
-        // if the url ends with a /  then assuming the url doesn't mention the blob.
-        public static string GetContainerFromUrl(string blobUrl, bool assumeNoBlob = false)
-        {
-            var url = new Uri( blobUrl );
-            string container = "";  // there may be no container.
 
-            if (blobUrl.EndsWith("/") || assumeNoBlob)
-            {
-                container = url.Segments[url.Segments.Length - 1];
-            }
-            else
-            {
-
-                // container will be second last segment of url.
-                // length == 4 means BASE + ACCOUNT + CONTAINER + BLOB
-                // length == 3 means BASE + CONTAINER + BLOB
-
-                container = url.Segments[url.Segments.Length - 2];
-            }
-
-            container = container.TrimEnd('/');
-            return container;
-        }
 
 
         public static IEnumerable<IListBlobItem> ListBlobsInContainer(string containerUrl)
@@ -160,12 +137,12 @@ namespace azurecopy.Utils
             return filteredBlobList;
         }
 
+        // currently just use the virtual directory code to get the blob url.
+        // same concept, basically everything after the container.
+        // This will obviously need to change.
         public static string GetBlobFromUrl(string blobUrl)
         {
-            var url = new Uri(blobUrl);
-            var blobName = "";
-
-            blobName = url.Segments[url.Segments.Length - 1];
+            var blobName = GetVirtualDirectoryFromUrl(blobUrl);
 
             return blobName;
         }
@@ -201,6 +178,50 @@ namespace azurecopy.Utils
             };
 
             return basicBlob;
+        }
+
+        // Want to get everything after the container.
+        // eg if we have container name "mycontainer", and the blobUrl passed in is
+        // "http://xxxx/mycontainer/dira/dirb" then we need to return "dira/dirb"
+        public static string GetVirtualDirectoryFromUrl(string blobUrl)
+        {
+            var url = new Uri(blobUrl);
+            string virtualDir = "";
+
+            if (IsDevUrl(blobUrl))
+            {
+                virtualDir = string.Join("/", url.Segments.Skip(3));
+            }
+            else
+            {
+                virtualDir = string.Join("/", url.Segments.Skip(2));
+            }
+
+            virtualDir = virtualDir.TrimEnd('/');
+            return virtualDir;
+
+        }
+
+        // container lives in different part of url depending on dev or real.
+        // if the url ends with a /  then assuming the url doesn't mention the blob.
+        // blobUrl can contain multiple levels of / due to virtual directories 
+        // may be referenced.
+        public static string GetContainerFromUrl(string blobUrl, bool assumeNoBlob = false)
+        { 
+            var url = new Uri(blobUrl);
+            string container = "";  // there may be no container.
+
+            if (IsDevUrl(blobUrl))
+            {
+                container = url.Segments[2];
+            }
+            else
+            {
+                container = url.Segments[1];
+            }
+
+            container = container.TrimEnd('/');
+            return container;
         }
     }
 }

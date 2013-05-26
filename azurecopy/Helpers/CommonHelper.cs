@@ -65,5 +65,13 @@ namespace azurecopy.Utils
             return basicBlob;
         }
 
+        // Allow listing of virtual directories.
+        // Azure provides this in the client library already, but will just keep this common functionality here
+        // until I can figure out how to do this consistently across the multiple cloud providers.
+        public static List<BasicBlobContainer> ListVirtualDirectory(List<BasicBlobContainer> blobList, string virtualDirectory)
+        {
+            return blobList.Where(b => b.Name.StartsWith(virtualDirectory)).ToList();
+        }
+
     }
 }

@@ -271,6 +271,11 @@ namespace azurecopy
         }
 
 
+        // assumption is that baseurl can include items PAST the container level.
+        // ie a url such as: https://....../mycontainer/virtualdir1/virtualdir2   could be used.
+        // Now, we know the first directory listed is the container (assumption?) but
+        // virtualdir1/virtualdir2 are just blob name prefixes that are used to fake
+        // a filesystem like structure.
         public List<BasicBlobContainer> ListBlobsInContainer(string baseUrl)
         {
             var blobList = new List<BasicBlobContainer>();
@@ -278,6 +283,7 @@ namespace azurecopy
             var client = AzureHelper.GetSourceCloudBlobClient(baseUrl);
 
             var containerName = AzureHelper.GetContainerFromUrl(baseUrl, true);
+            var virtualDirectoryName = AzureHelper.GetVirtualDirectoryFromUrl(baseUrl);
             var blobName = AzureHelper.GetBlobFromUrl(baseUrl);
 
             IEnumerable<IListBlobItem> azureBlobList;
@@ -288,6 +294,8 @@ namespace azurecopy
                 container = client.GetRootContainerReference();
 
                 // add container.
+                // Assuming no blobs at root level.
+                // incorrect assumption. FIXME!
                 var containerList = client.ListContainers();
                 foreach (var cont in containerList)
                 {
@@ -304,20 +312,34 @@ namespace azurecopy
             {
                 container = client.GetContainerReference(containerName);
 
-            }
+                // if we were only passed the container name, then list contents of container.
+                if (string.IsNullOrEmpty(virtualDirectoryName))
+                {
+                    // add blobs
+                    azureBlobList = container.ListBlobs();
+                   
+                }
+                else
+                {
+                    // if passed virtual directory information, then filter based off that.
+                    var vd = container.GetDirectoryReference(virtualDirectoryName);
+                    azureBlobList = vd.ListBlobs();
+                }
 
-            container.CreateIfNotExists();
+                foreach (var blob in azureBlobList)
+                {
+                    var b = new BasicBlobContainer();
+                    var bn = AzureHelper.GetBlobFromUrl(blob.Uri.AbsoluteUri);
+                    b.Name = bn;
+                    var sp = bn.Split('/');
+                    var displayName = sp[ sp.Length -1];
+                    b.DisplayName = displayName;
+                    b.Container = blob.Container.Name;
+                    b.Url = blob.Uri.AbsoluteUri;
+                    b.BlobType = BlobEntryType.Blob;
+                    blobList.Add(b);
+                }
             
-            // add blobs
-            azureBlobList = container.ListBlobs();
-            foreach (var blob in azureBlobList)
-            {   
-                var b = new BasicBlobContainer();
-                b.Name = AzureHelper.GetBlobFromUrl(blob.Uri.AbsoluteUri);
-                b.Container = blob.Container.Name;
-                b.Url = blob.Uri.AbsoluteUri;
-                b.BlobType = BlobEntryType.Blob;
-                blobList.Add(b);
             }
 
             return blobList;
@@ -348,6 +370,8 @@ namespace azurecopy
         }
 
         // not required to pass full url.
+        // container is possibly a container/bucket in the azure/s3 sense in addition to other directories added
+        // on.
         public List<BasicBlobContainer> ListBlobsInContainerSimple(string container)
         {
             if (baseUrl == null)

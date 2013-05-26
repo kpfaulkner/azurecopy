@@ -168,6 +168,7 @@ namespace azurecopy
                 blob.Name = skyDriveEntry.Name;
                 blob.Container = container;
                 blob.Url = skyDriveEntry.Link;
+
                 blobList.Add( blob );
             }
             return blobList;

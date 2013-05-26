@@ -37,13 +37,28 @@ namespace azurecopy
     // purely used for listing blobs.
     public class BasicBlobContainer
     {
-        // name.
+        // Blob name.
+        // This can be a virtual directory structure such as /dir1/dir2/blobname
+        // although technically with both S3 and Azure it's really just the blob name.
+        // Will supply helper classes to deal with traversing these virtual directories.
         public string Name { get; set; }
+
+        // display name. This would be used when virtual directories are involved.
+        // ie if the name is "dir1/dir2/myfile.txt" then the displayname will be "myfile.txt"
+        public string DisplayName { get; set; }
 
         // container for blob. Can mean different things to different 
         // cloud providers. For S3 it would be bucket. For Azure it would be container. etc.
         // Once I get around to sharepoint it will probably be parent directory.
         public string Container { get; set; }
+
+        // virtual directory parent of the blob.
+        // Both S3 and Azure (and I'm sure other cloud storage providers) have the concept 
+        // of virtual directories, which is basically just manipulation of the blob name to 
+        // make it appear there are directories between the blob and the container.
+        // ie a blob can have the name "dir1/dir2/myfile.txt". It *looks* like there are 
+        // directories, but there really isn't.
+        public string VirtualDirectoryParent { get; set; }
 
         // original url.
         public string Url { get; set; }

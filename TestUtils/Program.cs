@@ -11,24 +11,19 @@ namespace TestUtils
     // These aren't unit tests, are more integration tests but really just working samples.
     class Program
     {
-        static void CopyFromAzureToS3()
+        static void Test()
         {
-        
             var azureUrl = ConfigHelper.AzureBaseUrl;
-            var S3Url = ConfigHelper.S3BaseUrl;
-
+        
             var sourceHandler = new AzureHandler(azureUrl);
-            var targetHandler = new S3Handler(S3Url);
 
-            var blob = sourceHandler.ReadBlobSimple("temp", "test.png");
-            targetHandler.WriteBlobSimple("", blob);
-
+            sourceHandler.ListBlobsInContainerSimple("test/dira");
         }
 
         static void Main(string[] args)
         {
 
-            CopyFromAzureToS3();
+            Test();
         }
     }
 }

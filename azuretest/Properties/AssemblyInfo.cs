@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("azurecopy")]
-[assembly: AssemblyDescription("AzureCopy assembly. see http://kpfaulkner.com/azurecopy")]
+[assembly: AssemblyTitle("azuretest")]
+[assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Ken Faulkners")]
-[assembly: AssemblyProduct("azurecopy")]
-[assembly: AssemblyCopyright("Copyright © Ken Faulkner 2013")]
+[assembly: AssemblyCompany("")]
+[assembly: AssemblyProduct("azuretest")]
+[assembly: AssemblyCopyright("Copyright ©  2013")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("366777f8-aedf-4b80-a789-3b158485a420")]
+[assembly: Guid("02336cf7-4caf-40f7-a5a3-c166079c5bc2")]
 
 // Version information for an assembly consists of the following four values:
 //
@@ -32,5 +32,5 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("0.11.0.0")]
-[assembly: AssemblyFileVersion("0.11.0.0")]
+[assembly: AssemblyVersion("1.0.0.0")]
+[assembly: AssemblyFileVersion("1.0.0.0")]

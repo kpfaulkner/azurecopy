@@ -98,8 +98,7 @@ namespace azurecopy
                 }
             }
 
-            // need to rename somehow...  hopefully this will do.
-            blob.Name = key.Replace("/", "_");
+            blob.Name = key;
 
             return blob;
 

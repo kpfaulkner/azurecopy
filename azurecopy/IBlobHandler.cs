@@ -51,6 +51,9 @@ namespace azurecopy
         List<BasicBlobContainer> ListBlobsInContainer(string baseUrl);
 
         // not required to pass full url.
+        // for S3 the container name could be the bucket name.
+        // for azure it would be an azure container.
+        // for others it would probably be the first directory in a full path listing many directories. (eg. dir1/dir2/dir3/file.txt)
         List<BasicBlobContainer> ListBlobsInContainerSimple(string containerName);
 
         // core URL used for this handler.

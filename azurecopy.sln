@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "azurecopycommand", "azureco
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestUtils", "TestUtils\TestUtils.csproj", "{0A779CE3-288C-44F2-B927-31E9C5B5344C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "azuretest", "azuretest\azuretest.csproj", "{02AE4E9A-175D-413D-93E2-83D4BC72998A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -31,6 +33,10 @@ Global
 		{0A779CE3-288C-44F2-B927-31E9C5B5344C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0A779CE3-288C-44F2-B927-31E9C5B5344C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0A779CE3-288C-44F2-B927-31E9C5B5344C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{02AE4E9A-175D-413D-93E2-83D4BC72998A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{02AE4E9A-175D-413D-93E2-83D4BC72998A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{02AE4E9A-175D-413D-93E2-83D4BC72998A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{02AE4E9A-175D-413D-93E2-83D4BC72998A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
