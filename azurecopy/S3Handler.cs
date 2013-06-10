@@ -132,32 +132,43 @@ namespace azurecopy
         }
 
         // lists all blobs (keys) in a bucket.
-        // baseUrl for S3 would be something like https://testken123.s3-us-west-2.amazonaws.com/
-        // and then we get all blobs in that bucket.
-        // Am NOT going to return "fake" directories etc as some apps do. Will be returning the real results and
-        // will be relying on the caller to interpret as they see fit.
+        // baseUrl for S3 would be something like https://s3-us-west-2.amazonaws.com/mybucket/virtualdir1/virtualdir2/
+        // mybucket is the real bucket, virtualdir1 and 2 are virtual directories used for faking directory structures.
         public List<BasicBlobContainer> ListBlobsInContainer(string baseUrl)
         {
             var bucket = S3Helper.GetBucketFromUrl( baseUrl );
             var blobList = new List<BasicBlobContainer>();
+            var prefix = S3Helper.GetPrefixFromUrl(baseUrl);
 
             using (AmazonS3 client = Amazon.AWSClientFactory.CreateAmazonS3Client(ConfigHelper.SrcAWSAccessKeyID, ConfigHelper.SrcAWSSecretAccessKeyID))
             {
-                ListObjectsRequest listObjectRequest = new ListObjectsRequest();
                 var request = new ListObjectsRequest();
+     
                 request.BucketName = bucket;
+
+                if (!string.IsNullOrEmpty(prefix))
+                {
+                    request.Prefix = prefix;
+                }
+                
                 do
                 {
                     ListObjectsResponse response = client.ListObjects(request);
 
                     foreach (var obj in response.S3Objects)
                     {
-                        var fullPath = Path.Combine(baseUrl, obj.Key);
+                       
+                        var fullPath = GenerateUrl(baseUrl, bucket, obj.Key);
+                        //var fullPath = Path.Combine(baseUrl, obj.Key);
                         var blob = new BasicBlobContainer();
                         blob.Name = obj.Key;
                         blob.Url = fullPath;
                         blob.Container = bucket;
                         blob.BlobType = BlobEntryType.Blob;
+                        if (blob.Name.Contains('/'))
+                        {
+                            blob.DisplayName = blob.Name.Split('/')[1];
+                        }
                         blobList.Add(blob);
                     }
 
@@ -174,6 +185,20 @@ namespace azurecopy
             }
 
             return blobList;
+        }
+
+        // generates full url to object.
+        // seems strange that I'd need to generate this and that its
+        // not returned to the caller already. Will need to investigate. FIXME
+        // also assumption about https.
+        private string GenerateUrl(string baseUrl, string bucket, string key)
+        {
+            var url = new Uri(baseUrl);
+            var fqdn = "https://"+url.DnsSafeHost;
+            var res = new Uri( new Uri(fqdn), bucket + "/" + key);
+
+            return res.AbsoluteUri;
+
         }
 
         // not passing url. Url will be generated behind the scenes.
@@ -209,7 +234,7 @@ namespace azurecopy
                 throw new ArgumentNullException("Constructor needs base url passed");
             }
 
-            var url = baseUrl + "/" + container + "/";
+            var url = baseUrl + "/" + container;
             return ListBlobsInContainer(url);
         }
 

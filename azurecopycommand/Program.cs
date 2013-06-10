@@ -41,7 +41,7 @@ namespace azurecopycommand
 	            -o : output url
 	            -d : download to filesystem before uploading to output url. (use for big blobs)
 	            -blobcopy : use blobcopy API for when Azure is output url.
-	            -list : list blobs in bucket/container. Use in conjunction with -i
+	            -list : list blobs in bucket/container. eg. -list https://s3.amazonaws.com/mycontainer 
                 -pu : parallel upload
                 -cs : chunk size used for parallel upload (in MB).
 	            -m : Monitor progress of copy when in 'blobcopy' mode (ie -blobcopy flag was used). Program will not exit until all pending copies are complete.

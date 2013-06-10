@@ -48,6 +48,7 @@ namespace azurecopy
         void WriteBlobSimple(string container, Blob blob, int parallelUploadFactor = 1, int chunkSizeInMB = 4);
 
         // passing full url.
+        // can contain virtual directories such as https://....../mycontainer/virtualdir1/virtualdir2  
         List<BasicBlobContainer> ListBlobsInContainer(string baseUrl);
 
         // not required to pass full url.

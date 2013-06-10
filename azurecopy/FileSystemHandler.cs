@@ -96,7 +96,6 @@ namespace azurecopy
                     stream.Close();
                 }
             }
-
         }
 
         public List<BasicBlobContainer> ListBlobsInContainer(string baseUrl)

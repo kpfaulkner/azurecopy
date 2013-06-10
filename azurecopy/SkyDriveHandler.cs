@@ -166,9 +166,11 @@ namespace azurecopy
             {
                 var blob = new BasicBlobContainer();
                 blob.Name = skyDriveEntry.Name;
-                blob.Container = container;
-                blob.Url = skyDriveEntry.Link;
 
+                // keep display name same as name until determine otherwise.
+                blob.DisplayName = blob.Name;
+                blob.Container = container;
+                blob.Url = skyDriveEntry.Link;                
                 blobList.Add( blob );
             }
             return blobList;

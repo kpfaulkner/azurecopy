@@ -17,13 +17,25 @@ namespace TestUtils
         
             var sourceHandler = new AzureHandler(azureUrl);
 
-            sourceHandler.ListBlobsInContainerSimple("test/dira");
+            sourceHandler.ListBlobsInContainerSimple("temp/test/");
         }
+
+        static void Test2()
+        {
+            var s3Url = ConfigHelper.S3BaseUrl;
+
+            var sourceHandler = new S3Handler(s3Url);
+
+            sourceHandler.ListBlobsInContainerSimple("testken123/test/");
+        }
+
+
+
 
         static void Main(string[] args)
         {
 
-            Test();
+            Test2();
         }
     }
 }

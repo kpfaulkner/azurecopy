@@ -34,10 +34,24 @@ namespace azurecopy.Utils
 
         static  string AmazonDetection = "amazon";
 
+        // assuming URL is in form https://s3.amazonaws.com/bucketname  and
+        // NOT in the form :https://bucketname.s3.amazonaws.com
         public static string GetBucketFromUrl(string url)
         {
             var u = new Uri( url );
-            var bucket = u.DnsSafeHost.Split('.')[0];
+            
+            // used for https://bucketname.s3.amazonaws.com/  format.
+            //var bucket = u.DnsSafeHost.Split('.')[0];
+
+            var bucket = "";
+            if (u.Segments.Length > 1)
+            {
+                bucket = u.Segments[1];
+                if (bucket.EndsWith("/"))
+                {
+                    bucket = bucket.Substring(0, bucket.Length - 1);
+                }
+            }
 
             return bucket;
         }
@@ -72,6 +86,14 @@ namespace azurecopy.Utils
                 string url = client.GetPreSignedURL(request);
                 return url;
             }
+        }
+
+        internal static string GetPrefixFromUrl(string baseUrl)
+        {
+            var url = new Uri(baseUrl);
+            var u = url.Segments;
+            var prefix = string.Join("/", url.Segments.Skip(2));
+            return prefix;
         }
     }
 }
