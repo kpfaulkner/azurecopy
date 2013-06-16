@@ -37,7 +37,9 @@ namespace TestUtils
         public static string AzureBaseUrl { get; set; }
         public static string S3BaseUrl { get; set; }
 
-
+        // dropbox
+        public static string DropBoxAPIKey { get; set; }
+        public static string DropBoxAPISecret { get; set; }
 
         static ConfigHelper()
         {
@@ -65,7 +67,9 @@ namespace TestUtils
             AzureBaseUrl = GetConfigValue<string>("AzureBaseUrl", "");
             S3BaseUrl = GetConfigValue<string>("S3BaseUrl", "");
 
-           
+            // dropbox
+            DropBoxAPIKey = GetConfigValue<string>("DropBoxAPIKey", "");
+            DropBoxAPISecret = GetConfigValue<string>("DropBoxAPISecret", "");
 
         }
     }

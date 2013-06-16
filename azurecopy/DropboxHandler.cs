@@ -15,8 +15,10 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
- using azurecopy.Helpers;
+using azurecopy.Helpers;
 using azurecopy.Utils;
+using DropNet;
+using DropNet.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -29,16 +31,25 @@ namespace azurecopy
     public class DropboxHandler : IBlobHandler
     {
         private string baseUrl = null;
+        private DropNetClient client;
+        private UserLogin accessToken;
 
-        public DropboxHandler(string url=null)
+
+        // really dont like the idea of storing plain passwords.
+        // need to encrypt the app.config soon.
+        public DropboxHandler()
         {
-            baseUrl = url;
+            client = new DropNetClient(ConfigHelper.DropBoxAPIKey, ConfigHelper.DropBoxAPISecret);
+            //accessToken = client.GetAccessToken();
+
+            var url = client.BuildAuthorizeUrl();
         }
 
         public string GetBaseUrl()
         {
-            return baseUrl;
+            return null;
         }
+
 
         public Blob ReadBlob(string url, string filePath = "")
         {
@@ -76,8 +87,9 @@ namespace azurecopy
         // not required to pass full url.
         public List<BasicBlobContainer> ListBlobsInContainerSimple(string containerName)
         {
-            throw new NotImplementedException("Dropbox not implemented yet");
+            var metadata = client.GetMetaData();
 
+            return new List<BasicBlobContainer>();
         }
 
     }

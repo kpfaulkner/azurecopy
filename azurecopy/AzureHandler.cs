@@ -316,7 +316,7 @@ namespace azurecopy
                 if (string.IsNullOrEmpty(virtualDirectoryName))
                 {
                     // add blobs
-                    azureBlobList = container.ListBlobs();
+                    azureBlobList = container.ListBlobs(useFlatBlobListing:true);
                    
                 }
                 else

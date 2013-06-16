@@ -63,6 +63,10 @@ namespace azurecopy.Helpers
         public static string SkyDriveRefreshToken { get; set; }
         public static string SkyDriveAccessToken { get; set; }
 
+        // dropbox
+        public static string DropBoxAPIKey { get; set; }
+        public static string DropBoxAPISecret { get; set; }
+
         static ConfigHelper()
         {
             ReadConfig();
@@ -113,6 +117,10 @@ namespace azurecopy.Helpers
 
             SkyDriveCode = GetConfigValue<string>("SkyDriveCode", "");
             SkyDriveRefreshToken = GetConfigValue<string>("SkyDriveRefreshToken", "");
+
+            // dropbox
+            DropBoxAPIKey = GetConfigValue<string>("DropBoxAPIKey", "");
+            DropBoxAPISecret = GetConfigValue<string>("DropBoxAPISecret", "");
 
         }
     }

@@ -1,5 +1,8 @@
 ﻿TODO:
 
++ Upload to DropBox
++ Download from DropBox
++ Encrypt login details in app.config
 + Add retry logic to any Azure/S3 comms
 + Azure Download in parallel for single blob.
 + S3 Download in parallel for single blob.
@@ -13,8 +16,6 @@
 + list of blobs to copy read from a file.
 + Upload to Skydrive
 + Download from Skydrive
-+ Upload to DropBox
-+ Download from DropBox
 + Upload to Sharepoint
 + Download from Sharepoint
 + Handle Azure Short Access Signatures.

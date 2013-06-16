@@ -29,13 +29,23 @@ namespace TestUtils
             sourceHandler.ListBlobsInContainerSimple("testken123/test/");
         }
 
+        static void Test3()
+        {
+
+            var bb = ConfigHelper.DropBoxAPIKey;
+            var sourceHandler = new DropboxHandler();
+
+            var a = sourceHandler.ListBlobsInContainerSimple("");
+
+        }
+
 
 
 
         static void Main(string[] args)
         {
 
-            Test2();
+            Test3();
         }
     }
 }

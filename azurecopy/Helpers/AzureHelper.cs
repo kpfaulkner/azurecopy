@@ -217,7 +217,10 @@ namespace azurecopy.Utils
             }
             else
             {
-                container = url.Segments[1];
+                if (url.Segments.Length > 1)
+                {
+                    container = url.Segments[1];
+                }
             }
 
             container = container.TrimEnd('/');
