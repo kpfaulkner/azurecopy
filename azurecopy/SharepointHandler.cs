@@ -24,6 +24,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace azurecopy
 {
@@ -88,8 +89,55 @@ namespace azurecopy
 
         public void WriteBlob(string url, Blob blob,  int parallelUploadFactor=1, int chunkSizeInMB=4)
         {
-            throw new NotImplementedException("Sharepoint not implemented yet");
-           
+            var context = GetContext(url);
+
+            // get file collection.
+            var fileCollection = GetSharepointFileCollection( url );
+
+            byte[] data;
+            Stream inputStream = null;
+            // get stream to data.
+            if (blob.BlobSavedToFile)
+            {
+                inputStream = new FileStream(blob.FilePath, FileMode.Open);
+                var length = inputStream.Length;
+                var lengthInt = Convert.ToInt32(length);
+                data = new byte[lengthInt];
+                inputStream.Read(data, 0, lengthInt);
+
+            }
+            else
+            {
+                data = blob.Data;
+            }
+
+
+            //populate information about the new file
+            FileCreationInformation fci = new FileCreationInformation();
+            fci.Url = blob.Name;
+            fci.Content = data;
+            fci.Overwrite = true;
+
+
+            //add this file to the file collection
+            Microsoft.SharePoint.Client.File newFile = fileCollection.Add(fci);
+
+
+            // probably need to do this elsewhere from Azure Storage.
+            // but leave here until I know for sure.
+            var t = Task.Factory.StartNew(() =>
+            {
+                ctx.Load(newFile);
+                
+                ctx.ExecuteQuery();
+
+            });
+
+            // wait... this is incase the application finishes and exits before the async upload is complete.
+            if (true)
+            {
+                t.Wait();
+            }
 
         }
 
