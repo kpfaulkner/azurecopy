@@ -1,5 +1,14 @@
 ﻿TODO:
 
++ Upload to dropbox
++ Download from dropbox
++ Upload to Sharepoint
++ Download from Sharepoint
+
+==================
+
+reorder.
+
 + Upload to DropBox
 + Download from DropBox
 + Encrypt login details in app.config

@@ -15,8 +15,9 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
- using azurecopy.Helpers;
+using azurecopy.Helpers;
 using azurecopy.Utils;
+using Microsoft.SharePoint.Client;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -29,10 +30,49 @@ namespace azurecopy
     public class SharepointHandler : IBlobHandler
     {
         private string baseUrl = null;
+        private ClientContext ctx = null;
 
-        public SharepointHandler()
+        public SharepointHandler( string url = null)
         {
-        
+            baseUrl = url;
+            if (baseUrl != null)
+            {
+                ctx = SharepointHelper.GetContext(baseUrl);
+            }
+        }
+
+        private ClientContext GetContext(string url)
+        {
+            if (ctx == null)
+            {
+                var uri = new Uri(url);
+                baseUrl = uri.Scheme + "://" + uri.Host + "/";
+                ctx = SharepointHelper.GetContext(baseUrl);
+            }
+
+            return ctx;
+
+        }
+
+        /// <summary>
+        /// Return reference to files in Sharepoint.
+        /// </summary>
+        /// <param name="ctx"></param>
+        /// <returns></returns>
+        private FileCollection GetSharepointFileCollection( string documentURL)
+        {
+            Web site = ctx.Web;
+
+            //get the document library folder
+            Folder docSetFolder = site.GetFolderByServerRelativeUrl( documentURL );
+            ctx.ExecuteQuery();
+
+            //load the file collection for the documents in the library
+            FileCollection documentFiles = docSetFolder.Files;
+            ctx.Load(documentFiles);
+            ctx.ExecuteQuery();
+            
+            return docSetFolder.Files;
         }
 
         public string GetBaseUrl()
@@ -53,9 +93,11 @@ namespace azurecopy
 
         }
 
-        public List<BasicBlobContainer> ListBlobsInContainer(string container)
+        public List<BasicBlobContainer> ListBlobsInContainer(string url)
         {
-            throw new NotImplementedException("Sharepoint not implemented yet");
+            var context = GetContext(url);
+
+            return ListBlobsInContainerSimple(url);
 
         }
 
@@ -73,10 +115,31 @@ namespace azurecopy
 
         }
 
-        // not required to pass full url.
-        public List<BasicBlobContainer> ListBlobsInContainerSimple(string containerName)
+        // ontainer name is just appended to base url.
+        public List<BasicBlobContainer> ListBlobsInContainerSimple(string url)
         {
-            throw new NotImplementedException("Dropbox not implemented yet");
+            var blobList = new List<BasicBlobContainer>();
+
+            var fileCollection = GetSharepointFileCollection(url);
+           
+            foreach (var obj in fileCollection)
+            {
+                // construct properly.s
+                var fullUrl = url + "/" + obj.Name;
+
+                //var fullPath = Path.Combine(baseUrl, obj.Key);
+                var blob = new BasicBlobContainer();
+                blob.Name = obj.Name;
+                blob.Url = fullUrl;
+                blob.Container = url;
+                blob.BlobType = BlobEntryType.Blob;
+                blob.DisplayName = blob.Name;  // same as blob name for Sharepoint....
+
+                blobList.Add(blob);
+            }
+
+
+            return blobList;
 
         }
 

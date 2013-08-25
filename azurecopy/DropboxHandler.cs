@@ -33,16 +33,16 @@ namespace azurecopy
         private string baseUrl = null;
         private DropNetClient client;
         private UserLogin accessToken;
-
+        private string url;
 
         // really dont like the idea of storing plain passwords.
         // need to encrypt the app.config soon.
         public DropboxHandler()
         {
             client = new DropNetClient(ConfigHelper.DropBoxAPIKey, ConfigHelper.DropBoxAPISecret);
-            //accessToken = client.GetAccessToken();
-
-            var url = client.BuildAuthorizeUrl();
+            
+            client.GetToken();
+            url = client.BuildAuthorizeUrl();
         }
 
         public string GetBaseUrl()

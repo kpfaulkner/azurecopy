@@ -67,6 +67,11 @@ namespace azurecopy.Helpers
         public static string DropBoxAPIKey { get; set; }
         public static string DropBoxAPISecret { get; set; }
 
+        // sharepoint
+        public static string SharepointUsername { get; set; }
+        public static string SharepointPassword { get; set; }
+
+
         static ConfigHelper()
         {
             ReadConfig();
@@ -121,6 +126,11 @@ namespace azurecopy.Helpers
             // dropbox
             DropBoxAPIKey = GetConfigValue<string>("DropBoxAPIKey", "");
             DropBoxAPISecret = GetConfigValue<string>("DropBoxAPISecret", "");
+
+            // sharepoint
+            SharepointUsername = GetConfigValue<string>("SharepointUsername", "");
+            SharepointPassword = GetConfigValue<string>("SharepointPassword", "");
+
 
         }
     }

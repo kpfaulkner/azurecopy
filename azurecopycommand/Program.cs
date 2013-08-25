@@ -105,6 +105,12 @@ namespace azurecopycommand
         const string TargetAWSAccessKeyIDFlag = "-targets3accesskey";
         const string TargetAWSSecretAccessKeyIDFlag = "-targets3secretkey";
 
+        // sharepoint
+        const string SharepointUsernameShortFlag = "-spu";
+        const string SharepointPasswordShortFlag = "-spp";
+        const string SharepointUsernameFlag = "-sharepointusername";
+        const string SharepointPasswordFlag = "-sharepointpassword";
+
         // skydrive 
         const string SkyDriveCodeFlag = "-skydrivecode";
 
@@ -147,6 +153,9 @@ namespace azurecopycommand
             else if (SkyDriveHelper.MatchHandler(url))
             {
                 urlType = UrlType.SkyDrive;
+            } if (SharepointHelper.MatchHandler(url))
+            {
+                urlType = UrlType.Sharepoint;
             }
             else
             {
@@ -229,6 +238,21 @@ namespace azurecopycommand
                             _action = Action.List;
 
                             break;
+
+                        case SharepointUsernameFlag:
+                        case SharepointUsernameShortFlag:
+                            i++;
+                            var username = GetArgument(args, i);
+                            ConfigHelper.SharepointUsername = username;
+                            break;
+
+                        case SharepointPasswordFlag:
+                        case SharepointPasswordShortFlag:
+                            i++;
+                            var password = GetArgument(args, i);
+                            ConfigHelper.SharepointPassword = password;
+                            break;
+
 
                         case AzureAccountKeyFlag:
                         case AzureAccountKeyShortFlag:
@@ -370,6 +394,11 @@ namespace azurecopycommand
                 case UrlType.Local:
                     blobHandler = new FileSystemHandler();
                     break;
+                
+                case UrlType.Sharepoint:
+                    blobHandler = new SharepointHandler();
+                    break;
+
 
                 default:
                     blobHandler = new FileSystemHandler();

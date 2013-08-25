@@ -39,13 +39,21 @@ namespace TestUtils
 
         }
 
+        static void Test4()
+        {
+
+            var sourceHandler = new SharepointHandler("https://faulkner.sharepoint.com/");
+
+            var a = sourceHandler.ListBlobsInContainerSimple("Shared Documents");
+
+        }
 
 
 
         static void Main(string[] args)
         {
 
-            Test3();
+            Test4();
         }
     }
 }
