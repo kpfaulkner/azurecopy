@@ -146,11 +146,11 @@ namespace azurecopy.ThirdParty
             //generate response to Sharepoint               
             HttpWebRequest sharepointRequest = HttpWebRequest.Create(sharepointSite.Wreply) as HttpWebRequest;
             sharepointRequest.Method = "POST";
+            sharepointRequest.UserAgent = "Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; WOW64; Trident/5.0)";
             sharepointRequest.ContentType = "application/x-www-form-urlencoded";
             sharepointRequest.CookieContainer = new CookieContainer();
             sharepointRequest.AllowAutoRedirect = false; // This is important
-            sharepointRequest.UserAgent = "Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; WOW64; Trident/5.0)";
-
+            
             byte[] data;
             using (Stream newStream = sharepointRequest.GetRequestStream()) {
                 data = Encoding.UTF8.GetBytes(crypt.FirstOrDefault().Value);

@@ -76,6 +76,43 @@ namespace azurecopy
             return docSetFolder.Files;
         }
 
+        /// <summary>
+        /// Return reference to files in Sharepoint.
+        /// </summary>
+        /// <param name="ctx"></param>
+        /// <returns></returns>
+        private Microsoft.SharePoint.Client.File GetSharepointFile(string documentURL)
+        {
+
+            var context = GetContext(documentURL);
+
+            // get file collection.
+            var fileCollection = GetSharepointFileCollection(documentURL);
+            ctx.Load(fileCollection);
+            ctx.ExecuteQuery();
+
+            try
+            {
+                var f = Microsoft.SharePoint.Client.File.OpenBinaryDirect(ctx, "/Shared Documents/ken.txt");
+
+                var fs = new FileStream("c:\\temp\\ken.file", FileMode.Create);
+                f.Stream.CopyTo(fs);
+                f.Stream.Close();
+                fs.Close();
+            }
+            catch (Exception ex)
+            {
+                var a = ex;
+            }
+
+            //Microsoft.SharePoint.Client.File.SaveBinaryDirect( ctx, documentURL, myStream, true);
+            //ctx.Load(docSetFile);
+            //ctx.ExecuteQuery();
+            return null;
+            //return docSetFile;
+        }
+
+
         public string GetBaseUrl()
         {
             return baseUrl;
@@ -89,10 +126,36 @@ namespace azurecopy
 
         public void WriteBlob(string url, Blob blob,  int parallelUploadFactor=1, int chunkSizeInMB=4)
         {
+
+            WriteBlobSimple(url, blob, parallelUploadFactor, chunkSizeInMB);
+
+        }
+
+        public List<BasicBlobContainer> ListBlobsInContainer(string url)
+        {
+            var context = GetContext(url);
+
+            return ListBlobsInContainerSimple(url);
+
+        }
+
+        // not passing url. Url will be generated behind the scenes.
+        public Blob ReadBlobSimple(string url, string blobName, string filePath = "")
+        {
+            var context = GetContext(url);
+
+            var spFile = GetSharepointFile("https://faulkner.sharepoint.com/Shared Documents/");
+   
+            return null;
+        }
+
+        // not passing url.
+        public void WriteBlobSimple(string url, Blob blob, int parallelUploadFactor = 1, int chunkSizeInMB = 4)
+        {
             var context = GetContext(url);
 
             // get file collection.
-            var fileCollection = GetSharepointFileCollection( url );
+            var fileCollection = GetSharepointFileCollection(url);
 
             byte[] data;
             Stream inputStream = null;
@@ -128,7 +191,7 @@ namespace azurecopy
             var t = Task.Factory.StartNew(() =>
             {
                 ctx.Load(newFile);
-                
+
                 ctx.ExecuteQuery();
 
             });
@@ -138,28 +201,6 @@ namespace azurecopy
             {
                 t.Wait();
             }
-
-        }
-
-        public List<BasicBlobContainer> ListBlobsInContainer(string url)
-        {
-            var context = GetContext(url);
-
-            return ListBlobsInContainerSimple(url);
-
-        }
-
-        // not passing url. Url will be generated behind the scenes.
-        public Blob ReadBlobSimple(string container, string blobName, string filePath = "")
-        {
-            throw new NotImplementedException("Dropbox not implemented yet");
-
-        }
-
-        // not passing url.
-        public void WriteBlobSimple(string container, Blob blob, int parallelUploadFactor = 1, int chunkSizeInMB = 4)
-        {
-            throw new NotImplementedException("Dropbox not implemented yet");
 
         }
 

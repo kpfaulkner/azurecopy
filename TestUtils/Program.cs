@@ -44,7 +44,8 @@ namespace TestUtils
 
             var sourceHandler = new SharepointHandler("https://faulkner.sharepoint.com/");
 
-            var a = sourceHandler.ListBlobsInContainerSimple("Shared Documents");
+            var a = sourceHandler.ReadBlobSimple("https://faulkner.sharepoint.com/", "foo");
+
 
         }
 

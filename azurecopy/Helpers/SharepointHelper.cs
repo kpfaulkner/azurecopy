@@ -60,6 +60,7 @@ namespace azurecopy.Utils
 
         private static void ctx_ExecutingWebRequest(object sender, WebRequestEventArgs e)
         {
+            e.WebRequestExecutor.WebRequest.UserAgent = "Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; WOW64; Trident/5.0)";
             e.WebRequestExecutor.WebRequest.CookieContainer = msOnlineHelper.CookieContainer;
         }
 
