@@ -105,11 +105,8 @@ namespace azurecopy
                 var a = ex;
             }
 
-            //Microsoft.SharePoint.Client.File.SaveBinaryDirect( ctx, documentURL, myStream, true);
-            //ctx.Load(docSetFile);
-            //ctx.ExecuteQuery();
             return null;
-            //return docSetFile;
+
         }
 
 
@@ -120,8 +117,13 @@ namespace azurecopy
 
         public Blob ReadBlob(string url, string filePath = "")
         {
-            throw new NotImplementedException("Sharepoint not implemented yet");
+
+            var uri = new Uri(url);
+            var blobName = uri.Segments[uri.Segments.Length - 1];
+
+            //var f = GetSharepointFile(url);
             
+            return ReadBlobSimple(url, blobName, filePath);
         }
 
         public void WriteBlob(string url, Blob blob,  int parallelUploadFactor=1, int chunkSizeInMB=4)
@@ -142,11 +144,34 @@ namespace azurecopy
         // not passing url. Url will be generated behind the scenes.
         public Blob ReadBlobSimple(string url, string blobName, string filePath = "")
         {
-            var context = GetContext(url);
+            var blob = new Blob();
+            blob.BlobSavedToFile = !string.IsNullOrEmpty(filePath);
+            blob.Name = blobName;
+            blob.FilePath = filePath;
+            blob.BlobType = DestinationBlobType.Block;
 
-            var spFile = GetSharepointFile("https://faulkner.sharepoint.com/Shared Documents/");
-   
-            return null;
+            // get stream to store.
+            using (var stream = CommonHelper.GetStream(filePath))
+            {
+                var context = GetContext(url);
+
+                // get file collection.
+                var fileCollection = GetSharepointFileCollection(url);
+                ctx.Load(fileCollection);
+                ctx.ExecuteQuery();
+
+                var uri = new Uri(url);
+                var f = Microsoft.SharePoint.Client.File.OpenBinaryDirect(ctx, uri.PathAndQuery);
+                f.Stream.CopyTo(stream);
+                
+                if (!blob.BlobSavedToFile)
+                {
+                    var ms = stream as MemoryStream;
+                    blob.Data = ms.ToArray();
+                }
+            }
+
+            return blob;
         }
 
         // not passing url.

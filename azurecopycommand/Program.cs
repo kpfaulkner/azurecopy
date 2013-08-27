@@ -55,6 +55,8 @@ namespace azurecopycommand
 	            -tak | -targetazurekey : output url Azure account key.
 	            -ts3k | -targets3accesskey : output url S3 access key.
 	            -ts3sk | -targets3secretkey : output url S3 access key secret.
+                -spu | -SharepointUsername : Sharepoint Online username
+	            -spp | -SharepointPassword : Sharepoint Online password
                 -rd : Retry delay in seconds used when communicating with cloud storage environments.
                 -mr : Maximum number of retries for a given operation.
                 -skydrivecode : returned when accessing URL: https://login.live.com/oauth20_authorize.srf?client_id=00000000480EE365&scope=wl.offline_access,wl.skydrive,wl.skydrive_update&response_type=code&redirect_uri=http://kpfaulkner.com
