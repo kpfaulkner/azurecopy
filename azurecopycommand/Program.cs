@@ -155,7 +155,7 @@ namespace azurecopycommand
             else if (SkyDriveHelper.MatchHandler(url))
             {
                 urlType = UrlType.SkyDrive;
-            } if (SharepointHelper.MatchHandler(url))
+            } else  if (SharepointHelper.MatchHandler(url))
             {
                 urlType = UrlType.Sharepoint;
             }
