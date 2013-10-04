@@ -397,7 +397,7 @@ namespace azurecopycommand
         private static void ConfigureSkyDrive()
         {
             Console.WriteLine("Configuring AzureCopy for Skydrive:\n\n");
-            Console.WriteLine("Please open a browser and enter the URL: " + SkyDriveOAuthUrl+"\n");
+            Console.WriteLine("Please open a browser and enter the URL:\n" + SkyDriveOAuthUrl+"\n");
             Console.WriteLine("Once you log in with your Microsoft Account, you'll be redirected to a url similar to http://kpfaulkner.com/azurecopyoauth/?code=abf0d6b4-4eec-da53-c786-adb1aa42bff2");
             Console.WriteLine("Please copy and paste the code (everything after the = sign) here then press enter");
             var code = Console.ReadLine();
