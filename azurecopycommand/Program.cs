@@ -34,6 +34,8 @@ namespace azurecopycommand
 
     class Program
     {
+        const string SkyDriveOAuthUrl = "https://login.live.com/oauth20_authorize.srf?client_id=00000000480EE365&scope=wl.offline_access,wl.skydrive,wl.skydrive_update&response_type=code&redirect_uri=http://kpfaulkner.com/azurecopyoauth";
+
         const string UsageString =
            @"Usage: azurecopy
                 -v : verbose
@@ -59,7 +61,8 @@ namespace azurecopycommand
 	            -spp | -SharepointPassword : Sharepoint Online password
                 -rd : Retry delay in seconds used when communicating with cloud storage environments.
                 -mr : Maximum number of retries for a given operation.
-                -skydrivecode : returned when accessing URL: https://login.live.com/oauth20_authorize.srf?client_id=00000000480EE365&scope=wl.offline_access,wl.skydrive,wl.skydrive_update&response_type=code&redirect_uri=http://kpfaulkner.com
+                -skydrivecode : returned when accessing URL: https://login.live.com/oauth20_authorize.srf?client_id=00000000480EE365&scope=wl.offline_access,wl.skydrive,wl.skydrive_update&response_type=code&redirect_uri=http://kpfaulkner.com/azurecopyoauth
+                -configskydrive : Steps through configuring of SkyDrive and saves config file with new data.
                 Note: Remember when local file system is destination/output do NOT end the directory with a \
                       When destination is Skydrive, use the url format  skydrive://directory/file";
 
@@ -115,6 +118,7 @@ namespace azurecopycommand
 
         // skydrive 
         const string SkyDriveCodeFlag = "-skydrivecode";
+        const string ConfigSkyDriveFlag = "-configskydrive";
 
         static UrlType _inputUrlType;
         static UrlType _outputUrlType;
@@ -208,6 +212,12 @@ namespace azurecopycommand
                             ConfigHelper.SkyDriveCode = GetArgument(args, i);
                             break;
 
+                        // if we have this flag, then we simply want to redirect user to a given url.
+                        // then prompt for code (response from browser). Then save it to the app.config file.
+                        // will do similar for dropbox.
+                        case ConfigSkyDriveFlag:
+                            ConfigureSkyDrive();
+                            break;
 
                         case DestBlobType:
                             i++;
@@ -371,6 +381,20 @@ namespace azurecopycommand
                 Console.WriteLine(UsageString);
             }
 
+        }
+
+        private static void ConfigureSkyDrive()
+        {
+            Console.WriteLine("Configuring AzureCopy for Skydrive:\n\n");
+            Console.WriteLine("Please open a browser and enter the URL: " + SkyDriveOAuthUrl+"\n");
+            Console.WriteLine("Once you log in with your Microsoft Account, you'll be redirected to a url similar to http://kpfaulkner.com/azurecopyoauth/?code=abf0d6b4-4eec-da53-c786-adb1aa42bff2");
+            Console.WriteLine("Please copy and paste the code (everything after the = sign) here then press enter");
+            var code = Console.ReadLine();
+            Console.WriteLine("Modifying config file with code");
+            Console.WriteLine("Thankyou....  enjoy AzureCopy");
+
+            ConfigHelper.SkyDriveCode = code;
+            ConfigHelper.SaveConfig();
         }
 
 

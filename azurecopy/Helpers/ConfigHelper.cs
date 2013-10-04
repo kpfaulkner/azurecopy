@@ -88,6 +88,19 @@ namespace azurecopy.Helpers
             return defaultValue;
         }
 
+        private static void SetConfigValue(Configuration config, string key, string val)
+        {
+            if ( config.AppSettings.Settings.AllKeys.Contains(key))
+            {
+                config.AppSettings.Settings[key].Value = val;
+            }
+            else
+            {
+                config.AppSettings.Settings.Add( new KeyValueConfigurationElement( key, val));
+            }
+
+        }
+
         // populates src and target values IF there is a default set.
         public static void ReadConfig()
         {
@@ -131,7 +144,41 @@ namespace azurecopy.Helpers
             SharepointUsername = GetConfigValue<string>("SharepointUsername", "");
             SharepointPassword = GetConfigValue<string>("SharepointPassword", "");
 
-
         }
+
+        public static void SaveConfig()
+        {
+            Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            SetConfigValue(config, "AzureAccountKey",AzureAccountKey);
+            SetConfigValue(config, "AWSAccessKeyID",AWSAccessKeyID);
+            SetConfigValue(config, "AWSSecretAccessKeyID",AWSSecretAccessKeyID);
+            SetConfigValue(config, "SrcAzureAccountKey",SrcAzureAccountKey);
+            SetConfigValue(config, "SrcAWSAccessKeyID",SrcAWSAccessKeyID);
+            SetConfigValue(config, "SrcAWSSecretAccessKeyID",SrcAWSSecretAccessKeyID);
+            SetConfigValue(config, "TargetAzureAccountKey",TargetAzureAccountKey);
+            SetConfigValue(config, "TargetAWSAccessKeyID",TargetAWSAccessKeyID);
+            SetConfigValue(config, "TargetAWSSecretAccessKeyID",TargetAWSSecretAccessKeyID);
+            SetConfigValue(config, "RetryAttemptDelayInSeconds",RetryAttemptDelayInSeconds.ToString());
+            SetConfigValue(config, "MaxRetryAttempts",MaxRetryAttempts.ToString());
+            SetConfigValue(config, "DownloadDirectory",DownloadDirectory);
+            SetConfigValue(config, "Verbose",Verbose.ToString());
+            SetConfigValue(config, "AmDownloading",AmDownloading.ToString());
+            SetConfigValue(config, "UseBlobCopy",UseBlobCopy.ToString()) ;
+            SetConfigValue(config, "ListContainer",ListContainer.ToString());
+            SetConfigValue(config, "MonitorBlobCopy",MonitorBlobCopy.ToString());
+            SetConfigValue(config, "ParallelFactor",ParallelFactor.ToString());
+            SetConfigValue(config, "ChunkSizeInMB",ChunkSizeInMB.ToString());
+            SetConfigValue(config, "DestinationBlobTypeSelected",DestinationBlobTypeSelected.ToString());
+            SetConfigValue(config, "SkyDriveCode",SkyDriveCode.ToString());
+            SetConfigValue(config, "SkyDriveRefreshToken",SkyDriveRefreshToken.ToString());
+            SetConfigValue(config, "DropBoxAPIKey",DropBoxAPIKey.ToString());
+            SetConfigValue(config, "DropBoxAPISecret",DropBoxAPISecret.ToString());
+            SetConfigValue(config, "SharepointUsername",SharepointUsername.ToString());
+            SetConfigValue(config, "SharepointPassword", SharepointPassword.ToString());
+
+            config.Save(ConfigurationSaveMode.Modified);
+            ConfigurationManager.RefreshSection("appSettings");
+        }
+
     }
 }
