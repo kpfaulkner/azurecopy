@@ -129,6 +129,7 @@
   <ItemGroup>
     <Compile Include="AzureHandler.cs" />
     <Compile Include="Helpers\SharepointHelper.cs" />
+    <Compile Include="Helpers\DropboxHelper.cs" />
     <Compile Include="RackspaceHandler.cs" />
     <Compile Include="Datatypes\Blob.cs" />
     <Compile Include="AzureBlobCopyHandler.cs" />

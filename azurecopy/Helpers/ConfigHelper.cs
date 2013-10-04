@@ -66,6 +66,8 @@ namespace azurecopy.Helpers
         // dropbox
         public static string DropBoxAPIKey { get; set; }
         public static string DropBoxAPISecret { get; set; }
+        public static string DropBoxUserSecret { get; set; }
+        public static string DropBoxUserToken { get; set; }
 
         // sharepoint
         public static string SharepointUsername { get; set; }
@@ -139,6 +141,8 @@ namespace azurecopy.Helpers
             // dropbox
             DropBoxAPIKey = GetConfigValue<string>("DropBoxAPIKey", "");
             DropBoxAPISecret = GetConfigValue<string>("DropBoxAPISecret", "");
+            DropBoxUserSecret = GetConfigValue<string>("DropBoxUserSecret", "");
+            DropBoxUserToken = GetConfigValue<string>("DropBoxUserToken", "");
 
             // sharepoint
             SharepointUsername = GetConfigValue<string>("SharepointUsername", "");
@@ -173,7 +177,9 @@ namespace azurecopy.Helpers
             SetConfigValue(config, "SkyDriveRefreshToken",SkyDriveRefreshToken.ToString());
             SetConfigValue(config, "DropBoxAPIKey",DropBoxAPIKey.ToString());
             SetConfigValue(config, "DropBoxAPISecret",DropBoxAPISecret.ToString());
-            SetConfigValue(config, "SharepointUsername",SharepointUsername.ToString());
+            SetConfigValue(config, "DropBoxUserSecret", DropBoxUserSecret.ToString());
+            SetConfigValue(config, "DropBoxUserToken", DropBoxUserToken.ToString());
+            SetConfigValue(config, "SharepointUsername", SharepointUsername.ToString());
             SetConfigValue(config, "SharepointPassword", SharepointPassword.ToString());
 
             config.Save(ConfigurationSaveMode.Modified);

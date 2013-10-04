@@ -63,6 +63,8 @@ namespace azurecopycommand
                 -mr : Maximum number of retries for a given operation.
                 -skydrivecode : returned when accessing URL: https://login.live.com/oauth20_authorize.srf?client_id=00000000480EE365&scope=wl.offline_access,wl.skydrive,wl.skydrive_update&response_type=code&redirect_uri=http://kpfaulkner.com/azurecopyoauth
                 -configskydrive : Steps through configuring of SkyDrive and saves config file with new data.
+                -configdropbox : Steps through configuring of Dropbox and saves config file with new data.
+           
                 Note: Remember when local file system is destination/output do NOT end the directory with a \
                       When destination is Skydrive, use the url format  skydrive://directory/file";
 
@@ -119,6 +121,9 @@ namespace azurecopycommand
         // skydrive 
         const string SkyDriveCodeFlag = "-skydrivecode";
         const string ConfigSkyDriveFlag = "-configskydrive";
+
+        // dropbox
+        const string ConfigDropboxFlag = "-configdropbox";
 
         static UrlType _inputUrlType;
         static UrlType _outputUrlType;
@@ -217,6 +222,12 @@ namespace azurecopycommand
                         // will do similar for dropbox.
                         case ConfigSkyDriveFlag:
                             ConfigureSkyDrive();
+                            break;
+
+                        // if we have this flag, then we simply want to redirect user to a given url.
+                        // then prompt for code (response from browser). Then save it to the app.config file.
+                        case ConfigDropboxFlag:
+                            ConfigureDropbox();
                             break;
 
                         case DestBlobType:
@@ -394,6 +405,24 @@ namespace azurecopycommand
             Console.WriteLine("Thankyou....  enjoy AzureCopy");
 
             ConfigHelper.SkyDriveCode = code;
+            ConfigHelper.SaveConfig();
+        }
+
+        private static void ConfigureDropbox()
+        {
+            var authorizeUrl = DropboxHelper.BuildAuthorizeUrl();
+
+            Console.WriteLine("Configuring AzureCopy for Dropbox:\n\n");
+            Console.WriteLine("Please open a browser and enter the URL:\n" + authorizeUrl + "\n");
+            Console.WriteLine("Once you log in with your Dropbox Account, please return to this screen and press enter.\n");
+            Console.ReadKey();
+            Console.WriteLine("Modifying config file with code");
+            Console.WriteLine("Thankyou....  enjoy AzureCopy");
+
+            var userLoginTuple = DropboxHelper.GetAccessToken();
+            ConfigHelper.DropBoxUserSecret = userLoginTuple.Item1.ToString();
+            ConfigHelper.DropBoxUserToken = userLoginTuple.Item2.ToString();
+
             ConfigHelper.SaveConfig();
         }
 
