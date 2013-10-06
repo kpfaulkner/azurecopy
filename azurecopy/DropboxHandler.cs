@@ -39,10 +39,7 @@ namespace azurecopy
         // need to encrypt the app.config soon.
         public DropboxHandler()
         {
-            client = new DropNetClient(ConfigHelper.DropBoxAPIKey, ConfigHelper.DropBoxAPISecret);
-            
-            client.GetToken();
-            url = client.BuildAuthorizeUrl();
+            client = new DropNetClient(ConfigHelper.DropBoxAPIKey, ConfigHelper.DropBoxAPISecret, ConfigHelper.DropBoxUserToken, ConfigHelper.DropBoxUserSecret);            
         }
 
         public string GetBaseUrl()
@@ -64,10 +61,12 @@ namespace azurecopy
 
         }
 
-        public List<BasicBlobContainer> ListBlobsInContainer(string container)
+        public List<BasicBlobContainer> ListBlobsInContainer(string url)
         {
-            throw new NotImplementedException("Dropbox not implemented yet");
-
+            // how to strip off prefix to get the container/directory?
+            var uri = new Uri(url);
+            var container = uri.Segments[0];
+            return ListBlobsInContainerSimple(container);
         }
 
         // not passing url. Url will be generated behind the scenes.
@@ -87,9 +86,35 @@ namespace azurecopy
         // not required to pass full url.
         public List<BasicBlobContainer> ListBlobsInContainerSimple(string containerName)
         {
-            var metadata = client.GetMetaData();
+            var dirListing = new List<BasicBlobContainer>();
 
-            return new List<BasicBlobContainer>();
+            var metadata = client.GetMetaData(containerName);
+
+            // generate list of dirs and files.
+            foreach (var entry in metadata.Contents)
+            {
+                // basic blob info.
+                var blob = new BasicBlobContainer();
+                blob.Container = containerName;
+                blob.DisplayName = entry.Name;
+                blob.Name = entry.Name;
+                blob.Url = entry.Path;
+
+                if (entry.Is_Dir)
+                {
+                    blob.BlobType = BlobEntryType.Container;
+                
+                }
+                else
+                {
+                    blob.BlobType = BlobEntryType.Blob;
+                }
+
+                dirListing.Add(blob);
+
+            }
+
+            return dirListing;
         }
 
     }

@@ -167,8 +167,11 @@ namespace azurecopycommand
             } else  if (SharepointHelper.MatchHandler(url))
             {
                 urlType = UrlType.Sharepoint;
-            }
-            else
+            } 
+            else if (DropboxHelper.MatchHandler(url))
+            {
+                urlType = UrlType.Dropbox;
+            } else
             {
                 urlType = UrlType.Local;  // local filesystem.
             }
@@ -454,6 +457,9 @@ namespace azurecopycommand
                     blobHandler = new SharepointHandler();
                     break;
 
+                case UrlType.Dropbox:
+                    blobHandler = new DropboxHandler();
+                    break;
 
                 default:
                     blobHandler = new FileSystemHandler();

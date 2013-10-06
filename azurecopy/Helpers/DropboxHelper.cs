@@ -30,7 +30,7 @@ namespace azurecopy.Helpers
 {
     public class DropboxHelper
     {
-        const string DropboxDetection = "dropbox.com";
+        const string DropboxDetection = "dropbox";
 
         static DropNetClient client = null;
 
