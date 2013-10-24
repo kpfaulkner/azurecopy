@@ -36,13 +36,17 @@ namespace azurecopy.Utils
 
         // assuming URL is in form https://s3.amazonaws.com/bucketname  and
         // NOT in the form :https://bucketname.s3.amazonaws.com
+        // WHY WHY WHY the above comment?
+        // will eventually need to handle both URL formats, but for now I may need to 
+        // focus on https://bucketname.s3.amazonaws.com format due to the AWS libs creating urls.
         public static string GetBucketFromUrl(string url)
         {
             var u = new Uri( url );
             
             // used for https://bucketname.s3.amazonaws.com/  format.
-            //var bucket = u.DnsSafeHost.Split('.')[0];
+            var bucket = u.DnsSafeHost.Split('.')[0];
 
+            /*
             var bucket = "";
             if (u.Segments.Length > 1)
             {
@@ -52,7 +56,7 @@ namespace azurecopy.Utils
                     bucket = bucket.Substring(0, bucket.Length - 1);
                 }
             }
-
+            */
             return bucket;
         }
 
@@ -76,10 +80,11 @@ namespace azurecopy.Utils
         public static string GeneratePreSignedUrl( string bucket, string key, int timeout=30 )
         {
 
+            // set for 5 hours... just incase.
             GetPreSignedUrlRequest request = new GetPreSignedUrlRequest()
                 .WithBucketName(bucket)
                 .WithKey(key)
-                .WithExpires(DateTime.Now.AddMinutes(32))
+                .WithExpires(DateTime.Now.AddMinutes(300))
                 .WithProtocol(Protocol.HTTPS);
             using (AmazonS3 client = Amazon.AWSClientFactory.CreateAmazonS3Client(ConfigHelper.SrcAWSAccessKeyID, ConfigHelper.SrcAWSSecretAccessKeyID))
             {

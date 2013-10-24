@@ -56,7 +56,8 @@ namespace azurecopy
                 url = S3Helper.GeneratePreSignedUrl(bucket, key);
             }
 
-            if (destBlobType == DestinationBlobType.Block)
+            // include unknown for now. Unsure.
+            if (destBlobType == DestinationBlobType.Block || destBlobType == DestinationBlobType.Unknown)
             {
                 blob = container.GetBlockBlobReference(blobName);
                 

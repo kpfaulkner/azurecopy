@@ -30,7 +30,7 @@ using System.Threading.Tasks;
 namespace azurecopycommand
 {
 
-    public enum Action { None, NormalCopy, BlobCopy, List }
+    public enum Action { None, NormalCopy, BlobCopy, List, Examples }
 
     class Program
     {
@@ -38,6 +38,7 @@ namespace azurecopycommand
 
         const string UsageString =
            @"Usage: azurecopy
+                -example : Displays example commands for common scenarios
                 -v : verbose
 	            -i : input url
 	            -o : output url
@@ -70,6 +71,7 @@ namespace azurecopycommand
 
 
         const string LocalDetection = "???";
+        const string ExampleFlag = "-example";
         const string VerboseFlag = "-v";
         const string InputUrlFlag = "-i";
         const string OutputUrlFlag = "-o";
@@ -189,6 +191,10 @@ namespace azurecopycommand
                 {
                     switch (args[i])
                     {
+                        case ExampleFlag:
+                            _action = Action.Examples;
+                            break;
+
                         case VerboseFlag:
                             ConfigHelper.Verbose = true;
                             break;
@@ -587,6 +593,10 @@ namespace azurecopycommand
         {
             switch (_action)
             {
+                case Action.Examples:
+                    DisplayExamples();
+                    break;
+
                 case Action.List:
                     DoList();
                     break;
@@ -600,6 +610,13 @@ namespace azurecopycommand
                     break;
             }
 
+        }
+
+        private static void DisplayExamples()
+        {
+            Console.WriteLine("AzureCopy Common Usage Examples\n\n");
+            Console.WriteLine("(assumption that the config file is correctly configured with Azure/S3/etc identifiers and keys)\n\n");
+            Console.WriteLine("TODO!!!");
         }
 
 
