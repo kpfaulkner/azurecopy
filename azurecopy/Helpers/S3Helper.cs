@@ -82,10 +82,13 @@ namespace azurecopy.Utils
 
             // set for 5 hours... just incase.
             GetPreSignedUrlRequest request = new GetPreSignedUrlRequest()
-                .WithBucketName(bucket)
-                .WithKey(key)
-                .WithExpires(DateTime.Now.AddMinutes(300))
-                .WithProtocol(Protocol.HTTPS);
+            {
+                BucketName = bucket,
+                Key = key,
+                Expires = DateTime.Now.AddMinutes(300),
+                Protocol = Protocol.HTTPS
+            };
+
             using (AmazonS3 client = Amazon.AWSClientFactory.CreateAmazonS3Client(ConfigHelper.SrcAWSAccessKeyID, ConfigHelper.SrcAWSSecretAccessKeyID))
             {
                 string url = client.GetPreSignedURL(request);

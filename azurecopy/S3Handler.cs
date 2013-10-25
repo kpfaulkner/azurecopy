@@ -67,8 +67,8 @@ namespace azurecopy
 
             using (AmazonS3 client = Amazon.AWSClientFactory.CreateAmazonS3Client(ConfigHelper.SrcAWSAccessKeyID, ConfigHelper.SrcAWSSecretAccessKeyID))
             {
-                GetObjectRequest getObjectRequest = new GetObjectRequest().WithBucketName(bucket).WithKey(key);
-
+                GetObjectRequest getObjectRequest = new GetObjectRequest() { BucketName = bucket, Key = key };
+                
                 using (S3Response getObjectResponse = client.GetObject(getObjectRequest))
                 {
 
