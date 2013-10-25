@@ -77,10 +77,25 @@ namespace azurecopy
             return blob;
         }
 
+        // synchronous atm. Async it later.
         public void WriteBlob(string url, Blob blob,  int parallelUploadFactor=1, int chunkSizeInMB=4)
         {
-            throw new NotImplementedException("Dropbox not implemented yet");
-           
+
+            var uri = new Uri( url);
+            var container = uri.PathAndQuery;
+
+            if (blob.BlobSavedToFile)
+            {
+                using( var stream = new FileStream(blob.FilePath, FileMode.Open))
+                {
+                    client.UploadFile(container, blob.Name, stream);
+                }
+
+            }
+            else
+            {
+                client.UploadFile(container, blob.Name, blob.Data);
+            }
 
         }
 

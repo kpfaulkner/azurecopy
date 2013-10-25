@@ -40,11 +40,11 @@ namespace azurecopycommand
            @"Usage: azurecopy
                 -examples : Displays example commands for common scenarios
                 -v : verbose
-	            -i : input url
-	            -o : output url
-	            -d : download to filesystem before uploading to output url. (use for big blobs)
+	            -i <url>: input url
+	            -o <url>: output url
+	            -d <local path>: download to filesystem before uploading to output url. (use for big blobs)
 	            -blobcopy : use blobcopy API for when Azure is output url.
-	            -list : list blobs in bucket/container. eg. -list https://s3.amazonaws.com/mycontainer 
+	            -list <url>: list blobs in bucket/container. eg. -list https://s3.amazonaws.com/mycontainer 
                 -pu : parallel upload
                 -cs : chunk size used for parallel upload (in MB).
 	            -m : Monitor progress of copy when in 'blobcopy' mode (ie -blobcopy flag was used). Program will not exit until all pending copies are complete.
@@ -620,7 +620,9 @@ namespace azurecopycommand
             Console.WriteLine("\nS3 to Azure using regular copy:\n azurecopy.exe -i https://mybucket.s3.amazonaws.com/myblob -o https://myaccount.blob.core.windows.net/mycontainer");
             Console.WriteLine("\nS3 to Azure using blob copy api (better for local bandwidth:\n azurecopy.exe -i https://mybucket.s3.amazonaws.com/myblob -o https://myaccount.blob.core.windows.net/mycontainer -blobcopy");
             Console.WriteLine("\nAzure to S3:\n azurecopy.exe -i https://myaccount.blob.core.windows.net/mycontainer/myblob -o https://mybucket.s3.amazonaws.com/ ");
-
+            Console.WriteLine("\nList contents in S3 bucket:\n azurecopy.exe -list https://mybucket.s3.amazonaws.com/");
+            Console.WriteLine("\nList contents in Azure container:\n azurecopy.exe -list https://myaccount.blob.core.windows.net/mycontainer/ ");
+            
         }
 
 

@@ -104,31 +104,51 @@ namespace azurecopy
 
         }
 
+        // FIXME: only coded for in memory blob.
         public void WriteBlob(string url, Blob blob,   int parallelUploadFactor=1, int chunkSizeInMB=4)
         {
             var bucket = S3Helper.GetBucketFromUrl(url);
-            //var key = S3Helper.GetKeyFromUrl(url);
             var key = blob.Name;
 
-            using (AmazonS3 client = Amazon.AWSClientFactory.CreateAmazonS3Client(ConfigHelper.TargetAWSAccessKeyID, ConfigHelper.TargetAWSSecretAccessKeyID))
-            {
+            Stream stream = null;
 
-                using (var ms = new MemoryStream( blob.Data) )
+            try
+            {             
+                // get stream to data.
+                if (blob.BlobSavedToFile)
                 {
-                   
-                    var putObjectRequest = new PutObjectRequest {
-                        BucketName            = bucket,
-                        Key                   = key,
-                        GenerateMD5Digest     = true,
-                        Timeout               = -1,
-                        InputStream = ms,
-                        ReadWriteTimeout      = 300000     // 5 minutes in milliseconds
+                    stream = new FileStream(blob.FilePath, FileMode.Open);
+                }
+                else
+                {
+                    stream = new MemoryStream(blob.Data);
+                }
 
-                    };
+                using (AmazonS3 client = Amazon.AWSClientFactory.CreateAmazonS3Client(ConfigHelper.TargetAWSAccessKeyID, ConfigHelper.TargetAWSSecretAccessKeyID))
+                {
+                    var putObjectRequest = new PutObjectRequest
+                        {
+                            BucketName = bucket,
+                            Key = key,
+                            GenerateMD5Digest = true,
+                            Timeout = -1,
+                            InputStream = stream,
+                            ReadWriteTimeout = 300000     // 5 minutes in milliseconds
 
-                    client.PutObject( putObjectRequest);
+                        };
+
+                    client.PutObject(putObjectRequest);
                 }
             }
+            finally 
+            {
+                if (stream != null)
+                {
+                    stream.Close();
+
+                }
+            }
+            
         }
 
         // lists all blobs (keys) in a bucket.
