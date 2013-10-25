@@ -38,7 +38,7 @@ namespace azurecopycommand
 
         const string UsageString =
            @"Usage: azurecopy
-                -example : Displays example commands for common scenarios
+                -examples : Displays example commands for common scenarios
                 -v : verbose
 	            -i : input url
 	            -o : output url
@@ -71,7 +71,7 @@ namespace azurecopycommand
 
 
         const string LocalDetection = "???";
-        const string ExampleFlag = "-example";
+        const string ExampleFlag = "-examples";
         const string VerboseFlag = "-v";
         const string InputUrlFlag = "-i";
         const string OutputUrlFlag = "-o";
@@ -616,7 +616,11 @@ namespace azurecopycommand
         {
             Console.WriteLine("AzureCopy Common Usage Examples\n\n");
             Console.WriteLine("(assumption that the config file is correctly configured with Azure/S3/etc identifiers and keys)\n\n");
-            Console.WriteLine("TODO!!!");
+            Console.WriteLine("\n\n\n");
+            Console.WriteLine("\nS3 to Azure using regular copy:\n azurecopy.exe -i https://mybucket.s3.amazonaws.com/myblob -o https://myaccount.blob.core.windows.net/mycontainer");
+            Console.WriteLine("\nS3 to Azure using blob copy api (better for local bandwidth:\n azurecopy.exe -i https://mybucket.s3.amazonaws.com/myblob -o https://myaccount.blob.core.windows.net/mycontainer -blobcopy");
+            Console.WriteLine("\nAzure to S3:\n azurecopy.exe -i https://myaccount.blob.core.windows.net/mycontainer/myblob -o https://mybucket.s3.amazonaws.com/ ");
+
         }
 
 

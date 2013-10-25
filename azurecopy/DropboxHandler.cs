@@ -50,8 +50,31 @@ namespace azurecopy
 
         public Blob ReadBlob(string url, string filePath = "")
         {
-            throw new NotImplementedException("Dropbox not implemented yet");
+            var uri = new Uri(url);
+            var pathUri = uri.PathAndQuery;
             
+            var blob = new Blob();
+
+            blob.BlobSavedToFile = !string.IsNullOrEmpty(filePath);
+            blob.FilePath = filePath;
+            blob.BlobOriginType = UrlType.Dropbox;
+            blob.Name = uri.Segments[uri.Segments.Length - 1];
+            // get stream to store.
+            using (var stream = CommonHelper.GetStream(filePath))
+            {
+                var fileBytes = client.GetFile(pathUri);
+
+                if (!blob.BlobSavedToFile)
+                {
+                    blob.Data = fileBytes;
+                }
+                else
+                {
+                    stream.Write(fileBytes, 0, fileBytes.Length);
+                }
+            }
+
+            return blob;
         }
 
         public void WriteBlob(string url, Blob blob,  int parallelUploadFactor=1, int chunkSizeInMB=4)
@@ -65,7 +88,7 @@ namespace azurecopy
         {
             // how to strip off prefix to get the container/directory?
             var uri = new Uri(url);
-            var container = uri.Segments[0];
+            var container = uri.PathAndQuery;
             return ListBlobsInContainerSimple(container);
         }
 
