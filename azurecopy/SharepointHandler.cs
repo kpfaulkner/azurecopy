@@ -41,6 +41,17 @@ namespace azurecopy
                 ctx = SharepointHelper.GetContext(baseUrl);
             }
         }
+        public void MoveBlob(string startUrl, string finishUrl)
+        {
+
+
+        }
+        // make container
+        // assumption being last part of url is the new container.
+        public void MakeContainer(string url)
+        {
+
+        }
 
         private ClientContext GetContext(string url)
         {

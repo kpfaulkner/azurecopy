@@ -36,6 +36,18 @@ namespace azurecopy
             baseUrl = url;
         }
 
+        public void MoveBlob( string startUrl, string finishUrl)
+        {
+
+
+        }
+        // make container
+        // assumption being last part of url is the new container.
+        public void MakeContainer(string url)
+        {
+
+        }
+
         public string GetBaseUrl()
         {
             return baseUrl;

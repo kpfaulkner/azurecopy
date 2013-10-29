@@ -30,7 +30,7 @@ using System.Threading.Tasks;
 namespace azurecopycommand
 {
 
-    public enum Action { None, NormalCopy, BlobCopy, List, Examples }
+    public enum Action { None, NormalCopy, BlobCopy, List, Examples, Make }
 
     class Program
     {
@@ -62,6 +62,7 @@ namespace azurecopycommand
 	            -spp | -SharepointPassword : Sharepoint Online password
                 -rd : Retry delay in seconds used when communicating with cloud storage environments.
                 -mr : Maximum number of retries for a given operation.
+                -mc <full url> : Make container/folder/directory.
                 -skydrivecode : returned when accessing URL: https://login.live.com/oauth20_authorize.srf?client_id=00000000480EE365&scope=wl.offline_access,wl.skydrive,wl.skydrive_update&response_type=code&redirect_uri=http://kpfaulkner.com/azurecopyoauth
                 -configskydrive : Steps through configuring of SkyDrive and saves config file with new data.
                 -configdropbox : Steps through configuring of Dropbox and saves config file with new data.
@@ -83,6 +84,7 @@ namespace azurecopycommand
         const string ChunkSizeFlag = "-cs";
         const string RetryAttemptDelayInSecondsFlag = "-rd";
         const string MaxRetryAttemptsFlag = "-mr";
+        const string MakeContainerFlag = "-mc";
 
         // only makes sense for azure destination.
         const string DestBlobType = "-destblobtype";
@@ -134,6 +136,7 @@ namespace azurecopycommand
         static string _outputUrl;
         static Action _action = Action.None;
         static bool _listContainer = false;
+        static bool _makeContainer = false;
 
         // destination blob...  can only assign if source is NOT azure and destination IS azure.
         static DestinationBlobType _destinationBlobType = DestinationBlobType.Unknown;
@@ -270,6 +273,16 @@ namespace azurecopycommand
                             _action = Action.List;
 
                             break;
+
+                        case MakeContainerFlag:
+                            i++;
+                            _inputUrl = GetArgument(args, i);
+                            _inputUrlType = GetUrlType(_inputUrl);
+                            _makeContainer = true;
+                            _action = Action.Make;
+
+                            break;
+
 
                         case SharepointUsernameFlag:
                         case SharepointUsernameShortFlag:
@@ -601,6 +614,10 @@ namespace azurecopycommand
                     DoList();
                     break;
 
+                case Action.Make:
+                    DoMake();
+                    break;
+
                 case Action.NormalCopy:
                 case Action.BlobCopy:
                     DoNormalCopy();
@@ -610,6 +627,11 @@ namespace azurecopycommand
                     break;
             }
 
+        }
+
+        private static void DoMake()
+        {
+            throw new NotImplementedException();
         }
 
         private static void DisplayExamples()

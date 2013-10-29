@@ -47,6 +47,13 @@ namespace azurecopy
         // not passing url.
         void WriteBlobSimple(string container, Blob blob, int parallelUploadFactor = 1, int chunkSizeInMB = 4);
 
+        // moving blob
+        void MoveBlob(string startUrl, string finishUrl);
+
+        // make container
+        // assumption being last part of url is the new container.
+        void MakeContainer(string url);
+
         // passing full url.
         // can contain virtual directories such as https://....../mycontainer/virtualdir1/virtualdir2  
         List<BasicBlobContainer> ListBlobsInContainer(string baseUrl);
