@@ -51,6 +51,9 @@ namespace azurecopy
         // assumption being last part of url is the new container.
         public void MakeContainer(string url)
         {
+            url = url.Replace("sky://", "");
+
+            var targetDirectory = SkyDriveHelper.CreateFolder(url);
 
         }
 

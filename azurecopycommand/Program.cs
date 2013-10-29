@@ -631,7 +631,8 @@ namespace azurecopycommand
 
         private static void DoMake()
         {
-            throw new NotImplementedException();
+            IBlobHandler handler = GetHandler(_inputUrlType);
+            handler.MakeContainer(_inputUrl);
         }
 
         private static void DisplayExamples()

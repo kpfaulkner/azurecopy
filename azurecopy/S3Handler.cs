@@ -49,9 +49,30 @@ namespace azurecopy
         }
         // make container
         // assumption being last part of url is the new container.
+        // With S3 "containers" could really be the bucket for the account
+        // OR are we just considering fake subdirectories here?
+        // For now (until I decide otherwise) I'll just make it one of the
+        // fake subdirectories. 
+        // ie blob of 0 bytes.
         public void MakeContainer(string url)
         {
+            var bucket = S3Helper.GetBucketFromUrl(url);
+            var key = S3Helper.GetKeyFromUrl(url);
+            
+            using (AmazonS3 client = Amazon.AWSClientFactory.CreateAmazonS3Client(ConfigHelper.AWSAccessKeyID, ConfigHelper.AWSSecretAccessKeyID))
+            {
+                var putObjectRequest = new PutObjectRequest
+                {
+                    BucketName = bucket,
+                    Key = key,
+                    GenerateMD5Digest = true,
+                    Timeout = -1,
+                    ContentBody = "",
+                    ReadWriteTimeout = 300000     // 5 minutes in milliseconds
+                };
 
+                client.PutObject(putObjectRequest);
+            }
         }
 
         public string GetBaseUrl()

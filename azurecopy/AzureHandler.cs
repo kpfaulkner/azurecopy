@@ -45,7 +45,11 @@ namespace azurecopy
         // assumption being last part of url is the new container.
         public void MakeContainer(string url)
         {
-
+            var uri = new Uri(url);
+            var containerName = uri.Segments[uri.Segments.Length - 1];
+            var client = AzureHelper.GetSourceCloudBlobClient(url);
+            var container = client.GetContainerReference(containerName);
+            container.CreateIfNotExists();
         }
 
         public string GetBaseUrl()

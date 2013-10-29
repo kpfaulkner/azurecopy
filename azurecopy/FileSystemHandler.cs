@@ -39,8 +39,9 @@ namespace azurecopy
         }
         // make container
         // assumption being last part of url is the new container.
-        public void MakeContainer(string url)
+        public void MakeContainer(string localFilePath)
         {
+            Directory.CreateDirectory(localFilePath);
 
         }
 

@@ -48,9 +48,18 @@ namespace azurecopy
         }
         // make container
         // assumption being last part of url is the new container.
+        // so need to get collection of everything up until the last segment of the url.
         public void MakeContainer(string url)
         {
+            throw new NotImplementedException();
 
+            var context = GetContext(url);
+
+            var folderCollection = GetSharepointFolderCollection(url);
+            Microsoft.SharePoint.Client.Folder newFolder = folderCollection.Add("test");
+
+            context.ExecuteQuery(); 
+            
         }
 
         private ClientContext GetContext(string url)
@@ -83,8 +92,29 @@ namespace azurecopy
             FileCollection documentFiles = docSetFolder.Files;
             ctx.Load(documentFiles);
             ctx.ExecuteQuery();
-            
+           
             return docSetFolder.Files;
+        }
+
+        /// <summary>
+        /// Return reference to files in Sharepoint.
+        /// </summary>
+        /// <param name="ctx"></param>
+        /// <returns></returns>
+        private FolderCollection GetSharepointFolderCollection(string documentURL)
+        {
+            Web site = ctx.Web;
+
+            //get the document library folder
+            Folder docSetFolder = site.GetFolderByServerRelativeUrl(documentURL);
+            ctx.ExecuteQuery();
+
+            //load the file collection for the documents in the library
+            FolderCollection documentFolders = docSetFolder.Folders;
+            ctx.Load(documentFolders);
+            ctx.ExecuteQuery();
+
+            return docSetFolder.Folders;
         }
 
         /// <summary>
@@ -233,6 +263,7 @@ namespace azurecopy
             });
 
             // wait... this is incase the application finishes and exits before the async upload is complete.
+            // Need to make entire app async friendly...
             if (true)
             {
                 t.Wait();
