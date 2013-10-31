@@ -51,12 +51,16 @@ namespace azurecopy
         // so need to get collection of everything up until the last segment of the url.
         public void MakeContainer(string url)
         {
-            throw new NotImplementedException();
+            var uri = new Uri(url);
 
-            var context = GetContext(url);
+            // Feel this is overkill when I could just search string for the last /
+            var newUri = uri.Scheme + "://" + uri.Host + string.Join("", uri.Segments.Take(uri.Segments.Length - 1));
+            var newContainer = uri.Segments[uri.Segments.Length - 1];
 
-            var folderCollection = GetSharepointFolderCollection(url);
-            Microsoft.SharePoint.Client.Folder newFolder = folderCollection.Add("test");
+            var context = GetContext(newUri);
+
+            var folderCollection = GetSharepointFolderCollection(newUri);
+            Microsoft.SharePoint.Client.Folder newFolder = folderCollection.Add(newContainer );
 
             context.ExecuteQuery(); 
             
