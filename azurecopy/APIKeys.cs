@@ -10,8 +10,8 @@ namespace azurecopy
     // this file should NEVER be checked into github with any data filled in.
     static class APIKeys
     {
-        static public string DropBoxAPIKey = "test";
-        static public string DropBoxAPISecret = "test";
+        static public string DropBoxAPIKey = "";
+        static public string DropBoxAPISecret = "";
 
     }
 }
