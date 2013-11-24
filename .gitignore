@@ -16,7 +16,6 @@ local.properties
 .settings/
 .loadpath
 *.nupkg
-*APIKeys.cs
 
 # External tool builders
 .externalToolBuilders/
@@ -43,6 +42,8 @@ local.properties
 *.user
 *.sln.docstates
 App.config
+APIKeys.cs
+
 # Build results
 
 [Dd]ebug/
