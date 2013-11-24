@@ -38,7 +38,22 @@ namespace azurecopy.Helpers
         {
             if (client == null)
             {
-                client = new DropNetClient(ConfigHelper.DropBoxAPIKey, ConfigHelper.DropBoxAPISecret);
+                // dummy names, avoiding obvious names.
+                var key = ConfigHelper.DropBoxAPIKey;
+                var secret = ConfigHelper.DropBoxAPISecret;
+
+                // Obviously don't share DropBoxAPIKey or DropBoxAPISecret in source. This is to be kept private.
+                if (string.IsNullOrEmpty(key))
+                {
+                    key = APIKeys.DropBoxAPIKey;
+                }
+
+                if (string.IsNullOrEmpty(secret))
+                {
+                    secret = APIKeys.DropBoxAPISecret;
+                }
+
+                client = new DropNetClient(key, secret);
             }
 
         }

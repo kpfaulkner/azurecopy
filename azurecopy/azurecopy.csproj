@@ -126,6 +126,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="APIKeys.cs" />
     <Compile Include="AzureHandler.cs" />
     <Compile Include="Helpers\SharepointHelper.cs" />
     <Compile Include="Helpers\DropboxHelper.cs" />

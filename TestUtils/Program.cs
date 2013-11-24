@@ -42,19 +42,32 @@ namespace TestUtils
         static void Test4()
         {
 
-            var sourceHandler = new SharepointHandler("https://faulkner.sharepoint.com/");
+            var sourceHandler = new SharepointHandler("https://xx.sharepoint.com/");
 
-            var a = sourceHandler.ReadBlobSimple("https://faulkner.sharepoint.com/Shared Documents/ken.txt", "foo");
+            var a = sourceHandler.ReadBlobSimple("https://xx.sharepoint.com/Shared Documents/ken.txt", "foo");
 
 
         }
 
+        static void Test5()
+        {
+            var azureHandler = new AzureHandler();
+            var dropboxHandler = new DropboxHandler();
+
+            var inputUrl = "https://xx.blob.core.windows.net/temp/test2";
+            var outputUrl = "https://dropbox.com/stuff/";
+
+            var blob = azureHandler.ReadBlob(inputUrl);
+            dropboxHandler.WriteBlob(outputUrl, blob);
+            Console.WriteLine("done");
+            Console.ReadKey();
+        }
 
 
         static void Main(string[] args)
         {
 
-            Test4();
+            Test5();
         }
     }
 }
