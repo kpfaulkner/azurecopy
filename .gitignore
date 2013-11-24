@@ -16,6 +16,7 @@ local.properties
 .settings/
 .loadpath
 *.nupkg
+APIKeys.cs
 
 # External tool builders
 .externalToolBuilders/
