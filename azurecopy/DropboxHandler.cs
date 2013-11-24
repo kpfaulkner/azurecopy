@@ -39,7 +39,7 @@ namespace azurecopy
         // need to encrypt the app.config soon.
         public DropboxHandler()
         {
-            client = new DropNetClient(ConfigHelper.DropBoxAPIKey, ConfigHelper.DropBoxAPISecret, ConfigHelper.DropBoxUserToken, ConfigHelper.DropBoxUserSecret);            
+            client = DropboxHelper.GetClient();
         }
 
         public string GetBaseUrl()

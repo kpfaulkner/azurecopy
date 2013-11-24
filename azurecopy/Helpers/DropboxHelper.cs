@@ -32,7 +32,7 @@ namespace azurecopy.Helpers
     {
         const string DropboxDetection = "dropbox";
 
-        static DropNetClient client = null;
+        public static DropNetClient client { get; set; }
 
         static DropboxHelper()
         {
@@ -41,6 +41,8 @@ namespace azurecopy.Helpers
                 // dummy names, avoiding obvious names.
                 var key = ConfigHelper.DropBoxAPIKey;
                 var secret = ConfigHelper.DropBoxAPISecret;
+                var userSecret = ConfigHelper.DropBoxUserSecret;
+                var userToken = ConfigHelper.DropBoxUserToken;
 
                 // Obviously don't share DropBoxAPIKey or DropBoxAPISecret in source. This is to be kept private.
                 if (string.IsNullOrEmpty(key))
@@ -53,9 +55,21 @@ namespace azurecopy.Helpers
                     secret = APIKeys.DropBoxAPISecret;
                 }
 
-                client = new DropNetClient(key, secret);
+                if (string.IsNullOrEmpty(userSecret) || string.IsNullOrEmpty(userToken))
+                {
+                    client = new DropNetClient(key, secret);
+                }
+                else
+                {
+                    client = new DropNetClient(key, secret, userToken, userSecret);
+                }
             }
 
+        }
+
+        public static DropNetClient GetClient()
+        {
+            return client;
         }
 
         public static string BuildAuthorizeUrl()
