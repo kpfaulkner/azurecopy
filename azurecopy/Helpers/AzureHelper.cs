@@ -35,25 +35,13 @@ namespace azurecopy.Utils
 
         const string AzureDetection = "windows.net";
         const string DevAzureDetection = "127.0.0.1";
-        static CloudBlobClient BlobClient { get; set; }
+        static CloudBlobClient SrcBlobClient { get; set; }
+        static CloudBlobClient TargetBlobClient { get; set; }
 
         static AzureHelper()
         {
-            BlobClient = null;
-        }
-
-
-        public static CloudBlobClient GetCloudBlobClient(string accountName, string accountKey)
-        {
-            if (BlobClient == null)
-            {
-
-                var credentials = new Microsoft.WindowsAzure.Storage.Auth.StorageCredentials(accountName, accountKey);
-                CloudStorageAccount azureStorageAccount = new CloudStorageAccount(credentials, true);
-                BlobClient = azureStorageAccount.CreateCloudBlobClient();
-            }
-
-            return BlobClient;
+            SrcBlobClient = null;
+            TargetBlobClient = null;
         }
 
         public static CloudBlobClient GetSourceCloudBlobClient(string url)
@@ -71,13 +59,24 @@ namespace azurecopy.Utils
 
         public static CloudBlobClient GetCloudBlobClient(string url, bool isSrc )
         {
-            if (BlobClient == null)
+            CloudBlobClient blobClient = null;
+
+            if (isSrc)
+            {
+                blobClient = SrcBlobClient;
+            }
+            else
+            {
+                blobClient = TargetBlobClient;
+            }
+
+            if (blobClient == null)
             {
                 if (IsDevUrl(url))
                 {
                    
                     CloudStorageAccount storageAccount = CloudStorageAccount.DevelopmentStorageAccount;
-                    BlobClient = storageAccount.CreateCloudBlobClient();
+                    blobClient = storageAccount.CreateCloudBlobClient();
               
                 }
                 else
@@ -96,18 +95,18 @@ namespace azurecopy.Utils
 
                     var credentials = new Microsoft.WindowsAzure.Storage.Auth.StorageCredentials(accountName, accountKey);
                     CloudStorageAccount azureStorageAccount = new CloudStorageAccount(credentials, true);
-                    BlobClient = azureStorageAccount.CreateCloudBlobClient();
+                    blobClient = azureStorageAccount.CreateCloudBlobClient();
 
                     // retry policy.
                     // could do with a little work.
                     IRetryPolicy linearRetryPolicy = new LinearRetry( TimeSpan.FromSeconds( ConfigHelper.RetryAttemptDelayInSeconds), ConfigHelper.MaxRetryAttempts);
-                    BlobClient.RetryPolicy = linearRetryPolicy;
+                    blobClient.RetryPolicy = linearRetryPolicy;
 
                 }
 
             }
 
-            return BlobClient;
+            return blobClient;
         }
 
 

@@ -51,7 +51,7 @@ namespace azurecopy
                 policy.Permissions = SharedAccessBlobPermissions.Read;
 
                 var blob = client.GetBlobReferenceFromServer( new Uri(sourceUrl));
-                url = blob.GetSharedAccessSignature(policy);
+                url = sourceUrl+ blob.GetSharedAccessSignature(policy);
             }
 
             return url;
