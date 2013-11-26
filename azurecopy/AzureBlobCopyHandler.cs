@@ -31,6 +31,34 @@ namespace azurecopy
     public class AzureBlobCopyHandler
     {
 
+        private static string GeneratedAccessibleUrl( string sourceUrl)
+        {
+            var url = sourceUrl;
+            
+            // if S3, then generate signed url.
+            if (S3Helper.MatchHandler(sourceUrl))
+            {
+                var bucket = S3Helper.GetBucketFromUrl(sourceUrl);
+                var key = S3Helper.GetKeyFromUrl(sourceUrl);
+                url = S3Helper.GeneratePreSignedUrl(bucket, key);
+            } else if (AzureHelper.MatchHandler( sourceUrl))
+            {
+                // generate Azure signed url.
+                var client = AzureHelper.GetSourceCloudBlobClient(sourceUrl);
+                var policy = new SharedAccessBlobPolicy();
+                policy.SharedAccessStartTime = DateTime.UtcNow.AddMinutes(-1);
+                policy.SharedAccessExpiryTime = DateTime.UtcNow.AddMinutes(30); // FIXME: magic!
+                policy.Permissions = SharedAccessBlobPermissions.Read;
+
+                var blob = client.GetBlobReferenceFromServer( new Uri(sourceUrl));
+                url = blob.GetSharedAccessSignature(policy);
+            }
+
+            return url;
+
+        }
+
+
         // Copy from complete URL (assume URL is complete at this stage) to destination blob.
         public static void StartCopy(string sourceUrl, string DestinationUrl, DestinationBlobType destBlobType)
         {
@@ -46,15 +74,7 @@ namespace azurecopy
             container.CreateIfNotExists();
 
             ICloudBlob blob = null;
-            
-            var url = sourceUrl;
-            // if S3, then generate signed url.
-            if (S3Helper.MatchHandler(sourceUrl))
-            {
-                var bucket = S3Helper.GetBucketFromUrl(sourceUrl);
-                var key = S3Helper.GetKeyFromUrl(sourceUrl);
-                url = S3Helper.GeneratePreSignedUrl(bucket, key);
-            }
+            var url = GeneratedAccessibleUrl(sourceUrl);
 
             // include unknown for now. Unsure.
             if (destBlobType == DestinationBlobType.Block || destBlobType == DestinationBlobType.Unknown)
