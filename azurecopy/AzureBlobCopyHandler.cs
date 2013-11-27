@@ -24,6 +24,7 @@ using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 using azurecopy.Utils;
 using System.Threading;
+using azurecopy.Helpers;
 
 namespace azurecopy
 {
@@ -47,7 +48,7 @@ namespace azurecopy
                 var client = AzureHelper.GetSourceCloudBlobClient(sourceUrl);
                 var policy = new SharedAccessBlobPolicy();
                 policy.SharedAccessStartTime = DateTime.UtcNow.AddMinutes(-1);
-                policy.SharedAccessExpiryTime = DateTime.UtcNow.AddMinutes(30); // FIXME: magic!
+                policy.SharedAccessExpiryTime = DateTime.UtcNow.AddMinutes( ConfigHelper.SharedAccessSignatureDurationInSeconds / 60 );
                 policy.Permissions = SharedAccessBlobPermissions.Read;
 
                 var blob = client.GetBlobReferenceFromServer( new Uri(sourceUrl));

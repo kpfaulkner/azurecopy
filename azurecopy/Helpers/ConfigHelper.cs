@@ -73,6 +73,9 @@ namespace azurecopy.Helpers
         public static string SharepointUsername { get; set; }
         public static string SharepointPassword { get; set; }
 
+        // for any scenario where we need to create a public signature (SAS for Azure, something else for S3)
+        // we want a time limit on how long that signature is valid
+        public static int SharedAccessSignatureDurationInSeconds { get; set; }
 
         static ConfigHelper()
         {
@@ -148,6 +151,8 @@ namespace azurecopy.Helpers
             SharepointUsername = GetConfigValue<string>("SharepointUsername", "");
             SharepointPassword = GetConfigValue<string>("SharepointPassword", "");
 
+            // SAS timeout
+            SharedAccessSignatureDurationInSeconds = GetConfigValue<int>("SharedAccessSignatureDurationInSeconds", 600);
         }
 
         public static void SaveConfig()
@@ -181,6 +186,9 @@ namespace azurecopy.Helpers
             SetConfigValue(config, "DropBoxUserToken", DropBoxUserToken.ToString());
             SetConfigValue(config, "SharepointUsername", SharepointUsername.ToString());
             SetConfigValue(config, "SharepointPassword", SharepointPassword.ToString());
+            SetConfigValue(config, "SharedAccessSignatureDurationInSeconds", SharedAccessSignatureDurationInSeconds.ToString());
+            
+
 
             config.Save(ConfigurationSaveMode.Modified);
             ConfigurationManager.RefreshSection("appSettings");

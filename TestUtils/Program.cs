@@ -54,7 +54,7 @@ namespace TestUtils
             var azureHandler = new AzureHandler();
             var dropboxHandler = new DropboxHandler();
 
-            var inputUrl = "https://xx.blob.core.windows.net/temp/test2";
+            var inputUrl = "https://xxx.blob.core.windows.net/temp/test2";
             var outputUrl = "https://dropbox.com/stuff/";
 
             var blob = azureHandler.ReadBlob(inputUrl);

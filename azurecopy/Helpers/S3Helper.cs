@@ -85,7 +85,7 @@ namespace azurecopy.Utils
             {
                 BucketName = bucket,
                 Key = key,
-                Expires = DateTime.Now.AddMinutes(300),
+                Expires = DateTime.Now.AddMinutes( ConfigHelper.SharedAccessSignatureDurationInSeconds /60),
                 Protocol = Protocol.HTTPS
             };
 
