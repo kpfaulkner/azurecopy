@@ -33,9 +33,33 @@ namespace azurecopy.Utils
     {
 
         static  string AmazonDetection = "amazon";
+        static Dictionary<String, Amazon.RegionEndpoint> RegionDict;
 
-        // assuming URL is in form https://s3.amazonaws.com/bucketname  and
-        // NOT in the form :https://bucketname.s3.amazonaws.com
+        // hardcoded region information
+        // convert to app config at a later stage maybe? For now the data seems fairly static
+        // that I'll keep it hardcoded here.
+        static S3Helper()
+        {
+            RegionDict = GenerateRegionDict();
+            
+        }
+        static private Dictionary<string, Amazon.RegionEndpoint> GenerateRegionDict()
+        {
+            var rd = new Dictionary<string, Amazon.RegionEndpoint>();
+
+            rd["us-west-1"] = Amazon.RegionEndpoint.USWest1;
+            rd["us-west-2"] = Amazon.RegionEndpoint.USWest2;
+            rd["us-east-1"] = Amazon.RegionEndpoint.USEast1;
+            rd["eu-west-1"] = Amazon.RegionEndpoint.EUWest1;
+            rd["ap-southeast-1"] = Amazon.RegionEndpoint.APSoutheast1;
+            rd["ap-southeast-1"] = Amazon.RegionEndpoint.APSoutheast2;
+            rd["ap-northeast-1"] = Amazon.RegionEndpoint.APNortheast1;
+            rd["sa-east-1"] = Amazon.RegionEndpoint.SAEast1;
+          
+            return rd;
+        }
+
+        // assuming URL is in form :https://bucketname.s3.amazonaws.com
         // WHY WHY WHY the above comment?
         // will eventually need to handle both URL formats, but for now I may need to 
         // focus on https://bucketname.s3.amazonaws.com format due to the AWS libs creating urls.
@@ -89,11 +113,20 @@ namespace azurecopy.Utils
                 Protocol = Protocol.HTTPS
             };
 
-            using (AmazonS3 client = Amazon.AWSClientFactory.CreateAmazonS3Client(ConfigHelper.SrcAWSAccessKeyID, ConfigHelper.SrcAWSSecretAccessKeyID))
+            using (IAmazonS3 client = GenerateS3Client(ConfigHelper.SrcAWSAccessKeyID, ConfigHelper.SrcAWSSecretAccessKeyID, ConfigHelper.SrcAWSRegion))
             {
                 string url = client.GetPreSignedURL(request);
                 return url;
             }
+        }
+
+        public static IAmazonS3 GenerateS3Client( string accessKey, string secretKey, string region)
+        {
+            var regionToUse = RegionDict[region];
+
+            IAmazonS3 client = Amazon.AWSClientFactory.CreateAmazonS3Client(accessKey, secretKey, regionToUse);
+
+            return client;
         }
 
         internal static string GetPrefixFromUrl(string baseUrl)

@@ -59,16 +59,13 @@ namespace azurecopy
             var bucket = S3Helper.GetBucketFromUrl(url);
             var key = S3Helper.GetKeyFromUrl(url);
             
-            using (AmazonS3 client = Amazon.AWSClientFactory.CreateAmazonS3Client(ConfigHelper.AWSAccessKeyID, ConfigHelper.AWSSecretAccessKeyID))
+            using (IAmazonS3 client = S3Helper.GenerateS3Client(ConfigHelper.AWSAccessKeyID, ConfigHelper.AWSSecretAccessKeyID, ConfigHelper.AWSRegion))
             {
                 var putObjectRequest = new PutObjectRequest
                 {
                     BucketName = bucket,
                     Key = key,
-                    GenerateMD5Digest = true,
-                    Timeout = -1,
                     ContentBody = "",
-                    ReadWriteTimeout = 300000     // 5 minutes in milliseconds
                 };
 
                 client.PutObject(putObjectRequest);
@@ -97,11 +94,11 @@ namespace azurecopy
             blob.FilePath = fileName;
             blob.BlobOriginType = UrlType.S3;
 
-            using (AmazonS3 client = Amazon.AWSClientFactory.CreateAmazonS3Client(ConfigHelper.SrcAWSAccessKeyID, ConfigHelper.SrcAWSSecretAccessKeyID))
+            using (IAmazonS3 client = S3Helper.GenerateS3Client(ConfigHelper.SrcAWSAccessKeyID, ConfigHelper.SrcAWSSecretAccessKeyID, ConfigHelper.SrcAWSRegion))
             {
                 GetObjectRequest getObjectRequest = new GetObjectRequest() { BucketName = bucket, Key = key };
                 
-                using (S3Response getObjectResponse = client.GetObject(getObjectRequest))
+                using (GetObjectResponse getObjectResponse = client.GetObject(getObjectRequest))
                 {
 
                     using (Stream s = getObjectResponse.ResponseStream)
@@ -156,17 +153,14 @@ namespace azurecopy
                     stream = new MemoryStream(blob.Data);
                 }
 
-                using (AmazonS3 client = Amazon.AWSClientFactory.CreateAmazonS3Client(ConfigHelper.TargetAWSAccessKeyID, ConfigHelper.TargetAWSSecretAccessKeyID))
+                using (IAmazonS3 client = S3Helper.GenerateS3Client(ConfigHelper.TargetAWSAccessKeyID, ConfigHelper.TargetAWSSecretAccessKeyID, ConfigHelper.TargetAWSRegion))
                 {
                     var putObjectRequest = new PutObjectRequest
                         {
                             BucketName = bucket,
                             Key = key,
-                            GenerateMD5Digest = true,
-                            Timeout = -1,
                             InputStream = stream,
-                            ReadWriteTimeout = 300000     // 5 minutes in milliseconds
-
+                            
                         };
 
                     client.PutObject(putObjectRequest);
@@ -192,7 +186,7 @@ namespace azurecopy
             var blobList = new List<BasicBlobContainer>();
             var prefix = S3Helper.GetPrefixFromUrl(baseUrl);
 
-            using (AmazonS3 client = Amazon.AWSClientFactory.CreateAmazonS3Client(ConfigHelper.SrcAWSAccessKeyID, ConfigHelper.SrcAWSSecretAccessKeyID))
+            using (IAmazonS3 client = S3Helper.GenerateS3Client(ConfigHelper.SrcAWSAccessKeyID, ConfigHelper.SrcAWSSecretAccessKeyID, ConfigHelper.SrcAWSRegion))
             {
                 var request = new ListObjectsRequest();
      

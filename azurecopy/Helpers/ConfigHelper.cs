@@ -42,6 +42,13 @@ namespace azurecopy.Helpers
         public static string TargetAWSAccessKeyID { get; set; }
         public static string TargetAWSSecretAccessKeyID { get; set; }
 
+        // regions. Now required for the S3 client lib.
+        // need to figure out a way to detect this so the user doens't have to set the value in 
+        // the configuration file.
+        public static string AWSRegion { get; set; }
+        public static string SrcAWSRegion { get; set; }
+        public static string TargetAWSRegion { get; set; }
+
         // retry attempt details
         public static int RetryAttemptDelayInSeconds {get;set;}
         public static int MaxRetryAttempts { get; set; }
@@ -121,6 +128,10 @@ namespace azurecopy.Helpers
             TargetAWSAccessKeyID = GetConfigValue<string>("TargetAWSAccessKeyID", AWSAccessKeyID);
             TargetAWSSecretAccessKeyID = GetConfigValue<string>("TargetAWSSecretAccessKeyID", AWSSecretAccessKeyID);
 
+            AWSRegion = GetConfigValue<string>("AWSRegion", "us-west-1");
+            SrcAWSRegion = GetConfigValue<string>("SrcAWSRegion", AWSRegion);
+            TargetAWSRegion = GetConfigValue<string>("TargetAWSRegion", AWSRegion);
+
             // retry policies.
             // can be used in both Azure and AWS (eventually).
             RetryAttemptDelayInSeconds = GetConfigValue<int>("RetryAttemptDelayInSeconds", 2);
@@ -187,8 +198,11 @@ namespace azurecopy.Helpers
             SetConfigValue(config, "SharepointUsername", SharepointUsername.ToString());
             SetConfigValue(config, "SharepointPassword", SharepointPassword.ToString());
             SetConfigValue(config, "SharedAccessSignatureDurationInSeconds", SharedAccessSignatureDurationInSeconds.ToString());
-            
 
+            SetConfigValue(config, "AWSRegion", AWSRegion.ToString());
+            SetConfigValue(config, "SrcAWSRegion", SrcAWSRegion.ToString());
+            SetConfigValue(config, "TargetAWSRegion", TargetAWSRegion.ToString());
+            
 
             config.Save(ConfigurationSaveMode.Modified);
             ConfigurationManager.RefreshSection("appSettings");
