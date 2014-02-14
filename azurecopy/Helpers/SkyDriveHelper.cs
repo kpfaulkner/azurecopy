@@ -291,7 +291,9 @@ namespace azurecopy.Helpers
                     skydriveListing = ListSkyDriveDirectoryWithUrl(searchDir);
 
                 }
-                if (foundEntry != null && foundEntry.Type == "file")
+
+                // cant have == "file", since "photos" etc come up as different types.
+                if (foundEntry != null && foundEntry.Type != "folder")
                 {
                     fileFound = true;
                     var l = ListSkyDriveFileWithUrl(foundEntry.Id);

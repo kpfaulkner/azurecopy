@@ -638,13 +638,14 @@ namespace azurecopycommand
         private static void DisplayExamples()
         {
             Console.WriteLine("AzureCopy Common Usage Examples\n\n");
-            Console.WriteLine("(assumption that the config file is correctly configured with Azure/S3/etc identifiers and keys)\n\n");
-            Console.WriteLine("\n\n\n");
+            Console.WriteLine("(assumption that the config file is correctly configured with Azure/S3/etc identifiers and keys)\n");
+            Console.WriteLine("\n");
             Console.WriteLine("\nS3 to Azure using regular copy:\n azurecopy.exe -i https://mybucket.s3.amazonaws.com/myblob -o https://myaccount.blob.core.windows.net/mycontainer");
             Console.WriteLine("\nS3 to Azure using blob copy api (better for local bandwidth:\n azurecopy.exe -i https://mybucket.s3.amazonaws.com/myblob -o https://myaccount.blob.core.windows.net/mycontainer -blobcopy");
             Console.WriteLine("\nAzure to S3:\n azurecopy.exe -i https://myaccount.blob.core.windows.net/mycontainer/myblob -o https://mybucket.s3.amazonaws.com/ ");
             Console.WriteLine("\nList contents in S3 bucket:\n azurecopy.exe -list https://mybucket.s3.amazonaws.com/");
             Console.WriteLine("\nList contents in Azure container:\n azurecopy.exe -list https://myaccount.blob.core.windows.net/mycontainer/ ");
+            Console.WriteLine("\nSkydrive to local using regular copy:\n azurecopy.exe -sky://temp/myfile.txt -o c:\\temp\\");
             
         }
 
