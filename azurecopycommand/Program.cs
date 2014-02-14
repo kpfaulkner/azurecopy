@@ -38,34 +38,34 @@ namespace azurecopycommand
 
         const string UsageString =
            @"Usage: azurecopy
-                -examples : Displays example commands for common scenarios
-                -v : verbose
-	            -i <url>: input url
-	            -o <url>: output url
-	            -d <local path>: download to filesystem before uploading to output url. (use for big blobs)
-	            -blobcopy : use blobcopy API for when Azure is output url.
-	            -list <url>: list blobs in bucket/container. eg. -list https://s3.amazonaws.com/mycontainer 
-                -pu : parallel upload
-                -cs : chunk size used for parallel upload (in MB).
-	            -m : Monitor progress of copy when in 'blobcopy' mode (ie -blobcopy flag was used). Program will not exit until all pending copies are complete.
-	            -destblobtype page|block : Destination blob type. Used when destination url is Azure and input url was NOT azure. eg S3 to Azure. 
-	            -ak | -azurekey : Azure account key.
-	            -s3k | -s3accesskey : S3 access key.
-	            -s3sk | -s3secretkey : S3 access key secret.
-	            -sak | -srcazurekey : input url Azure account key.
-	            -ss3k | -srcs3accesskey : input url S3 access key.
-	            -ss3sk | -srcs3secretkey : input url S3 access key secret.
-	            -tak | -targetazurekey : output url Azure account key.
-	            -ts3k | -targets3accesskey : output url S3 access key.
-	            -ts3sk | -targets3secretkey : output url S3 access key secret.
-                -spu | -SharepointUsername : Sharepoint Online username
-	            -spp | -SharepointPassword : Sharepoint Online password
-                -rd : Retry delay in seconds used when communicating with cloud storage environments.
-                -mr : Maximum number of retries for a given operation.
-                -mc <full url> : Make container/folder/directory.
-                -skydrivecode : returned when accessing URL: https://login.live.com/oauth20_authorize.srf?client_id=00000000480EE365&scope=wl.offline_access,wl.skydrive,wl.skydrive_update&response_type=code&redirect_uri=http://kpfaulkner.com/azurecopyoauth
-                -configskydrive : Steps through configuring of SkyDrive and saves config file with new data.
-                -configdropbox : Steps through configuring of Dropbox and saves config file with new data.
+                    -examples : Displays example commands for common scenarios
+                    -v : verbose
+                    -i <url>: input url
+                    -o <url>: output url
+                    -d <local path>: download to filesystem before uploading to output url. (use for big blobs)
+                    -blobcopy : use blobcopy API for when Azure is output url.
+                    -list <url>: list blobs in bucket/container. eg. -list https://s3.amazonaws.com/mycontainer 
+                    -pu : parallel upload
+                    -cs : chunk size used for parallel upload (in MB).
+                    -m : Monitor progress of copy when in 'blobcopy' mode (ie -blobcopy flag was used). Program will not exit until all pending copies are complete.
+                    -destblobtype page|block : Destination blob type. Used when destination url is Azure and input url was NOT azure. eg S3 to Azure. 
+                    -ak | -azurekey : Azure account key.
+                    -s3k | -s3accesskey : S3 access key.
+                    -s3sk | -s3secretkey : S3 access key secret.
+                    -sak | -srcazurekey : input url Azure account key.
+                    -ss3k | -srcs3accesskey : input url S3 access key.
+                    -ss3sk | -srcs3secretkey : input url S3 access key secret.
+                    -tak | -targetazurekey : output url Azure account key.
+                    -ts3k | -targets3accesskey : output url S3 access key.
+                    -ts3sk | -targets3secretkey : output url S3 access key secret.
+                    -spu | -SharepointUsername : Sharepoint Online username
+                    -spp | -SharepointPassword : Sharepoint Online password
+                    -rd : Retry delay in seconds used when communicating with cloud storage environments.
+                    -mr : Maximum number of retries for a given operation.
+                    -mc <full url> : Make container/folder/directory.
+                    -skydrivecode : returned when accessing URL: https://login.live.com/oauth20_authorize.srf?client_id=00000000480EE365&scope=wl.offline_access,wl.skydrive,wl.skydrive_update&response_type=code&redirect_uri=http://kpfaulkner.com/azurecopyoauth
+                    -configskydrive : Steps through configuring of SkyDrive and saves config file with new data.
+                    -configdropbox : Steps through configuring of Dropbox and saves config file with new data.
            
                 Note: Remember when local file system is destination/output do NOT end the directory with a \
                       When destination is Skydrive, use the url format  skydrive://directory/file";
