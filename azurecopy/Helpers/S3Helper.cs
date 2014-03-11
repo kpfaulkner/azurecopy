@@ -134,10 +134,6 @@ namespace azurecopy.Utils
             var url = new Uri(baseUrl);
             var u = url.Segments;
             var prefix = string.Join("",url.Segments.Skip(1));
-            if (false && !prefix.StartsWith("/"))
-            {
-                prefix = "/" + prefix;
-            }
             return prefix;
         }
     }
