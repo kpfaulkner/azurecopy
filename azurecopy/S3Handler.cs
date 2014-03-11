@@ -205,17 +205,24 @@ namespace azurecopy
                     {
                        
                         var fullPath = GenerateUrl(baseUrl, bucket, obj.Key);
-                        //var fullPath = Path.Combine(baseUrl, obj.Key);
-                        var blob = new BasicBlobContainer();
-                        blob.Name = obj.Key;
-                        blob.Url = fullPath;
-                        blob.Container = bucket;
-                        blob.BlobType = BlobEntryType.Blob;
-                        if (blob.Name.Contains('/'))
+
+                        // can only go one directory deep for now.
+                        // if ends in / will ignore.
+
+                        if (!fullPath.EndsWith("/"))
                         {
-                            blob.DisplayName = blob.Name.Split('/')[1];
+                            //var fullPath = Path.Combine(baseUrl, obj.Key);
+                            var blob = new BasicBlobContainer();
+                            blob.Name = obj.Key;
+                            blob.Url = fullPath;
+                            blob.Container = bucket;
+                            blob.BlobType = BlobEntryType.Blob;
+                            if (blob.Name.Contains('/'))
+                            {
+                                blob.DisplayName = blob.Name.Split('/')[1];
+                            }
+                            blobList.Add(blob);
                         }
-                        blobList.Add(blob);
                     }
 
                     if (response.IsTruncated)
@@ -241,7 +248,8 @@ namespace azurecopy
         {
             var url = new Uri(baseUrl);
             var fqdn = "https://"+url.DnsSafeHost;
-            var res = new Uri( new Uri(fqdn), bucket + "/" + key);
+            // var res = new Uri( new Uri(fqdn), bucket + "/" + key);
+            var res = new Uri(new Uri(fqdn), "/" + key);
 
             return res.AbsoluteUri;
 
