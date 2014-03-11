@@ -127,7 +127,9 @@ namespace azurecopy
                 }
             }
 
-            blob.Name = key;
+            // prune anything before the last /
+            var sp = key.Split('/');
+            blob.Name = sp.Last();
 
             return blob;
 
@@ -213,7 +215,7 @@ namespace azurecopy
                         {
                             //var fullPath = Path.Combine(baseUrl, obj.Key);
                             var blob = new BasicBlobContainer();
-                            blob.Name = obj.Key;
+                            blob.Name = obj.Key.Substring(prefix.Length);
                             blob.Url = fullPath;
                             blob.Container = bucket;
                             blob.BlobType = BlobEntryType.Blob;
