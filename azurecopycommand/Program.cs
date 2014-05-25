@@ -34,7 +34,7 @@ namespace azurecopycommand
 
     class Program
     {
-        const string SkyDriveOAuthUrl = "https://login.live.com/oauth20_authorize.srf?client_id=00000000480EE365&scope=wl.offline_access,wl.skydrive,wl.skydrive_update&response_type=code&redirect_uri=http://kpfaulkner.com/azurecopyoauth";
+        const string SkyDriveOAuthUrl = "https://login.live.com/oauth20_authorize.srf?client_id=00000000480EE365&scope=wl.offline_access,wl.skydrive,wl.skydrive_update&response_type=code&redirect_uri=https%3A%2F%2Flogin.live.com%2Foauth20_desktop.srf";
 
         const string UsageString =
            @"Usage: azurecopy
@@ -63,12 +63,11 @@ namespace azurecopycommand
                     -rd : Retry delay in seconds used when communicating with cloud storage environments.
                     -mr : Maximum number of retries for a given operation.
                     -mc <full url> : Make container/folder/directory.
-                    -skydrivecode : returned when accessing URL: https://login.live.com/oauth20_authorize.srf?client_id=00000000480EE365&scope=wl.offline_access,wl.skydrive,wl.skydrive_update&response_type=code&redirect_uri=http://kpfaulkner.com/azurecopyoauth
-                    -configskydrive : Steps through configuring of SkyDrive and saves config file with new data.
+                    -configonedrive : Steps through configuring of OneDrive and saves config file with new data.
                     -configdropbox : Steps through configuring of Dropbox and saves config file with new data.
            
                 Note: Remember when local file system is destination/output do NOT end the directory with a \
-                      When destination is Skydrive, use the url format  skydrive://directory/file";
+                      When destination is Onedrive, use the url format  one://directory/file";
 
 
         const string LocalDetection = "???";
@@ -124,7 +123,7 @@ namespace azurecopycommand
 
         // skydrive 
         const string SkyDriveCodeFlag = "-skydrivecode";
-        const string ConfigSkyDriveFlag = "-configskydrive";
+        const string ConfigOneDriveFlag = "-configonedrive";
 
         // dropbox
         const string ConfigDropboxFlag = "-configdropbox";
@@ -232,8 +231,8 @@ namespace azurecopycommand
                         // if we have this flag, then we simply want to redirect user to a given url.
                         // then prompt for code (response from browser). Then save it to the app.config file.
                         // will do similar for dropbox.
-                        case ConfigSkyDriveFlag:
-                            ConfigureSkyDrive();
+                        case ConfigOneDriveFlag:
+                            ConfigureOneDrive();
                             break;
 
                         // if we have this flag, then we simply want to redirect user to a given url.
@@ -416,12 +415,12 @@ namespace azurecopycommand
 
         }
 
-        private static void ConfigureSkyDrive()
+        private static void ConfigureOneDrive()
         {
-            Console.WriteLine("Configuring AzureCopy for Skydrive:\n\n");
+            Console.WriteLine("Configuring AzureCopy for Onedrive:\n\n");
             Console.WriteLine("Please open a browser and enter the URL:\n" + SkyDriveOAuthUrl+"\n");
-            Console.WriteLine("Once you log in with your Microsoft Account, you'll be redirected to a url similar to http://kpfaulkner.com/azurecopyoauth/?code=abf0d6b4-4eec-da53-c786-adb1aa42bff2");
-            Console.WriteLine("Please copy and paste the code (everything after the = sign) here then press enter");
+            Console.WriteLine("Once you log in with your Microsoft Account, you'll be redirected to a url similar to https://login.live.com/oauth20_desktop.srf?code=f011cabb-e9ce-e4cc-c169-cf70eae11da8&lc=2057");
+            Console.WriteLine("Please copy and paste the code parameter (in the example above, it would be 'f011cabb-e9ce-e4cc-c169-cf70eae11da8' here then press enter");
             var code = Console.ReadLine();
             Console.WriteLine("Modifying config file with code");
             Console.WriteLine("Thankyou....  enjoy AzureCopy");
@@ -645,7 +644,7 @@ namespace azurecopycommand
             Console.WriteLine("\nAzure to S3:\n azurecopy.exe -i https://myaccount.blob.core.windows.net/mycontainer/myblob -o https://mybucket.s3.amazonaws.com/ ");
             Console.WriteLine("\nList contents in S3 bucket:\n azurecopy.exe -list https://mybucket.s3.amazonaws.com/");
             Console.WriteLine("\nList contents in Azure container:\n azurecopy.exe -list https://myaccount.blob.core.windows.net/mycontainer/ ");
-            Console.WriteLine("\nSkydrive to local using regular copy:\n azurecopy.exe -sky://temp/myfile.txt -o c:\\temp\\");
+            Console.WriteLine("\nOnedrive to local using regular copy:\n azurecopy.exe -i sky://temp/myfile.txt -o c:\\temp\\");
             
         }
 

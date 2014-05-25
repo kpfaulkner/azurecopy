@@ -51,7 +51,7 @@ namespace azurecopy
         // assumption being last part of url is the new container.
         public void MakeContainer(string url)
         {
-            url = url.Replace("sky://", "");
+            url = url.Replace("one://", "");
 
             var targetDirectory = SkyDriveHelper.CreateFolder(url);
 
@@ -61,7 +61,7 @@ namespace azurecopy
         {
             Blob blob = new Blob();
 
-            url = url.Replace("sky://", "");
+            url = url.Replace("one://", "");
 
             var skydriveFileEntry = SkyDriveHelper.GetSkyDriveEntryByFileNameAndDirectory(url);
             
@@ -104,7 +104,7 @@ namespace azurecopy
         // will make directories if they do not already exist.
         public void WriteBlob(string url, Blob blob,  int parallelUploadFactor=1, int chunkSizeInMB=4)
         {
-            url = url.Replace("sky://", "");
+            url = url.Replace("one://", "");
 
             var targetDirectory = SkyDriveHelper.CreateFolder(url);
             var blobName = blob.Name;
