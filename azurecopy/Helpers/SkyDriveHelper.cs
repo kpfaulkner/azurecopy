@@ -14,8 +14,9 @@
 //    limitations under the License.
 // </copyright>
 //-----------------------------------------------------------------------
- 
+
 using azurecopy.Datatypes;
+using RestSharp;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -23,22 +24,27 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Threading.Tasks;
 
 namespace azurecopy.Helpers
 {
     public class SkyDriveHelper
     {
         private static string skyDriveClientId = @"00000000480EE365";
-        private static string skyDriveRedirectUri = @"http://kpfaulkner.com";
+        private static string skyDriveRedirectUri = @"https%3A%2F%2Flogin.live.com%2Foauth20_desktop.srf";
         private static string accessToken;
         private static string refreshToken;
-        const string SkyDriveDetection = "sky://";
+
+        // public just so handler can filter out crap.
+        public const string OneDrivePrefix = "one://";
 
         // determines if this is the first time (and need access and refresh token)
         // or determines if we're just refreshing a refresh token.
         public static string GetAccessToken()
         {
-            if (ConfigHelper.SkyDriveRefreshToken == null || ConfigHelper.SkyDriveRefreshToken == "")
+            if ( string.IsNullOrEmpty(ConfigHelper.SkyDriveRefreshToken))
             {
                 // no refresh token at all, therefore need to request it.
                 GetLiveAccessAndRefreshTokens(ConfigHelper.SkyDriveCode);
@@ -53,13 +59,25 @@ namespace azurecopy.Helpers
 
         }
 
-        public static void GetLiveAccessAndRefreshTokens( string code )
+        public static void GetLiveAccessAndRefreshTokens(string code)
         {
-            var urlTemplate = @"https://oauth.live.com/token?client_id={0}&redirect_uri={1}&code={2}&grant_type=authorization_code";
-            var url = string.Format(urlTemplate, skyDriveClientId, skyDriveRedirectUri,code);
+            var argTemplate = @"client_id={0}&redirect_uri={1}&code={2}&grant_type=authorization_code";
+            var baseUrl = @"https://login.live.com/oauth20_token.srf";
 
-            HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create( url );
-            request.Method = "GET";
+            // does client secret really need to be secret?
+            // if so... how do I distribute? FIXME
+            var args = string.Format(argTemplate, skyDriveClientId, skyDriveRedirectUri, code);
+
+            HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(baseUrl);
+            request.Method = "POST";
+            request.ContentType = "application/x-www-form-urlencoded;charset=UTF-8";
+
+            using (StreamWriter writer = new StreamWriter(request.GetRequestStream()))
+            {
+                writer.Write(args);
+            }
+
+
             HttpWebResponse response = (HttpWebResponse)request.GetResponse();
             var stream = response.GetResponseStream();
 
@@ -67,19 +85,28 @@ namespace azurecopy.Helpers
             stream.Read(arr, 0, 3000);
             var responseString = System.Text.Encoding.Default.GetString(arr);
 
-            ParseAccessRefreshResponse( responseString);
+            ParseAccessRefreshResponse(responseString);
             SaveRefreshTokenToAppConfig();
             ConfigHelper.SkyDriveAccessToken = accessToken;
             ConfigHelper.SkyDriveRefreshToken = refreshToken;
         }
 
+
         public static void RefreshAccessToken()
         {
-            var urlTemplate = @"https://oauth.live.com/token?client_id={0}&redirect_uri=https://oauth.live.com/desktop&grant_type=refresh_token&refresh_token={1}";
-            var url = string.Format(urlTemplate, skyDriveClientId, ConfigHelper.SkyDriveRefreshToken);
+            var argTemplate = @"client_id={0}&redirect_uri=https://oauth.live.com/desktop&grant_type=refresh_token&refresh_token={1}";
+            var baseUrl = @"https://login.live.com/oauth20_token.srf";
+         
+            var args = string.Format(argTemplate, skyDriveClientId, ConfigHelper.SkyDriveRefreshToken);
 
-            HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(url);
-            request.Method = "GET";
+            HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(baseUrl);
+            request.Method = "POST";
+            request.ContentType = "application/x-www-form-urlencoded;charset=UTF-8";
+            using (StreamWriter writer = new StreamWriter(request.GetRequestStream()))
+            {
+                writer.Write(args);
+            }
+
             HttpWebResponse response = (HttpWebResponse)request.GetResponse();
             var stream = response.GetResponseStream();
 
@@ -93,6 +120,7 @@ namespace azurecopy.Helpers
             ConfigHelper.SkyDriveRefreshToken = refreshToken;
 
         }
+
 
         // put in real JSON parsing later.
         private static void ParseAccessRefreshResponse(string tokenResponse)
@@ -407,7 +435,7 @@ namespace azurecopy.Helpers
 
         public static bool MatchHandler(string url)
         {
-            return url.Contains(SkyDriveDetection);
+            return url.Contains(OneDrivePrefix);
         }
 
    
