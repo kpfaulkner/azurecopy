@@ -51,7 +51,7 @@ namespace azurecopy
         // assumption being last part of url is the new container.
         public void MakeContainer(string url)
         {
-            url = url.Replace("one://", "");
+            url = url.Replace(SkyDriveHelper.OneDrivePrefix, "");
 
             var targetDirectory = SkyDriveHelper.CreateFolder(url);
 
@@ -61,10 +61,9 @@ namespace azurecopy
         {
             Blob blob = new Blob();
 
-            url = url.Replace("one://", "");
+            url = url.Replace(SkyDriveHelper.OneDrivePrefix, "");
 
             var skydriveFileEntry = SkyDriveHelper.GetSkyDriveEntryByFileNameAndDirectory(url);
-            
             
             var requestUriFile =  new StringBuilder( skydriveFileEntry.Source);
             requestUriFile.AppendFormat("?access_token={0}", accessToken);
@@ -104,7 +103,7 @@ namespace azurecopy
         // will make directories if they do not already exist.
         public void WriteBlob(string url, Blob blob,  int parallelUploadFactor=1, int chunkSizeInMB=4)
         {
-            url = url.Replace("one://", "");
+            url = url.Replace( SkyDriveHelper.OneDrivePrefix, "");
 
             var targetDirectory = SkyDriveHelper.CreateFolder(url);
             var blobName = blob.Name;
