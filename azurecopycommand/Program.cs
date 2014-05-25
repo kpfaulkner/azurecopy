@@ -645,6 +645,8 @@ namespace azurecopycommand
             Console.WriteLine("\nList contents in S3 bucket:\n azurecopy.exe -list https://mybucket.s3.amazonaws.com/");
             Console.WriteLine("\nList contents in Azure container:\n azurecopy.exe -list https://myaccount.blob.core.windows.net/mycontainer/ ");
             Console.WriteLine("\nOnedrive to local using regular copy:\n azurecopy.exe -i sky://temp/myfile.txt -o c:\\temp\\");
+            Console.WriteLine("\nDropbox to local using regular copy:\n azurecopy.exe -i https://dropbox.com/temp/myfile.txt -o c:\\temp\\");
+
             
         }
 
