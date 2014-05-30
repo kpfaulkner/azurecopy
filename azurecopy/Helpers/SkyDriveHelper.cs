@@ -244,7 +244,7 @@ namespace azurecopy.Helpers
 
         public static List<SkyDriveDirectory> ListSkyDriveDirectoryContent(string dirPath)
         {
-            dirPath = dirPath.Replace("sky://", "");
+            dirPath = dirPath.Replace( SkyDriveHelper.OneDrivePrefix, "");
             var skyId = "";
             if (!string.IsNullOrEmpty(dirPath))
             {
