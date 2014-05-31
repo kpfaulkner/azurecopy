@@ -43,6 +43,7 @@ local.properties
 *.sln.docstates
 App.config
 APIKeys.cs
+Test.cmd
 
 # Build results
 
