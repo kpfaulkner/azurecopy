@@ -1,18 +1,16 @@
 <?xml version="1.0"?>
 <package >
   <metadata>
-    <id>AzureCopy</id>
-    <version>$version$</version>
-    <title>$title$</title>
-    <authors>$author$</authors>
-    <owners>$author$</owners>
-    <licenseUrl>http://LICENSE_URL_HERE_OR_DELETE_THIS_LINE</licenseUrl>
-    <projectUrl>http://PROJECT_URL_HERE_OR_DELETE_THIS_LINE</projectUrl>
-    <iconUrl>http://ICON_URL_HERE_OR_DELETE_THIS_LINE</iconUrl>
+    <id>azurecopyclient</id>
+    <version>0.16.0.0</version>
+    <title>azurecopy</title>
+    <authors>Ken Faulkner</authors>
+    <owners>Ken Faulkner</owners>
+    <projectUrl>http://kpfaulkner.com/azurecopy</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>$description$</description>
-    <releaseNotes>Summary of changes made in this release of the package.</releaseNotes>
-    <copyright>Copyright 2013</copyright>
-    <tags>Tag1 Tag2</tags>
+    <description>AzureCopy is a .NET library to allow copying between local filesystem, Azure, S3, Onedrive, Sharepoint Online and Dropbox.</description>
+    <releaseNotes>Skydrive to Onedrive change. Misc smaller fixes. Updated to .NET 4.5.1</releaseNotes>
+    <copyright>Copyright 2014</copyright>
+    <tags>azure s3 amazon dropbox onedrive</tags>
   </metadata>
 </package>
