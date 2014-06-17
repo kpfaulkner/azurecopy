@@ -37,15 +37,10 @@ namespace azurecopy
     {
         // expected to pass entire url.
         Blob ReadBlob(string url, string filePath = "");
-        
-        // not passing url. Url will be generated behind the scenes.
-        Blob ReadBlobSimple(string container, string blobName, string filePath = "");
-
+      
         // expected to pass entire url
         void WriteBlob(string url, Blob blob,  int parallelUploadFactor=1, int chunkSizeInMB=4);
 
-        // not passing url.
-        void WriteBlobSimple(string container, Blob blob, int parallelUploadFactor = 1, int chunkSizeInMB = 4);
 
         // moving blob
         void MoveBlob(string startUrl, string finishUrl);
@@ -58,12 +53,7 @@ namespace azurecopy
         // can contain virtual directories such as https://....../mycontainer/virtualdir1/virtualdir2  
         List<BasicBlobContainer> ListBlobsInContainer(string baseUrl);
 
-        // not required to pass full url.
-        // for S3 the container name could be the bucket name.
-        // for azure it would be an azure container.
-        // for others it would probably be the first directory in a full path listing many directories. (eg. dir1/dir2/dir3/file.txt)
-        List<BasicBlobContainer> ListBlobsInContainerSimple(string containerName);
-
+      
         // core URL used for this handler.
         // could be the Azure url for a given account, or the bucket/S3 url.
         // This is purely so once a url has been used to establish a handler we can still
@@ -71,6 +61,24 @@ namespace azurecopy
         // ideally the copy methods would access this automatically (and not require urls in params)
         // but this modification will probably happen slowly.
         string GetBaseUrl();
+
+
+        // *Simple* methods which do NOT require full URL to be passed in.
+        // This will require constructor of implementation to have been passed the full URL
+        // and the simple methods are simply based off those.
+        // not passing url. Url will be generated behind the scenes.
+        Blob ReadBlobSimple(string container, string blobName, string filePath = "");
+
+        // not passing url.
+        void WriteBlobSimple(string container, Blob blob, int parallelUploadFactor = 1, int chunkSizeInMB = 4);
+
+        // not required to pass full url.
+        // for S3 the container name could be the bucket name.
+        // for azure it would be an azure container.
+        // for others it would probably be the first directory in a full path listing many directories. (eg. dir1/dir2/dir3/file.txt)
+        List<BasicBlobContainer> ListBlobsInContainerSimple(string containerName);
+
+        void MakeContainerSimple(string container);
 
     }
 }

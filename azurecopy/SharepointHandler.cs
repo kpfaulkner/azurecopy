@@ -166,16 +166,90 @@ namespace azurecopy
             var uri = new Uri(url);
             var blobName = uri.Segments[uri.Segments.Length - 1];
 
-            //var f = GetSharepointFile(url);
-            
-            return ReadBlobSimple(url, blobName, filePath);
+            var blob = new Blob();
+            blob.BlobSavedToFile = !string.IsNullOrEmpty(filePath);
+            blob.Name = blobName;
+            blob.FilePath = filePath;
+            blob.BlobType = DestinationBlobType.Block;
+
+            // get stream to store.
+            using (var stream = CommonHelper.GetStream(filePath))
+            {
+                var context = GetContext(url);
+
+                // get file collection.
+                var fileCollection = GetSharepointFileCollection(url);
+                ctx.Load(fileCollection);
+                ctx.ExecuteQuery();
+
+                var f = Microsoft.SharePoint.Client.File.OpenBinaryDirect(ctx, uri.PathAndQuery);
+                f.Stream.CopyTo(stream);
+
+                if (!blob.BlobSavedToFile)
+                {
+                    var ms = stream as MemoryStream;
+                    blob.Data = ms.ToArray();
+                }
+            }
+
+            return blob;
+
         }
 
         public void WriteBlob(string url, Blob blob,  int parallelUploadFactor=1, int chunkSizeInMB=4)
         {
+            var context = GetContext(url);
 
-            WriteBlobSimple(url, blob, parallelUploadFactor, chunkSizeInMB);
+            // get file collection.
+            var fileCollection = GetSharepointFileCollection(url);
 
+            byte[] data;
+            Stream inputStream = null;
+            // get stream to data.
+            if (blob.BlobSavedToFile)
+            {
+                inputStream = new FileStream(blob.FilePath, FileMode.Open);
+                var length = inputStream.Length;
+                var lengthInt = Convert.ToInt32(length);
+                data = new byte[lengthInt];
+                inputStream.Read(data, 0, lengthInt);
+
+            }
+            else
+            {
+                data = blob.Data;
+            }
+
+
+            //populate information about the new file
+            FileCreationInformation fci = new FileCreationInformation();
+            fci.Url = blob.Name;
+            fci.Content = data;
+            fci.Overwrite = true;
+
+
+            //add this file to the file collection
+            Microsoft.SharePoint.Client.File newFile = fileCollection.Add(fci);
+
+
+            // probably need to do this elsewhere from Azure Storage.
+            // but leave here until I know for sure.
+            var t = Task.Factory.StartNew(() =>
+            {
+                ctx.Load(newFile);
+
+                ctx.ExecuteQuery();
+
+            });
+
+            // wait... this is incase the application finishes and exits before the async upload is complete.
+            // Need to make entire app async friendly...
+            if (true)
+            {
+                t.Wait();
+            }
+
+            
         }
 
         public List<BasicBlobContainer> ListBlobsInContainer(string url)
@@ -302,6 +376,12 @@ namespace azurecopy
             return blobList;
 
         }
+
+        public void MakeContainerSimple(string container)
+        {
+            throw new NotImplementedException("MakeContainerSimple not implemented");
+        }
+
 
     }
 }

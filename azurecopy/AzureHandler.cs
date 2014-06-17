@@ -39,8 +39,10 @@ namespace azurecopy
         public void MoveBlob( string startUrl, string finishUrl)
         {
 
+            throw new NotImplementedException("MoveBlob not implemented");
 
         }
+
         // make container
         // assumption being last part of url is the new container.
         public void MakeContainer(string url)
@@ -56,6 +58,7 @@ namespace azurecopy
         {
             return baseUrl;
         }
+
         // default is no filepath.
         // make parallel download later.
         public Blob ReadBlob(string url, string filePath = "")
@@ -102,7 +105,6 @@ namespace azurecopy
             // get stream to store.
             using (var stream = CommonHelper.GetStream(fileName))
             {
-
                 // no parallel yet.
                 blockBlob.DownloadToStream(stream);
 
@@ -152,7 +154,6 @@ namespace azurecopy
                 var client = AzureHelper.GetTargetCloudBlobClient(url);
 
                 var containerName = AzureHelper.GetContainerFromUrl(url);
-                //var blobName = AzureHelper.GetBlobFromUrl(url);
                 var blobName = blob.Name;
 
                 var container = client.GetContainerReference(containerName);
@@ -397,6 +398,23 @@ namespace azurecopy
 
             var url = baseUrl + "/" + container + "/";
             return ListBlobsInContainer(url);
+        }
+
+        public void MakeContainerSimple(string container)
+        {
+            if (string.IsNullOrEmpty(baseUrl))
+            {
+                throw new ArgumentNullException("Constructor needs base url passed");
+            }
+
+           if (string.IsNullOrEmpty(container))
+            {
+                throw new ArgumentNullException("container name empty");
+            }
+
+            var fullUrl = baseUrl +"/" + container;
+            MakeContainer(fullUrl);
+
         }
 
     }

@@ -91,5 +91,11 @@ namespace azurecopy
 
         }
 
+        public void MakeContainerSimple(string container)
+        {
+            throw new NotImplementedException("MakeContainerSimple not implemented");
+        }
+
+
     }
 }

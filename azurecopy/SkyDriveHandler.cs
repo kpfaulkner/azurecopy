@@ -236,5 +236,11 @@ namespace azurecopy
             return ListBlobsInContainer(url);
         }
 
+        public void MakeContainerSimple(string container)
+        {
+            throw new NotImplementedException("MakeContainerSimple not implemented");
+        }
+
+
     }
 }

@@ -1,5 +1,13 @@
 ﻿TODO:
 
++ Neaten IBlobHandler interface and implementations.
++ Standardize coping to/from directories (do paths have to end in \ etc?)
++ General neatening up of code. (vaaaaaaaaague)
++ Make sure Apache license details at top of all files.
++ Make sure virtual directories (or equiv) work for all appropriate platforms.
+	+ If not possible for a particular platform, then what? 
++ Make sure copying multiple files at once... eg azurecopy ....\test*txt   c:\temp\  is supported.
++ Implement MoveBlob
 
 + Encrypt login details in app.config
 + Add retry logic to any Azure/S3 comms

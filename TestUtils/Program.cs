@@ -11,23 +11,63 @@ namespace TestUtils
     // These aren't unit tests, are more integration tests but really just working samples.
     class Program
     {
-        static void Test()
+        static void AzureListBlobsInContainerSimpleTest()
         {
             var azureUrl = ConfigHelper.AzureBaseUrl;
         
             var sourceHandler = new AzureHandler(azureUrl);
 
-            sourceHandler.ListBlobsInContainerSimple("temp/test/");
+            var res = sourceHandler.ListBlobsInContainerSimple("temp");
+            foreach(var i in res)
+            {
+                Console.WriteLine(i.Url);
+
+            }
         }
 
-        static void Test2()
+        static void AzureCopyBlobSimpleTest()
+        {
+            var azureUrl = ConfigHelper.AzureBaseUrl;
+
+            var sourceHandler = new AzureHandler(azureUrl);
+
+            var blob = sourceHandler.ReadBlobSimple("temp", "Test.cmd");
+
+            blob.Name = "Test2.cmd";
+
+            sourceHandler.WriteBlobSimple("temp", blob);
+        }
+
+
+        static void S3ListBlobsInContainerSimpleTest()
         {
             var s3Url = ConfigHelper.S3BaseUrl;
 
             var sourceHandler = new S3Handler(s3Url);
 
-            sourceHandler.ListBlobsInContainerSimple("testken123/test/");
+            var res = sourceHandler.ListBlobsInContainerSimple("");
+            foreach (var i in res)
+            {
+                Console.WriteLine(i.Url);
+
+            }
         }
+
+        static void S3CopyBlobSimpleTest()
+        {
+            var s3Url = ConfigHelper.S3BaseUrl;
+
+            var sourceHandler = new S3Handler(s3Url);
+
+            var blob = sourceHandler.ReadBlobSimple("", "Test.cmd");
+
+            blob.Name = "Test2.cmd";
+
+            sourceHandler.WriteBlobSimple("test", blob);
+        }
+
+
+      
 
         static void Test3()
         {
@@ -66,8 +106,20 @@ namespace TestUtils
 
         static void Main(string[] args)
         {
+            
+            //AzureListBlobsInContainerSimpleTest();
 
-            Test5();
+            //AzureCopyBlobSimpleTest();
+
+            S3ListBlobsInContainerSimpleTest();
+
+            S3CopyBlobSimpleTest();
+            //Test3();
+            //Test4();
+            //sTest5();
+
+            Console.WriteLine("done");
+            Console.ReadKey();
         }
     }
 }

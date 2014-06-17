@@ -266,11 +266,23 @@ namespace azurecopy
                 throw new ArgumentNullException("Constructor needs base url passed");
             }
 
-            var url = baseUrl + "/" + container + "/" + blobName;
+            var url = baseUrl;
+            if (string.IsNullOrEmpty( container))
+            {
+                url += "/" + blobName;
+            }
+            else
+            {
+                url += "/" + container + "/" + blobName;
+                
+            }
             return ReadBlob(url, filePath);
         }
 
         // not passing url.
+        // does the passing in of container even make sense here? Since there are no real containers 
+        // in S3 (am NOT talking about buckets).
+        // Shouldnt it just be adding the container as a prefix to the blob name?
         public void WriteBlobSimple(string container, Blob blob, int parallelUploadFactor = 1, int chunkSizeInMB = 4)
         {
             if (baseUrl == null)
@@ -278,7 +290,15 @@ namespace azurecopy
                 throw new ArgumentNullException("Constructor needs base url passed");
             }
 
-            var url = baseUrl + "/" + container + "/";
+            var url = baseUrl;
+
+            // just add container as prefix to blobname.
+            // This is due to S3 not really having containers but just "prefix" that fake them.
+            if (!string.IsNullOrEmpty(container))
+            {
+                blob.Name = container + "/" + blob.Name;
+            }
+
             WriteBlob(url, blob, parallelUploadFactor, chunkSizeInMB);
         }
 
@@ -292,6 +312,17 @@ namespace azurecopy
 
             var url = baseUrl + "/" + container;
             return ListBlobsInContainer(url);
+        }
+
+        public void MakeContainerSimple(string container)
+        {
+            if (baseUrl == null)
+            {
+                throw new ArgumentNullException("Constructor needs base url passed");
+            }
+
+            var url = baseUrl + "/" + container;
+            MakeContainer(url);
         }
 
 

@@ -37,18 +37,23 @@ namespace azurecopy
 
         // really dont like the idea of storing plain passwords.
         // need to encrypt the app.config soon.
-        public DropboxHandler()
+        public DropboxHandler( string url = null)
         {
             client = DropboxHelper.GetClient();
+
+            baseUrl = null;
         }
 
         public string GetBaseUrl()
         {
-            return null;
+            return baseUrl;
         }
+
         public void MoveBlob(string startUrl, string finishUrl)
         {
+            throw new NotImplementedException("MoveBlob for DropBox not implemented");
         }
+
         // make container
         // assumption being last part of url is the new container.
         public void MakeContainer(string url)
@@ -121,14 +126,27 @@ namespace azurecopy
         // not passing url. Url will be generated behind the scenes.
         public Blob ReadBlobSimple(string container, string blobName, string filePath = "")
         {
-            throw new NotImplementedException("Dropbox not implemented yet");
+            if (string.IsNullOrEmpty(baseUrl))
+            {
+                throw new ArgumentNullException("Constructor needs base url passed");
+            }
+
+            var url = baseUrl + "/" + container + "/" + blobName;
+
+            return ReadBlob(url, filePath);
 
         }
 
         // not passing url.
         public void WriteBlobSimple(string container, Blob blob, int parallelUploadFactor = 1, int chunkSizeInMB = 4)
         {
-            throw new NotImplementedException("Dropbox not implemented yet");
+            if (baseUrl == null)
+            {
+                throw new ArgumentNullException("Constructor needs base url passed");
+            }
+
+            var url = baseUrl + "/" + container + "/";
+            WriteBlob(url, blob, parallelUploadFactor, chunkSizeInMB);
 
         }
 
@@ -165,6 +183,27 @@ namespace azurecopy
 
             return dirListing;
         }
+
+        public void MakeContainerSimple(string container)
+        {
+            if (string.IsNullOrEmpty(baseUrl))
+            {
+                throw new ArgumentNullException("Constructor needs base url passed");
+            }
+
+            if (string.IsNullOrEmpty(container))
+            {
+                throw new ArgumentNullException("container is empty/null");
+            }
+
+            var url = baseUrl + "/" + container;
+            var uri = new Uri(url);
+            var pathUri = uri.PathAndQuery;
+            client.CreateFolder(pathUri); 
+                
+                
+        }
+
 
     }
 }
