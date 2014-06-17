@@ -1,19 +1,12 @@
 ﻿TODO:
 
-+ Upload to dropbox
-+ Download from dropbox
-+ Upload to Sharepoint
-+ Download from Sharepoint
 
-==================
-
-reorder.
-
-+ Upload to DropBox
-+ Download from DropBox
 + Encrypt login details in app.config
 + Add retry logic to any Azure/S3 comms
++ Parallel upload/download with Azure
++ Parallel upload/download with S3
 + Azure Download in parallel for single blob.
+
 + S3 Download in parallel for single blob.
 + Azure upload in parallel for single blob.
 + S3 upload in parallel for single blob.
