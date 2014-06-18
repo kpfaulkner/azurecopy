@@ -50,7 +50,6 @@ namespace azurecopy.Utils
         public static bool IsABlob(string url)
         {
             return !url.EndsWith("/");
-
         }
 
         public static BasicBlobContainer BlobToBasicBlobContainer(Blob blob)
@@ -72,6 +71,5 @@ namespace azurecopy.Utils
         {
             return blobList.Where(b => b.Name.StartsWith(virtualDirectory)).ToList();
         }
-
     }
 }

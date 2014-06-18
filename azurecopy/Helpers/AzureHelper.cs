@@ -15,7 +15,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
  
- using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 using azurecopy.Helpers;
 using System;
@@ -53,7 +53,6 @@ namespace azurecopy.Utils
         public static CloudBlobClient GetTargetCloudBlobClient(string url)
         {
             return GetCloudBlobClient(url, false);
-
         }
 
 
@@ -74,10 +73,8 @@ namespace azurecopy.Utils
             {
                 if (IsDevUrl(url))
                 {
-                   
                     CloudStorageAccount storageAccount = CloudStorageAccount.DevelopmentStorageAccount;
                     blobClient = storageAccount.CreateCloudBlobClient();
-              
                 }
                 else
                 {
@@ -101,9 +98,7 @@ namespace azurecopy.Utils
                     // could do with a little work.
                     IRetryPolicy linearRetryPolicy = new LinearRetry( TimeSpan.FromSeconds( ConfigHelper.RetryAttemptDelayInSeconds), ConfigHelper.MaxRetryAttempts);
                     blobClient.RetryPolicy = linearRetryPolicy;
-
                 }
-
             }
 
             return blobClient;
@@ -114,9 +109,6 @@ namespace azurecopy.Utils
         {
             return (url.Contains(DevAzureDetection));
         }
-
-
-
 
         public static IEnumerable<IListBlobItem> ListBlobsInContainer(string containerUrl)
         {
@@ -153,7 +145,6 @@ namespace azurecopy.Utils
             if (!string.IsNullOrEmpty(blobUrl))
             {
                 Uri url = new Uri(blobUrl);
-                var blobName = "";
                 account = url.Host.Split('.')[0];
             }
 

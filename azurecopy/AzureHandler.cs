@@ -189,6 +189,7 @@ namespace azurecopy
             {
                 // probably bad container.
                 Console.WriteLine("Argument Exception " + ex.ToString());
+                throw;
             }
             finally
             {

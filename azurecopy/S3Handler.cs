@@ -38,15 +38,12 @@ namespace azurecopy
             baseUrl = url;
         }
 
-        private void Authenticate()
-        {
-
-        }
         public void MoveBlob(string startUrl, string finishUrl)
         {
 
 
         }
+
         // make container
         // assumption being last part of url is the new container.
         // With S3 "containers" could really be the bucket for the account

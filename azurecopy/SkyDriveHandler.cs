@@ -15,7 +15,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
- using azurecopy.Helpers;
+using azurecopy.Helpers;
 using azurecopy.Utils;
 using System;
 using System.Collections.Generic;
@@ -42,11 +42,13 @@ namespace azurecopy
         {
             return baseUrl;
         }
+
         public void MoveBlob(string startUrl, string finishUrl)
         {
 
 
         }
+
         // make container
         // assumption being last part of url is the new container.
         public void MakeContainer(string url)
