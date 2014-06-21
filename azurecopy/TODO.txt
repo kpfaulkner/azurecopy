@@ -9,6 +9,7 @@
 + Make sure copying multiple files at once... eg azurecopy ....\test*txt   c:\temp\  is supported.
 + Implement MoveBlob
 
+
 + Encrypt login details in app.config
 + Add retry logic to any Azure/S3 comms
 + Parallel upload/download with Azure

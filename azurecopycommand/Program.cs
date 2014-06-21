@@ -535,6 +535,8 @@ namespace azurecopycommand
                             }
                         }
 
+                        Console.WriteLine(string.Format("Copying {0} to {1}", url, _outputUrl));
+
                         // write blob
                         outputHandler.WriteBlob(_outputUrl, blob, ConfigHelper.ParallelFactor, ConfigHelper.ChunkSizeInMB);
                     }

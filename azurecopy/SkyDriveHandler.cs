@@ -32,6 +32,9 @@ namespace azurecopy
         private string accessToken;
         private string baseUrl = "";
 
+        // store so we dont have to keep retrieving it.
+        private static Datatypes.SkyDriveDirectory destinationDirectory = null;
+
         public SkyDriveHandler( string url=null)
         {
             accessToken = SkyDriveHelper.GetAccessToken();
@@ -107,16 +110,24 @@ namespace azurecopy
         {
             url = url.Replace( SkyDriveHelper.OneDrivePrefix, "");
 
-            var targetDirectory = SkyDriveHelper.CreateFolder(url);
+            if (destinationDirectory == null)
+            {
+                // check if target folder exists.
+                // if not, create it.
+                destinationDirectory = SkyDriveHelper.GetSkyDriveDirectory(url);
+
+                if (destinationDirectory == null)
+                {
+                    destinationDirectory = SkyDriveHelper.CreateFolder(url);
+                }
+            }
+           
             var blobName = blob.Name;
 
-            var urlTemplate = @"https://apis.live.net/v5.0/{0}/files/{1}";
-            var requestUrl = string.Format(urlTemplate, targetDirectory.Id, blobName);
+            var urlTemplate = @"https://apis.live.net/v5.0/{0}/files/{1}?access_token={2}";
+            var requestUrl = string.Format(urlTemplate, destinationDirectory.Id, blobName, accessToken);
 
-            var requestUriFile = new StringBuilder(requestUrl);
-            requestUriFile.AppendFormat("?access_token={0}", accessToken);
- 
-            HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(requestUriFile.ToString());
+            HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(requestUrl);
             request.Method = "PUT";
             Stream dataStream = request.GetRequestStream();
             Stream inputStream = null;
@@ -146,12 +157,9 @@ namespace azurecopy
             }
             while (  bytesRead > 0);
          
-            //request.ContentLength = totalSize;
-         
             dataStream.Close();
             HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-            string returnString = response.StatusCode.ToString();
-
+            response.Close();
         }
 
 
