@@ -49,7 +49,7 @@ namespace azurecopy.Utils
 
         public static bool IsABlob(string url)
         {
-            return !url.EndsWith("/");
+            return !url.EndsWith("/") &&  !url.EndsWith("\\");
         }
 
         public static BasicBlobContainer BlobToBasicBlobContainer(Blob blob)

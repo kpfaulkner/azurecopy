@@ -113,7 +113,26 @@ namespace azurecopy
 
         public List<BasicBlobContainer> ListBlobsInContainer(string baseUrl)
         {
-            throw new NotImplementedException();
+            var fileList = new List<BasicBlobContainer>();
+
+            var files = Directory.EnumerateFiles(baseUrl);
+
+            foreach( var file in files)
+            {
+                var f = new BasicBlobContainer();
+
+                var name = Path.GetFileName(file);
+
+                f.BlobType = BlobEntryType.Blob;
+                f.DisplayName = name;
+                f.Url = file;
+                f.Name = name;
+
+                fileList.Add(f);
+            }
+
+            return fileList;
+
         }
 
         public bool MatchHandler(string url)
