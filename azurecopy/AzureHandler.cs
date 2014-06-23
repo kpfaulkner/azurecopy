@@ -202,11 +202,24 @@ namespace azurecopy
 
         }
 
-        // NOTE: need to check if we need to modify  blob.ServiceClient.ParallelOperationThreadCount
+        /// <summary>
+        /// Upload in parallel.
+        /// If total size of file is smaller than chunkSize, then simply split length by parallel factor.
+        /// </summary>
+        /// <param name="stream"></param>
+        /// <param name="blob"></param>
+        /// <param name="parallelFactor"></param>
+        /// <param name="chunkSizeInMB"></param>
         private void ParallelWriteBlockBlob(Stream stream, CloudBlockBlob blob, int parallelFactor, int chunkSizeInMB)
         {
-            int chunkSize = chunkSizeInMB * 1024*1024;
+            long chunkSize = chunkSizeInMB * 1024*1024;
             var length = stream.Length;
+
+            if (chunkSize > length)
+            {
+                chunkSize = length / parallelFactor;
+            }
+
             var numberOfBlocks = (length / chunkSize ) +1 ;
             var blockIdList = new string[numberOfBlocks];
             var chunkSizeList = new int[numberOfBlocks];
@@ -222,30 +235,38 @@ namespace azurecopy
                     var index = (numberOfBlocks - count -  1);
 
                     var chunkSizeToUpload = (int)Math.Min(chunkSize, length - (index * chunkSize));
-                    chunkSizeList[index] = chunkSizeToUpload;
-                    var dataBuffer = new byte[chunkSizeToUpload];
-                    stream.Seek(index * chunkSize, SeekOrigin.Begin);
-                    stream.Read(dataBuffer, 0, chunkSizeToUpload);
 
-                    var t = Task.Factory.StartNew(() =>
+                    // only upload if we have data to give.
+                    // edge case where we already have uploaded all the data.
+                    if (chunkSizeToUpload > 0)
                     {
-                        var tempCount = index;
-                        var uploadSize = chunkSizeList[tempCount];
 
-                        var newBuffer = new byte[uploadSize];
-                        Array.Copy(dataBuffer, newBuffer, dataBuffer.Length);
-                        
-                        var blockId = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
+                        chunkSizeList[index] = chunkSizeToUpload;
+                        var dataBuffer = new byte[chunkSizeToUpload];
+                        stream.Seek(index * chunkSize, SeekOrigin.Begin);
+                        stream.Read(dataBuffer, 0, chunkSizeToUpload);
 
-                        using (var memStream = new MemoryStream(newBuffer, 0, uploadSize))
+                        var t = Task.Factory.StartNew(() =>
                         {
-                            blob.PutBlock(blockId, memStream, null);
-                        }
-                        blockIdList[tempCount] = blockId;
+                            var tempCount = index;
+                            var uploadSize = chunkSizeList[tempCount];
 
-                    });
+                            var newBuffer = new byte[uploadSize];
+                            Array.Copy(dataBuffer, newBuffer, dataBuffer.Length);
 
-                    taskList.Add(t);
+                            var blockId = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
+
+                            using (var memStream = new MemoryStream(newBuffer, 0, uploadSize))
+                            {
+                                blob.PutBlock(blockId, memStream, null);
+                            }
+                            blockIdList[tempCount] = blockId;
+
+                        });
+
+                        taskList.Add(t);
+                    }
+
                     count--;
 
                     
@@ -258,7 +279,7 @@ namespace azurecopy
 
             Task.WaitAll(taskList.ToArray());
 
-            blob.PutBlockList(blockIdList);
+            blob.PutBlockList(blockIdList.Where(t => t != null));
         }
 
         // can make this concurrent... soonish. :)
