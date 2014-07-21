@@ -23,6 +23,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -39,6 +40,7 @@ namespace azurecopycommand
         const string UsageString =
            @"Usage: azurecopy
                     -examples : Displays example commands for common scenarios
+                    -version: version of azurecopy
                     -v : verbose
                     -i <url>: input url
                     -o <url>: output url
@@ -70,6 +72,7 @@ namespace azurecopycommand
                       When destination is Onedrive, use the url format  one://directory/file";
 
 
+        const string VersionFlag = "-version";
         const string LocalDetection = "???";
         const string ExampleFlag = "-examples";
         const string VerboseFlag = "-v";
@@ -193,6 +196,12 @@ namespace azurecopycommand
                 {
                     switch (args[i])
                     {
+                        case VersionFlag:
+                            Assembly Reference = typeof(azurecopy.AzureHandler).Assembly;
+                            Version Version = Reference.GetName().Version;
+                            Console.WriteLine(Version.ToString());
+                            break;
+
                         case ExampleFlag:
                             _action = Action.Examples;
                             break;
