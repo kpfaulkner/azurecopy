@@ -1,103 +1,63 @@
 Azure Copy
 ----------
 
-Allows easy copying between S3, Azure and local filesystem. 
-Only a few days old, so still in early development.
+Allows easy copying between S3, Azure, Dropbox, Sharepoint Online, OneDrive and local filesystem. 
 
-UPDATE:
+Configuration:
 
-Skydrive now has basic support (read/write blobs).
-To use Skydrive the prefix "sky://" needs to be appended to the URL. For example, if copying a file c:\temp\test.txt to a folder "temp" in my Skydrive account, then the
-command is:
+To access each cloud provider various keys/passwords will needed to be added to the azurecopy.exe.config (or app.config if you're coding your own). The AppSetting keys to use are:
 
-	azurecopy -i c:\temp\test.txt -o sky://temp
+Azure:
+<add key="AzureAccountKey" value="" />
 
-See end of file for details regarding setting up of Skydrive configuration.
+S3:
+<add key="AWSAccessKeyID" value="" />
+<add key="AWSSecretAccessKeyID" value="" />
+<add key="AWSRegion" value="us-west-2" />
 
-Usage:
+OneDrive: (yes yes, it still says skydrive in the config).
+<add key="SkyDriveCode" value="" />
+<add key="SkyDriveRefreshToken" value="" />
 
-azurecopy.exe -i inputurl -o outputurl
+Dropbox:
+<add key="DropBoxAPIKey" value="" />
+<add key="DropBoxAPISecret" value="" />
 
-	eg.
+Sharepoint Online:
+<add key="SharepointUsername" value="" />
+<add key="SharepointPassword" value="" />
 
-	azurecopy.exe -i "https://testurl.s3-us-west-2.amazonaws.com/myfile.txt" -o "https://azuretest.blob.core.windows.net/test/"
+For Azure,S3 and Sharepoint Online you simply copy the configuration values from the appropriate portal to the azurecopy.exe.config file directly. If you are unsure where to find these configuration values
+please feel free to contact me at ken.faulkner@gmail.com and I can direct you.
 
-	This will copy the S3 blob "myfile.txt" into Azure Blob Storage into the "test" container.
+For OneDrive and Dropbox the configuration is a little more invovled.
 
-You can also simply list directories and not files.
+For OneDrive you need to issue the command:
 
-	eg.
-	azurecopy.exe -i "https://testurl.s3-us-west-2.amazonaws.com/" -o "https://azuretest.blob.core.windows.net/test/"
+azurecopy -configonedrive
 
-	This will copy all S3 blobs that are in the "testurl" bucket into Azure Blob Storage and put them into the "test" container.
+and then follow the instructions. This basically involves copying a URL to a browser, accepting the OneDrive prompt saying you allow AzureCopy to access your OneDrive account and then copying part of the response 
+URL back into the command prompt. The instructions will be clearly displayed in the command prompt.
 
+For Dropbox you need to issue the command:
 
-If the target location is Azure Blob Storage, then we can get Azure to perform the copy for us (so we dont have to transfer between S3 and where azurecopy is running). 
-Simply add "-blobcopy" into the command.
+azurecopy -configdropbox 
 
-	eg.
-	azurecopy.exe -blobcopy -i "https://testurl.s3-us-west-2.amazonaws.com/myfile.txt" -o "https://azuretest.blob.core.windows.net/test/"
-
-	This version monitors the blob copy and waits until there are no pending copies left.
-	azurecopy.exe -m -blobcopy -i "https://testurl.s3-us-west-2.amazonaws.com/myfile.txt" -o "https://azuretest.blob.core.windows.net/test/"
-
-
-
-You can list blobs in a container/bucket.
-
-	eg.
-	azurecopy.exe -list "https://testurl.s3.amazonaws.com"
+Again, follow the instructions and the config file will be automatically modified for you.
 
 
-You *can* have the Azure Account Key, S3 Access Key and S3 Access Key secret in the azurecopy.exe.config file. But if preferred these can be passed in on the command line:
-
-	eg.
-	
-	azurecopy.exe -i "https://testurl.s3-us-west-2.amazonaws.com/myfile.txt" -o "https://azuretest.blob.core.windows.net/test/" -azurekey "myazurekey" -s3accesskey "mys3accesskey" -s3secretkey "mys3secretkey"
-
-To copy to Skydrive issue the command similar to:
-
-	azurecopy -i c:\temp\test.txt -o sky://temp
-
-Complete list of command line arguments:
-
-	-v : verbose
-	-i : input url
-	-o : output url
-	-d : download to filesystem before uploading to output url. (use for big blobs)
-	-blobcopy : use blobcopy API for when Azure is output url.
-	-list : list blobs in bucket/container. Use in conjunction with -i
-	-m : Monitor progress of copy when in "blobcopy" mode (ie -blobcopy flag was used). Program will not exit until all pending copies are complete.
-	-destblobtype page|block : Destination blob type. Used when destination url is Azure and input url was NOT azure. eg S3 to Azure. 
-	-ak | -azurekey : Azure account key.
-	-s3k | -s3accesskey : S3 access key.
-	-s3sk | -s3secretkey : S3 access key secret.
-	-sak | -srcazurekey : input url Azure account key.
-	-ss3k | -srcs3accesskey : input url S3 access key.
-	-ss3sk | -srcs3secretkey : input url S3 access key secret.
-	-tak | -targetazurekey : output url Azure account key.
-	-ts3k | -targets3accesskey : output url S3 access key.
-	-ts3sk | -targets3secretkey : output url S3 access key secret.
-
-Please see TODO.txt for planned changes/enhancements.
+Examples:
 
 
+S3 to Azure using regular copy:   azurecopy.exe -i https://mybucket.s3.amazonaws.com/myblob -o https://myaccount.blob.core.windows.net/mycontainer
+S3 to Azure using blob copy api (better for local bandwidth: azurecopy.exe -i https://mybucket.s3.amazonaws.com/myblob -o https://myaccount.blob.core.windows.net/mycontainer -blobcopy
+Azure to S3: azurecopy.exe -i https://myaccount.blob.core.windows.net/mycontainer/myblob -o https://mybucket.s3.amazonaws.com/ 
+List contents in S3 bucket: azurecopy.exe -list https://mybucket.s3.amazonaws.com/
+List contents in Azure container: azurecopy.exe -list https://myaccount.blob.core.windows.net/mycontainer/ 
+Onedrive to local using regular copy: azurecopy.exe -i sky://temp/myfile.txt -o c:\\temp\\");
+Dropbox to local using regular copy: azurecopy.exe -i https://dropbox.com/temp/myfile.txt -o c:\\temp\\
 
-SkyDrive Configuration:
+More examples will be added directly to AzureCopy which you can see by running the command:
 
-Due to the OAuth authentication/authorisation for Skydrive the setup process is currently a little cumbersome. Hopefully this will change soon.
-Currently the steps required to setup Skydrive is as follows:
+azurecopy -examples
 
-	1) In your favourite browser, load the URL:  https://login.live.com/oauth20_authorize.srf?client_id=00000000480EE365&scope=wl.offline_access,wl.skydrive,wl.skydrive_update&response_type=code&redirect_uri=http://kpfaulkner.com/azurecopyoauth/
-	2) Skydrive will ask you to login, allowing Azurecopy to access your Skydrive details. Please login.
-	3) You'll get redirected to a URL similar to: http://kpfaulkner.com/azurecopyoauth/?code=a06e4364-bd1d-9f10-6b24-0d576c37a8a7
-	4) Copy/paste the code (after the = character) into an editor.
-	5) Open the azurecopy.exe.config file which came with the azurecopy zip file.
-	6) Modify the "SkyDriveCode" line in the config file, entering the code copied in step 4.
-
-		eg. The line should look like:
-
-		<add key="SkyDriveCode" value="a06e4364-bd1d-9f10-6b24-0d576c37a8a7"/>
-
-	7) Save the azurecopy.exe.config  
-	8) Profit $$$
