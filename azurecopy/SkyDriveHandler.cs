@@ -65,12 +65,33 @@ namespace azurecopy
         public Blob ReadBlob(string url, string filePath = "")
         {
             Blob blob = new Blob();
+            string blobName = "";
 
-            url = url.Replace(SkyDriveHelper.OneDrivePrefix, "");
+            StringBuilder requestUriFile;
 
-            var skydriveFileEntry = SkyDriveHelper.GetSkyDriveEntryByFileNameAndDirectory(url);
-            
-            var requestUriFile =  new StringBuilder( skydriveFileEntry.Source);
+            if (url.IndexOf(SkyDriveHelper.OneDrivePrefix) != -1)
+            {
+                url = url.Replace(SkyDriveHelper.OneDrivePrefix, "");
+
+                var skydriveFileEntry = SkyDriveHelper.GetSkyDriveEntryByFileNameAndDirectory(url);
+                requestUriFile = new StringBuilder(skydriveFileEntry.Source);
+                var sp = url.Split('/');
+                blobName = sp[sp.Length - 1];
+            }
+            else
+            {
+                // get blob name from url then remove it.
+                // ugly ugly hack.
+                var sp = url.Split('=');
+                blobName = sp.Last();
+
+                var lastIndex = url.LastIndexOf("&");
+
+                requestUriFile = new StringBuilder(url.Substring(0, lastIndex));
+                // manipulated url to include blobName="real blob name". So parse end off url.
+                // ugly hack... but needed a way for compatibility with other handlers.
+            }
+
             requestUriFile.AppendFormat("?access_token={0}", accessToken);
             HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(requestUriFile.ToString());
             request.Method = "GET";
@@ -98,8 +119,7 @@ namespace azurecopy
 
             }
 
-            var sp = url.Split('/');
-            blob.Name = sp[sp.Length - 1];
+            blob.Name = blobName;
             blob.BlobOriginType = UrlType.SkyDrive;
             return blob;
         }
@@ -190,11 +210,13 @@ namespace azurecopy
                 var blob = new BasicBlobContainer();
                 blob.Name = skyDriveEntry.Name;
 
+                var resolvedOneDriveEntry = SkyDriveHelper.ListSkyDriveFileWithUrl(skyDriveEntry.Id);
+
                 // keep display name same as name until determine otherwise.
                 blob.DisplayName = blob.Name;
                 blob.Container = container;
-                blob.Url = skyDriveEntry.Link;                
-                blobList.Add( blob );
+                blob.Url = string.Format("{0}&blobName={1}", resolvedOneDriveEntry.Source, blob.Name);       // modify link so we can determine blob name purely from link.             
+                blobList.Add(blob);
             }
             return blobList;
 
