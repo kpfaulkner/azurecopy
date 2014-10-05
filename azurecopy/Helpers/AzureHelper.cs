@@ -34,7 +34,8 @@ namespace azurecopy.Utils
 
         public static string AzureStorageConnectionString { get; set; }
 
-        const string AzureDetection = "windows.net";
+        const string AzureDetection = "blob.core.windows.net";
+        const string AzureFileDetection = "file.core.windows.net";
         const string DevAzureDetection = "127.0.0.1";
         static CloudBlobClient SrcBlobClient { get; set; }
         static CloudBlobClient TargetBlobClient { get; set; }
@@ -207,6 +208,10 @@ namespace azurecopy.Utils
             return url.Contains(AzureDetection) || url.Contains(DevAzureDetection);
         }
 
+        public static bool MatchFileHandler(string url)
+        {
+            return url.Contains(AzureFileDetection);
+        }
 
         public static BasicBlobContainer AzureContainerToBasicBlobContainer(CloudBlobContainer container)
         {

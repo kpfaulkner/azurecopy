@@ -24,7 +24,7 @@ using System.Threading.Tasks;
 namespace azurecopy
 {
     public enum DestinationBlobType { Unknown, Block, Page };
-    public enum UrlType { Azure, S3, SkyDrive, Local, Sharepoint, Dropbox, Other };
+    public enum UrlType { Azure, S3, SkyDrive, Local, Sharepoint, Dropbox, AzureFile, Other };
 
     public enum BlobEntryType
     {

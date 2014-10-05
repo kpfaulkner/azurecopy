@@ -164,6 +164,10 @@ namespace azurecopycommand
             {
                 urlType = UrlType.Azure;
             }
+            else if (AzureHelper.MatchFileHandler(url))
+            {
+                urlType = UrlType.AzureFile;
+            }
             else if (S3Helper.MatchHandler(url))
             {
                 urlType = UrlType.S3;
@@ -466,6 +470,10 @@ namespace azurecopycommand
             {
                 case UrlType.Azure:
                     blobHandler = new AzureHandler();
+                    break;
+
+                case UrlType.AzureFile:
+                    blobHandler = new AzureFileHandler();
                     break;
 
                 case UrlType.S3:
