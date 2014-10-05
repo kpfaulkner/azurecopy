@@ -25,6 +25,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using Microsoft.WindowsAzure.Storage.RetryPolicies;
+using Microsoft.WindowsAzure.Storage.File;
 
 namespace azurecopy.Utils
 {
@@ -38,10 +39,16 @@ namespace azurecopy.Utils
         static CloudBlobClient SrcBlobClient { get; set; }
         static CloudBlobClient TargetBlobClient { get; set; }
 
+        static CloudFileClient SrcFileClient { get; set; }
+        static CloudFileClient TargetFileClient { get; set; }
+
+
         static AzureHelper()
         {
             SrcBlobClient = null;
             TargetBlobClient = null;
+            SrcFileClient = null;
+            TargetFileClient = null;
         }
 
         public static CloudBlobClient GetSourceCloudBlobClient(string url)
@@ -55,6 +62,23 @@ namespace azurecopy.Utils
             return GetCloudBlobClient(url, false);
         }
 
+        public static CloudStorageAccount GetCloudStorageAccount( string url, string accountKey, string accountName)
+        {
+            CloudStorageAccount storageAccount;
+
+            if (IsDevUrl(url))
+            {
+                storageAccount = CloudStorageAccount.DevelopmentStorageAccount;
+            }
+            else
+            {
+                var credentials = new Microsoft.WindowsAzure.Storage.Auth.StorageCredentials(accountName, accountKey);
+                storageAccount = new CloudStorageAccount(credentials, true);
+            }
+
+            return storageAccount;
+
+        }
 
         public static CloudBlobClient GetCloudBlobClient(string url, bool isSrc )
         {
@@ -71,39 +95,66 @@ namespace azurecopy.Utils
 
             if (blobClient == null)
             {
-                if (IsDevUrl(url))
+                
+                var accountName = GetAccountNameFromUrl(url);
+                string accountKey = ConfigHelper.AzureAccountKey;
+
+                if (isSrc)
                 {
-                    CloudStorageAccount storageAccount = CloudStorageAccount.DevelopmentStorageAccount;
-                    blobClient = storageAccount.CreateCloudBlobClient();
+                    accountKey = ConfigHelper.SrcAzureAccountKey;
                 }
                 else
                 {
-                    var accountName = GetAccountNameFromUrl(url);
-                    string accountKey = ConfigHelper.AzureAccountKey;
-
-                    if (isSrc)
-                    {
-                        accountKey = ConfigHelper.SrcAzureAccountKey;
-                    }
-                    else
-                    {
-                        accountKey = ConfigHelper.TargetAzureAccountKey;
-                    }
-
-                    var credentials = new Microsoft.WindowsAzure.Storage.Auth.StorageCredentials(accountName, accountKey);
-                    CloudStorageAccount azureStorageAccount = new CloudStorageAccount(credentials, true);
-                    blobClient = azureStorageAccount.CreateCloudBlobClient();
-
-                    // retry policy.
-                    // could do with a little work.
-                    IRetryPolicy linearRetryPolicy = new LinearRetry( TimeSpan.FromSeconds( ConfigHelper.RetryAttemptDelayInSeconds), ConfigHelper.MaxRetryAttempts);
-                    blobClient.RetryPolicy = linearRetryPolicy;
+                    accountKey = ConfigHelper.TargetAzureAccountKey;
                 }
+
+                var storageAccount = GetCloudStorageAccount(url, accountKey, accountName);
+                blobClient = storageAccount.CreateCloudBlobClient();
+
+                // retry policy.
+                // could do with a little work.
+                IRetryPolicy linearRetryPolicy = new LinearRetry( TimeSpan.FromSeconds( ConfigHelper.RetryAttemptDelayInSeconds), ConfigHelper.MaxRetryAttempts);
+                blobClient.RetryPolicy = linearRetryPolicy;
+                
             }
 
             return blobClient;
         }
 
+        public static CloudFileClient GetCloudFileClient(string url, bool isSrc)
+        {
+            CloudFileClient fileClient = null;
+
+            if (isSrc)
+            {
+                fileClient = SrcFileClient;
+            }
+            else
+            {
+                fileClient = TargetFileClient;
+            }
+
+            if (fileClient == null)
+            {
+
+                var accountName = GetAccountNameFromUrl(url);
+                string accountKey = ConfigHelper.AzureAccountKey;
+
+                if (isSrc)
+                {
+                    accountKey = ConfigHelper.SrcAzureAccountKey;
+                }
+                else
+                {
+                    accountKey = ConfigHelper.TargetAzureAccountKey;
+                }
+
+                var storageAccount = GetCloudStorageAccount(url, accountKey, accountName);
+                fileClient = storageAccount.CreateCloudFileClient();
+            }
+
+            return fileClient;
+        }
 
         private static bool IsDevUrl(string url)
         {
