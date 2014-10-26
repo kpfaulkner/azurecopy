@@ -228,11 +228,11 @@ namespace azurecopy
             var count = numberOfBlocks - 1;
 
             // read the data...  spawn a task to launch... then wait for all.
-            while (count >= 0) 
+            while (count >= 0)
             {
                 while (count >= 0 && taskList.Count < parallelFactor)
                 {
-                    var index = (numberOfBlocks - count -  1);
+                    var index = (numberOfBlocks - count - 1);
 
                     var chunkSizeToUpload = (int)Math.Min(chunkSize, length - (index * chunkSize));
 
@@ -269,11 +269,14 @@ namespace azurecopy
 
                     count--;
 
-                    
+
                 }
 
                 var waitedIndex = Task.WaitAny(taskList.ToArray());
-                taskList.RemoveAt(waitedIndex);
+                if (waitedIndex >= 0)
+                {
+                    taskList.RemoveAt(waitedIndex);
+                }
             }
 
 
@@ -382,6 +385,19 @@ namespace azurecopy
             }
 
             return blobList;
+        }
+
+        public List<BasicBlobContainer> ListContainers(string baseUrl)
+        {
+            var containerList = new List<BasicBlobContainer>();
+            var client = AzureHelper.GetSourceCloudBlobClient(baseUrl);
+            var containers = client.ListContainers();
+            foreach( var container in containers)
+            {
+                containerList.Add(new BasicBlobContainer { BlobType = BlobEntryType.Container, Container = "", DisplayName = container.Name, Name = container.Name });
+            }
+
+            return containerList;
         }
 
         // not passing url. Url will be generated behind the scenes.
