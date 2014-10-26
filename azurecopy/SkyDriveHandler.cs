@@ -62,6 +62,12 @@ namespace azurecopy
 
         }
 
+        public List<BasicBlobContainer> ListContainers(string baseUrl)
+        {
+            throw new NotImplementedException("Onedrive list containers not implemented");
+        }
+
+
         public Blob ReadBlob(string url, string filePath = "")
         {
             Blob blob = new Blob();

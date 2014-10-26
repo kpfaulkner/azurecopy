@@ -54,6 +54,11 @@ namespace azurecopy
             throw new NotImplementedException("MoveBlob for DropBox not implemented");
         }
 
+        public List<BasicBlobContainer> ListContainers(string baseUrl)
+        {
+            throw new NotImplementedException("Dropbox list containers not implemented");
+        }
+
         // make container
         // assumption being last part of url is the new container.
         public void MakeContainer(string url)

@@ -53,6 +53,8 @@ namespace azurecopy
         // can contain virtual directories such as https://....../mycontainer/virtualdir1/virtualdir2  
         List<BasicBlobContainer> ListBlobsInContainer(string baseUrl);
 
+        // list containers/directories available
+        List<BasicBlobContainer> ListContainers(string baseUrl);
       
         // core URL used for this handler.
         // could be the Azure url for a given account, or the bucket/S3 url.

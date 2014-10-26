@@ -71,6 +71,11 @@ namespace azurecopy
             return blob;
         }
 
+        public List<BasicBlobContainer> ListContainers(string baseUrl)
+        {
+            throw new NotImplementedException("Filesystem list containers not implemented");
+        }
+
 
         public void WriteBlob(string localFilePath, Blob blob,   int parallelUploadFactor=1, int chunkSizeInMB=4)
         {

@@ -31,7 +31,7 @@ using System.Threading.Tasks;
 namespace azurecopycommand
 {
 
-    public enum Action { None, NormalCopy, BlobCopy, List, Examples, Make }
+    public enum Action { None, NormalCopy, BlobCopy, List, ListContainers, Examples, Make }
 
     class Program
     {
@@ -47,6 +47,7 @@ namespace azurecopycommand
                     -d <local path>: download to filesystem before uploading to output url. (use for big blobs)
                     -blobcopy : use blobcopy API for when Azure is output url.
                     -list <url>: list blobs in bucket/container. eg. -list https://s3.amazonaws.com/mycontainer 
+                    -lc <url> : list containers for account. eg -lc https://testacc.blob.core.windows.net
                     -pu : parallel upload
                     -cs : chunk size used for parallel upload (in MB).
                     -m : Monitor progress of copy when in 'blobcopy' mode (ie -blobcopy flag was used). Program will not exit until all pending copies are complete.
@@ -80,7 +81,8 @@ namespace azurecopycommand
         const string OutputUrlFlag = "-o";
         const string DownloadFlag = "-d";
         const string BlobCopyFlag = "-blobcopy";
-        const string ListContainerFlag = "-list";
+        const string ListContainerBlobsFlag = "-list";
+        const string ListContainersFlag = "-lc";
         const string MonitorBlobCopyFlag = "-m";
         const string ParallelUploadFlag = "-pu";
         const string ChunkSizeFlag = "-cs";
@@ -277,13 +279,20 @@ namespace azurecopycommand
                             _action = Action.BlobCopy;
                             break;
 
-                        case ListContainerFlag:
+                        case ListContainerBlobsFlag:
                             i++;
                             _inputUrl = GetArgument(args, i);
                             _inputUrlType = GetUrlType(_inputUrl);
                             _listContainer = true;
                             _action = Action.List;
+                            break;
 
+                        case ListContainersFlag:
+                            i++;
+                            _inputUrl = GetArgument(args, i);
+                            _inputUrlType = GetUrlType(_inputUrl);
+                            _listContainer = true;
+                            _action = Action.ListContainers;
                             break;
 
                         case MakeContainerFlag:
@@ -608,6 +617,26 @@ namespace azurecopycommand
 
         }
 
+        static void DoListContainers()
+        {
+            IBlobHandler handler = GetHandler(_inputUrlType);
+
+            try
+            {
+                var containerList = handler.ListContainers(_inputUrl);
+
+                foreach (var container in containerList)
+                {
+                    Console.WriteLine(string.Format("{0}", container.DisplayName));
+                }
+            }
+            catch(NotImplementedException ex)
+            {
+                Console.WriteLine("Unfortunately Listing containers/directories is not supported for this cloud platform yet");
+            }
+        }
+
+
         static void DoList()
         {
             IBlobHandler handler = GetHandler(_inputUrlType);
@@ -632,6 +661,9 @@ namespace azurecopycommand
                     DoList();
                     break;
 
+                case Action.ListContainers:
+                    DoListContainers();
+                    break;
                 case Action.Make:
                     DoMake();
                     break;

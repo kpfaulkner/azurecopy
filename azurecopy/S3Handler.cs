@@ -299,6 +299,12 @@ namespace azurecopy
             WriteBlob(url, blob, parallelUploadFactor, chunkSizeInMB);
         }
 
+        public List<BasicBlobContainer> ListContainers(string baseUrl)
+        {
+            throw new NotImplementedException("S3 list containers not implemented");
+        }
+
+
         // not required to pass full url.
         public List<BasicBlobContainer> ListBlobsInContainerSimple(string container)
         {

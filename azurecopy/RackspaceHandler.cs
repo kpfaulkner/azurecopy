@@ -46,6 +46,12 @@ namespace azurecopy
 
         }
 
+        public List<BasicBlobContainer> ListBlobsInContainer(string baseUrl)
+        {
+            throw new NotImplementedException("Rackspace list containers not implemented");
+        }
+
+
         public string GetBaseUrl()
         {
             return baseUrl;
@@ -64,7 +70,7 @@ namespace azurecopy
 
         }
 
-        public List<BasicBlobContainer> ListBlobsInContainer(string container)
+        public List<BasicBlobContainer> ListContainers(string container)
         {
             throw new NotImplementedException("Sharepoint not implemented yet");
 

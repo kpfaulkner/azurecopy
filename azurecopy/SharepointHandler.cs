@@ -46,6 +46,12 @@ namespace azurecopy
 
 
         }
+
+        public List<BasicBlobContainer> ListContainers(string baseUrl)
+        {
+            throw new NotImplementedException("Sharepoint list containers not implemented");
+        }
+
         // make container
         // assumption being last part of url is the new container.
         // so need to get collection of everything up until the last segment of the url.

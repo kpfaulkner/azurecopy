@@ -50,6 +50,12 @@ namespace azurecopy
             GetContainer(url);
         }
 
+        public List<BasicBlobContainer> ListContainers(string baseUrl)
+        {
+            throw new NotImplementedException("Azure File Handler list containers not implemented");
+        }
+
+
         // container can be subdirectories and NOT just at root level.
         // url is full url https://myaccount.file.core.windows.net/mydirectory/myfile OR
         //  https://myaccount.file.core.windows.net/mydirectory/ <--- note trailing forward slash!
