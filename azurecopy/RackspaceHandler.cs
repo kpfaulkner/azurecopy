@@ -46,6 +46,12 @@ namespace azurecopy
 
         }
 
+        // override configuration. 
+        public void OverrideConfiguration(Dictionary<string, string> configuration)
+        {
+            throw new NotImplementedException("OverrideConfiguration not implemented yet");
+        }
+
         public List<BasicBlobContainer> ListBlobsInContainer(string baseUrl)
         {
             throw new NotImplementedException("Rackspace list containers not implemented");

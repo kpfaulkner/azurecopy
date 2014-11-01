@@ -52,6 +52,12 @@ namespace azurecopy
 
         }
 
+        // override configuration. 
+        public void OverrideConfiguration(Dictionary<string, string> configuration)
+        {
+            throw new NotImplementedException("OverrideConfiguration not implemented yet");
+        }
+
         // make container
         // assumption being last part of url is the new container.
         public void MakeContainer(string url)

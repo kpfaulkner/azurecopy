@@ -47,6 +47,12 @@ namespace azurecopy
 
         }
 
+        // override configuration. 
+        public void OverrideConfiguration(Dictionary<string, string> configuration)
+        {
+            throw new NotImplementedException("OverrideConfiguration not implemented yet");
+        }
+
         public List<BasicBlobContainer> ListContainers(string baseUrl)
         {
             throw new NotImplementedException("Sharepoint list containers not implemented");

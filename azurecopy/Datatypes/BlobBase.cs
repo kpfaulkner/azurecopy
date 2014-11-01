@@ -30,6 +30,7 @@ namespace azurecopy
     {
         Blob,
         Container,
+        Directory,
         Unknown
     };
 

@@ -55,6 +55,11 @@ namespace azurecopy
             throw new NotImplementedException("Azure File Handler list containers not implemented");
         }
 
+        // override configuration. 
+        public void OverrideConfiguration(Dictionary<string, string> configuration)
+        {
+            throw new NotImplementedException("OverrideConfiguration not implemented yet");
+        }
 
         // container can be subdirectories and NOT just at root level.
         // url is full url https://myaccount.file.core.windows.net/mydirectory/myfile OR

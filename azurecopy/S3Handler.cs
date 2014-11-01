@@ -32,16 +32,51 @@ namespace azurecopy
     public class S3Handler : IBlobHandler
     {
         private string baseUrl = null;
-
+        public static readonly string AwsRegionIdentifier = "region";
+        public static readonly string AwsKeyIdentifier = "key";
+        public static readonly string AwsSecretKeyIdentifier = "secret";
+      
         public S3Handler(string url = null)
         {
             baseUrl = url;
         }
 
+        // override configuration. 
+        public void OverrideConfiguration( Dictionary<string,string> configuration)
+        {
+            // assumptions on configuration values are made per cloud type.
+            // ie S3 will have diff values to Azure etc.
+            string awsRegion;
+            if (configuration.TryGetValue( AwsRegionIdentifier, out awsRegion ))
+            {
+                // reassign the 3 bucket variables for S3. The global, src and target values in ConfigHelper.
+                ConfigHelper.AWSRegion = awsRegion;
+                ConfigHelper.SrcAWSRegion = awsRegion;
+                ConfigHelper.TargetAWSRegion = awsRegion;
+            }
+
+            string awsKey;
+            if (configuration.TryGetValue(AwsKeyIdentifier, out awsKey))
+            {
+                // reassign the 3 bucket variables for S3. The global, src and target values in ConfigHelper.
+                ConfigHelper.AWSAccessKeyID = awsKey;
+                ConfigHelper.SrcAWSAccessKeyID = awsKey;
+                ConfigHelper.TargetAWSAccessKeyID = awsKey;
+            }
+
+            string awsSecret;
+            if (configuration.TryGetValue(AwsSecretKeyIdentifier, out awsSecret))
+            {
+                // reassign the 3 bucket variables for S3. The global, src and target values in ConfigHelper.
+                ConfigHelper.AWSSecretAccessKeyID = awsSecret;
+                ConfigHelper.SrcAWSSecretAccessKeyID = awsSecret;
+                ConfigHelper.TargetAWSSecretAccessKeyID = awsSecret;
+            }
+        }
+
         public void MoveBlob(string startUrl, string finishUrl)
         {
-
-
+            throw new NotImplementedException("Moving not implemented for S3 yet.");
         }
 
         // make container
@@ -56,7 +91,7 @@ namespace azurecopy
             var bucket = S3Helper.GetBucketFromUrl(url);
             var key = S3Helper.GetKeyFromUrl(url);
             
-            using (IAmazonS3 client = S3Helper.GenerateS3Client(ConfigHelper.AWSAccessKeyID, ConfigHelper.AWSSecretAccessKeyID, ConfigHelper.AWSRegion))
+            using (IAmazonS3 client = S3Helper.GenerateS3Client(ConfigHelper.AWSAccessKeyID, ConfigHelper.AWSSecretAccessKeyID, bucket))
             {
                 var putObjectRequest = new PutObjectRequest
                 {
@@ -82,7 +117,6 @@ namespace azurecopy
         /// <returns></returns>
         public Blob ReadBlob(string url, string fileName = "")
         {
-
             var bucket = S3Helper.GetBucketFromUrl(url);
             var key = S3Helper.GetKeyFromUrl(url);
             var blob = new Blob();
@@ -91,13 +125,12 @@ namespace azurecopy
             blob.FilePath = fileName;
             blob.BlobOriginType = UrlType.S3;
 
-            using (IAmazonS3 client = S3Helper.GenerateS3Client(ConfigHelper.SrcAWSAccessKeyID, ConfigHelper.SrcAWSSecretAccessKeyID, ConfigHelper.SrcAWSRegion))
+            using (IAmazonS3 client = S3Helper.GenerateS3Client(ConfigHelper.SrcAWSAccessKeyID, ConfigHelper.SrcAWSSecretAccessKeyID, bucket))
             {
                 GetObjectRequest getObjectRequest = new GetObjectRequest() { BucketName = bucket, Key = key };
                 
                 using (GetObjectResponse getObjectResponse = client.GetObject(getObjectRequest))
                 {
-
                     using (Stream s = getObjectResponse.ResponseStream)
                     {
                         // get stream to store.
@@ -117,7 +150,6 @@ namespace azurecopy
                                 var ms = stream as MemoryStream;
                                 blob.Data = ms.ToArray();
                             }
-
                         }
                     }
                     
@@ -137,6 +169,7 @@ namespace azurecopy
         {
             var bucket = S3Helper.GetBucketFromUrl(url);
             var key = blob.Name;
+            var prefix = S3Helper.GetPrefixFromUrl(url);
 
             Stream stream = null;
 
@@ -152,14 +185,13 @@ namespace azurecopy
                     stream = new MemoryStream(blob.Data);
                 }
 
-                using (IAmazonS3 client = S3Helper.GenerateS3Client(ConfigHelper.TargetAWSAccessKeyID, ConfigHelper.TargetAWSSecretAccessKeyID, ConfigHelper.TargetAWSRegion))
+                using (IAmazonS3 client = S3Helper.GenerateS3Client(ConfigHelper.TargetAWSAccessKeyID, ConfigHelper.TargetAWSSecretAccessKeyID, bucket))
                 {
                     var putObjectRequest = new PutObjectRequest
                         {
                             BucketName = bucket,
-                            Key = key,
-                            InputStream = stream,
-                            
+                            Key = prefix+key,
+                            InputStream = stream,                   
                         };
 
                     client.PutObject(putObjectRequest);
@@ -185,28 +217,23 @@ namespace azurecopy
             var blobList = new List<BasicBlobContainer>();
             var prefix = S3Helper.GetPrefixFromUrl(baseUrl);
 
-            using (IAmazonS3 client = S3Helper.GenerateS3Client(ConfigHelper.SrcAWSAccessKeyID, ConfigHelper.SrcAWSSecretAccessKeyID, ConfigHelper.SrcAWSRegion))
+            using (IAmazonS3 client = S3Helper.GenerateS3Client(ConfigHelper.SrcAWSAccessKeyID, ConfigHelper.SrcAWSSecretAccessKeyID, bucket))
             {
                 var request = new ListObjectsRequest();
      
                 request.BucketName = bucket;
-
+               
                 if (!string.IsNullOrEmpty(prefix))
                 {
                     request.Prefix = prefix;
                 }
-                
+         
                 do
                 {
                     ListObjectsResponse response = client.ListObjects(request);
-
                     foreach (var obj in response.S3Objects)
                     {
-                       
                         var fullPath = GenerateUrl(baseUrl, bucket, obj.Key);
-
-                        // can only go one directory deep for now.
-                        // if ends in / will ignore.
 
                         if (!fullPath.EndsWith("/"))
                         {
@@ -219,6 +246,10 @@ namespace azurecopy
                             if (blob.Name.Contains('/'))
                             {
                                 blob.DisplayName = blob.Name.Split('/')[1];
+                            }
+                            else
+                            {
+                                blob.DisplayName = blob.Name;
                             }
                             blobList.Add(blob);
                         }
@@ -301,19 +332,30 @@ namespace azurecopy
 
         public List<BasicBlobContainer> ListContainers(string baseUrl)
         {
-            throw new NotImplementedException("S3 list containers not implemented");
-        }
+            var containerList = new List<BasicBlobContainer>();
 
+            using (IAmazonS3 client = S3Helper.GenerateS3Client(ConfigHelper.SrcAWSAccessKeyID, ConfigHelper.SrcAWSSecretAccessKeyID))
+            {
+                var buckets = client.ListBuckets();
+
+                foreach(var bucket in buckets.Buckets)
+                {
+                    containerList.Add(new BasicBlobContainer { BlobType = BlobEntryType.Container, Container = "", DisplayName = bucket.BucketName, Name = bucket.BucketName });
+                }
+            }
+            return containerList;
+        }
 
         // not required to pass full url.
         public List<BasicBlobContainer> ListBlobsInContainerSimple(string container)
         {
-            if (baseUrl == null)
-            {
-                throw new ArgumentNullException("Constructor needs base url passed");
-            }
+            //if (baseUrl == null)
+            //{
+            //    throw new ArgumentNullException("Constructor needs base url passed");
+            //}
 
-            var url = baseUrl + "/" + container;
+            // var url = baseUrl + "/" + container;
+            var url = string.Format("https://{0}.s3.amazonaws.com", container);
             return ListBlobsInContainer(url);
         }
 
@@ -327,9 +369,6 @@ namespace azurecopy
             var url = baseUrl + "/" + container;
             MakeContainer(url);
         }
-
-
-
     }
 
 }

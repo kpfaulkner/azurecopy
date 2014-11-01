@@ -82,5 +82,7 @@ namespace azurecopy
 
         void MakeContainerSimple(string container);
 
+        // override configuration, instead of using app.configs.
+        void OverrideConfiguration(Dictionary<string, string> configuration);
     }
 }

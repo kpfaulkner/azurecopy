@@ -54,6 +54,12 @@ namespace azurecopy
             throw new NotImplementedException("MoveBlob for DropBox not implemented");
         }
 
+        // override configuration. 
+        public void OverrideConfiguration(Dictionary<string, string> configuration)
+        {
+            throw new NotImplementedException("OverrideConfiguration not implemented yet");
+        }
+
         public List<BasicBlobContainer> ListContainers(string baseUrl)
         {
             throw new NotImplementedException("Dropbox list containers not implemented");

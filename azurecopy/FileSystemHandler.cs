@@ -51,6 +51,12 @@ namespace azurecopy
             return baseUrl;
         }
 
+        // override configuration. 
+        public void OverrideConfiguration(Dictionary<string, string> configuration)
+        {
+            throw new NotImplementedException("OverrideConfiguration not implemented yet");
+        }
+
         // we will NOT be using the cachedFilePath (since we're just reading the file from the local 
         // filesystem anyway).
         // We will reference the file in the blob, but will make sure that the blob url type is set to local

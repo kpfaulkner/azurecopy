@@ -26,6 +26,7 @@ using System.Threading.Tasks;
 using System.IO;
 using Amazon.S3.Model;
 using Amazon.S3;
+using Amazon;
 
 namespace azurecopy.Utils
 {
@@ -41,8 +42,8 @@ namespace azurecopy.Utils
         static S3Helper()
         {
             RegionDict = GenerateRegionDict();
-            
         }
+
         static private Dictionary<string, Amazon.RegionEndpoint> GenerateRegionDict()
         {
             var rd = new Dictionary<string, Amazon.RegionEndpoint>();
@@ -55,6 +56,7 @@ namespace azurecopy.Utils
             rd["ap-southeast-1"] = Amazon.RegionEndpoint.APSoutheast2;
             rd["ap-northeast-1"] = Amazon.RegionEndpoint.APNortheast1;
             rd["sa-east-1"] = Amazon.RegionEndpoint.SAEast1;
+            rd[""] = Amazon.RegionEndpoint.USEast1;   // default...
           
             return rd;
         }
@@ -113,19 +115,27 @@ namespace azurecopy.Utils
                 Protocol = Protocol.HTTPS
             };
 
-            using (IAmazonS3 client = GenerateS3Client(ConfigHelper.SrcAWSAccessKeyID, ConfigHelper.SrcAWSSecretAccessKeyID, ConfigHelper.SrcAWSRegion))
+            using (IAmazonS3 client = GenerateS3Client(ConfigHelper.SrcAWSAccessKeyID, ConfigHelper.SrcAWSSecretAccessKeyID, bucket))
             {
                 string url = client.GetPreSignedURL(request);
                 return url;
             }
         }
 
-        public static IAmazonS3 GenerateS3Client( string accessKey, string secretKey, string region)
+        // Create one client to get region.. then create real one?
+        // Seems dumb, but will see how it goes.
+        public static IAmazonS3 GenerateS3Client( string accessKey, string secretKey, string bucketName = null)
         {
-            var regionToUse = RegionDict[region];
+            IAmazonS3 client = Amazon.AWSClientFactory.CreateAmazonS3Client(accessKey, secretKey);
 
-            IAmazonS3 client = Amazon.AWSClientFactory.CreateAmazonS3Client(accessKey, secretKey, regionToUse);
+            if (!string.IsNullOrEmpty(bucketName))
+            {
+                var regionForBucket = client.GetBucketLocation(bucketName);
 
+                // if default US region then location will be null. Replace it with string.Empty for region lookup.
+                client = Amazon.AWSClientFactory.CreateAmazonS3Client(accessKey, secretKey, RegionDict[regionForBucket.Location ?? string.Empty]);
+            }
+            
             return client;
         }
 

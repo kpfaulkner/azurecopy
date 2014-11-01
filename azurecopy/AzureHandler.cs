@@ -14,8 +14,9 @@
 //    limitations under the License.
 // </copyright>
 //-----------------------------------------------------------------------
- 
- using azurecopy.Utils;
+
+using azurecopy.Helpers;
+using azurecopy.Utils;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 using System;
@@ -30,7 +31,9 @@ namespace azurecopy
     public class AzureHandler : IBlobHandler
     {
         private string baseUrl = null;
-        
+
+        public static readonly string AzureAccountKey = "AzureAccountKey";
+  
         public AzureHandler(string url = null)
         {
             baseUrl = url;
@@ -57,6 +60,18 @@ namespace azurecopy
         public string GetBaseUrl()
         {
             return baseUrl;
+        }
+
+        // override configuration. 
+        public void OverrideConfiguration(Dictionary<string, string> configuration)
+        {
+            string azureAccountKey;
+            if (configuration.TryGetValue(AzureAccountKey, out azureAccountKey))
+            {
+                ConfigHelper.AzureAccountKey = azureAccountKey;
+                ConfigHelper.SrcAzureAccountKey = azureAccountKey;
+                ConfigHelper.TargetAzureAccountKey = azureAccountKey;
+            }
         }
 
         // default is no filepath.

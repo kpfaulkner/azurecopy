@@ -35,9 +35,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="AWSSDK, Version=2.1.1.0, Culture=neutral, PublicKeyToken=9f476d3089b52be3, processorArchitecture=MSIL">
+    <Reference Include="AWSSDK, Version=2.3.5.0, Culture=neutral, PublicKeyToken=9f476d3089b52be3, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\AWSSDK.2.1.1.0\lib\net45\AWSSDK.dll</HintPath>
+      <HintPath>..\packages\AWSSDK.2.3.5.0\lib\net45\AWSSDK.dll</HintPath>
     </Reference>
     <Reference Include="DropNet, Version=1.8.2.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
