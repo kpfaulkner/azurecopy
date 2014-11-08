@@ -30,9 +30,13 @@ using Amazon;
 
 namespace azurecopy.Utils
 {
+    /// <summary>
+    /// ASSUMPTION is that all S3 URLs will be in format https://bucketname.s3<region>.amazonaws.com and NOT
+    /// https://s3<region>.amazonaws.com/bucketname
+    /// Will need to handle both eventually.
+    /// </summary>
     public static class S3Helper
     {
-
         static  string AmazonDetection = "amazon";
         static Dictionary<String, Amazon.RegionEndpoint> RegionDict;
 
@@ -62,27 +66,12 @@ namespace azurecopy.Utils
         }
 
         // assuming URL is in form :https://bucketname.s3.amazonaws.com
-        // WHY WHY WHY the above comment?
-        // will eventually need to handle both URL formats, but for now I may need to 
-        // focus on https://bucketname.s3.amazonaws.com format due to the AWS libs creating urls.
         public static string GetBucketFromUrl(string url)
         {
             var u = new Uri( url );
             
             // used for https://bucketname.s3.amazonaws.com/  format.
             var bucket = u.DnsSafeHost.Split('.')[0];
-
-            /*
-            var bucket = "";
-            if (u.Segments.Length > 1)
-            {
-                bucket = u.Segments[1];
-                if (bucket.EndsWith("/"))
-                {
-                    bucket = bucket.Substring(0, bucket.Length - 1);
-                }
-            }
-            */
             return bucket;
         }
 

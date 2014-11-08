@@ -220,8 +220,7 @@ namespace azurecopy
             using (IAmazonS3 client = S3Helper.GenerateS3Client(ConfigHelper.SrcAWSAccessKeyID, ConfigHelper.SrcAWSSecretAccessKeyID, bucket))
             {
                 var request = new ListObjectsRequest();
-     
-                request.BucketName = bucket;
+                     request.BucketName = bucket;
                
                 if (!string.IsNullOrEmpty(prefix))
                 {
