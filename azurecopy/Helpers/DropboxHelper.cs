@@ -55,13 +55,15 @@ namespace azurecopy.Helpers
                     secret = APIKeys.DropBoxAPISecret;
                 }
 
+                //client = new DropNetClient(key, secret);
+
                 if (string.IsNullOrEmpty(userSecret) || string.IsNullOrEmpty(userToken))
                 {
                     client = new DropNetClient(key, secret);
                 }
                 else
                 {
-                    client = new DropNetClient(key, secret, userToken, userSecret);
+                    client = new DropNetClient(key, secret, userToken, userSecret, null);
                 }
             }
 

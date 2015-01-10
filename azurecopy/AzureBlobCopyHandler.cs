@@ -31,7 +31,6 @@ namespace azurecopy
 
     public class AzureBlobCopyHandler
     {
-
         private static string GeneratedAccessibleUrl( string sourceUrl)
         {
             var url = sourceUrl;
@@ -63,7 +62,6 @@ namespace azurecopy
         // Copy from complete URL (assume URL is complete at this stage) to destination blob.
         public static void StartCopy(string sourceUrl, string DestinationUrl, DestinationBlobType destBlobType)
         {
-
             var client = AzureHelper.GetTargetCloudBlobClient(DestinationUrl);
 
             var opt = client.GetServiceProperties();
