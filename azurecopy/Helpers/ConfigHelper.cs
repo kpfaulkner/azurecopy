@@ -120,17 +120,48 @@ namespace azurecopy.Helpers
             AWSAccessKeyID = GetConfigValue<string>("AWSAccessKeyID", "");
             AWSSecretAccessKeyID = GetConfigValue<string>("AWSSecretAccessKeyID", "");
 
-            SrcAzureAccountKey = GetConfigValue<string>("SrcAzureAccountKey", AzureAccountKey);
-            SrcAWSAccessKeyID = GetConfigValue<string>("SrcAWSAccessKeyID", AWSAccessKeyID);
-            SrcAWSSecretAccessKeyID = GetConfigValue<string>("SrcAWSSecretAccessKeyID", AWSSecretAccessKeyID);
+            SrcAzureAccountKey = GetConfigValue<string>("SrcAzureAccountKey", string.Empty);
+            SrcAWSAccessKeyID = GetConfigValue<string>("SrcAWSAccessKeyID", string.Empty);
+            SrcAWSSecretAccessKeyID = GetConfigValue<string>("SrcAWSSecretAccessKeyID", string.Empty);
 
-            TargetAzureAccountKey = GetConfigValue<string>("TargetAzureAccountKey", AzureAccountKey);
-            TargetAWSAccessKeyID = GetConfigValue<string>("TargetAWSAccessKeyID", AWSAccessKeyID);
-            TargetAWSSecretAccessKeyID = GetConfigValue<string>("TargetAWSSecretAccessKeyID", AWSSecretAccessKeyID);
+            TargetAzureAccountKey = GetConfigValue<string>("TargetAzureAccountKey", string.Empty);
+            TargetAWSAccessKeyID = GetConfigValue<string>("TargetAWSAccessKeyID", string.Empty);
+            TargetAWSSecretAccessKeyID = GetConfigValue<string>("TargetAWSSecretAccessKeyID", string.Empty);
 
             AWSRegion = GetConfigValue<string>("AWSRegion", "us-west-1");
-            SrcAWSRegion = GetConfigValue<string>("SrcAWSRegion", AWSRegion);
-            TargetAWSRegion = GetConfigValue<string>("TargetAWSRegion", AWSRegion);
+            SrcAWSRegion = GetConfigValue<string>("SrcAWSRegion", string.Empty);
+            TargetAWSRegion = GetConfigValue<string>("TargetAWSRegion", string.Empty);
+
+            // only use source and target IF they've not null/empty
+            if (string.IsNullOrWhiteSpace(SrcAzureAccountKey))
+            {
+                SrcAzureAccountKey = AzureAccountKey;
+            }
+
+            if (string.IsNullOrWhiteSpace(SrcAWSAccessKeyID))
+            {
+                SrcAWSAccessKeyID = AWSAccessKeyID;
+            }
+
+            if (string.IsNullOrWhiteSpace(SrcAWSSecretAccessKeyID))
+            {
+                SrcAWSSecretAccessKeyID = AWSSecretAccessKeyID;
+            }
+
+            if (string.IsNullOrWhiteSpace(TargetAzureAccountKey))
+            {
+                TargetAzureAccountKey = AzureAccountKey;
+            }
+
+            if (string.IsNullOrWhiteSpace(TargetAWSAccessKeyID))
+            {
+                TargetAWSAccessKeyID = AWSAccessKeyID;
+            }
+
+            if (string.IsNullOrWhiteSpace(TargetAWSSecretAccessKeyID))
+            {
+                TargetAWSSecretAccessKeyID = AWSSecretAccessKeyID;
+            }
 
             // retry policies.
             // can be used in both Azure and AWS (eventually).

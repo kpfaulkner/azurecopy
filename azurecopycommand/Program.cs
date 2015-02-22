@@ -44,6 +44,7 @@ namespace azurecopycommand
                     -v : verbose
                     -i <url>: input url
                     -o <url>: output url
+                    -d : debug (show stack traces etc)
                     -d <local path>: download to filesystem before uploading to output url. (use for big blobs)
                     -blobcopy : use blobcopy API for when Azure is output url.
                     -list <url>: list blobs in bucket/container. eg. -list https://s3.amazonaws.com/mycontainer 
@@ -78,6 +79,7 @@ namespace azurecopycommand
         const string ExampleFlag = "-examples";
         const string VerboseFlag = "-v";
         const string InputUrlFlag = "-i";
+        const string DebugFlag = "-db";
         const string OutputUrlFlag = "-o";
         const string DownloadFlag = "-d";
         const string BlobCopyFlag = "-blobcopy";
@@ -141,6 +143,7 @@ namespace azurecopycommand
         static Action _action = Action.None;
         static bool _listContainer = false;
         static bool _makeContainer = false;
+        static bool DebugMode = false;
 
         // destination blob...  can only assign if source is NOT azure and destination IS azure.
         static DestinationBlobType _destinationBlobType = DestinationBlobType.Unknown;
@@ -395,6 +398,10 @@ namespace azurecopycommand
                             var targetS3SecretKey = GetArgument(args, i);
                             ConfigHelper.TargetAWSSecretAccessKeyID = targetS3SecretKey;
 
+                            break;
+
+                        case DebugFlag:
+                            DebugMode = true;
                             break;
 
                         case InputUrlFlag:
@@ -731,7 +738,12 @@ namespace azurecopycommand
             }
             catch(Exception ex)
             {
-                Console.WriteLine("Unknown error generated. Please report to Github page https://github.com/kpfaulkner/azurecopy/issues");
+                Console.WriteLine("Unknown error generated. Please report to Github page https://github.com/kpfaulkner/azurecopy/issues .  Can view underlying stacktrace by adding -db flag.");
+
+                if (DebugMode)
+                {
+                    Console.WriteLine(ex.StackTrace.ToString());
+                }
             }
         }
 
