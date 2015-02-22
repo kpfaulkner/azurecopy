@@ -721,11 +721,20 @@ namespace azurecopycommand
             ParseArguments(args);
 
             var sw = new Stopwatch();
-            sw.Start();
-            Process();
-            sw.Stop();
-            Console.WriteLine("Operation took {0} ms", sw.ElapsedMilliseconds);
+
+            try
+            {
+                sw.Start();
+                Process();
+                sw.Stop();
+                Console.WriteLine("Operation took {0} ms", sw.ElapsedMilliseconds);
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine("Unknown error generated. Please report to Github page https://github.com/kpfaulkner/azurecopy/issues");
+            }
         }
+
 
     }
 }
