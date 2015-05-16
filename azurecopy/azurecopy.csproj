@@ -141,29 +141,31 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="APIKeys.cs" />
-    <Compile Include="AzureFileHandler.cs" />
-    <Compile Include="AzureHandler.cs" />
+    <Compile Include="Exceptions\CloudWriteException.cs" />
+    <Compile Include="Exceptions\CloudReadException.cs" />
+    <Compile Include="Handlers\AzureFileHandler.cs" />
+    <Compile Include="Handlers\AzureHandler.cs" />
     <Compile Include="Helpers\SharepointHelper.cs" />
     <Compile Include="Helpers\DropboxHelper.cs" />
-    <Compile Include="RackspaceHandler.cs" />
+    <Compile Include="Handlers\RackspaceHandler.cs" />
     <Compile Include="Datatypes\Blob.cs" />
     <Compile Include="AzureBlobCopyHandler.cs" />
     <Compile Include="Datatypes\BlobBase.cs" />
-    <Compile Include="DropboxHandler.cs" />
-    <Compile Include="SharepointHandler.cs" />
+    <Compile Include="Handlers\DropboxHandler.cs" />
+    <Compile Include="Handlers\SharepointHandler.cs" />
     <Compile Include="Datatypes\SkyDriveFile.cs" />
     <Compile Include="Datatypes\SkyDriveDirectory.cs" />
-    <Compile Include="FileSystemHandler.cs" />
+    <Compile Include="Handlers\FileSystemHandler.cs" />
     <Compile Include="Helpers\ConfigHelper.cs" />
     <Compile Include="Helpers\CommonHelper.cs" />
     <Compile Include="Helpers\JsonHelper.cs" />
     <Compile Include="Helpers\S3Helper.cs" />
     <Compile Include="Helpers\SkyDriveHelper.cs" />
-    <Compile Include="IBlobHandler.cs" />
+    <Compile Include="Handlers\IBlobHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="S3Handler.cs" />
+    <Compile Include="Handlers\S3Handler.cs" />
     <Compile Include="Helpers\AzureHelper.cs" />
-    <Compile Include="SkyDriveHandler.cs" />
+    <Compile Include="Handlers\SkyDriveHandler.cs" />
     <Compile Include="ThirdParty\MsOnlineClaimsHelper.cs" />
     <Compile Include="ThirdParty\WcfClientContracts.cs" />
   </ItemGroup>

@@ -15,6 +15,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
+using azurecopy.Exceptions;
 using azurecopy.Helpers;
 using azurecopy.Utils;
 using Microsoft.WindowsAzure.Storage;
@@ -31,7 +32,6 @@ namespace azurecopy
     public class AzureHandler : IBlobHandler
     {
         private string baseUrl = null;
-
         public static readonly string AzureAccountKey = "AzureAccountKey";
   
         public AzureHandler(string url = null)
@@ -41,13 +41,14 @@ namespace azurecopy
 
         public void MoveBlob( string startUrl, string finishUrl)
         {
-
             throw new NotImplementedException("MoveBlob not implemented");
-
         }
 
-        // make container
-        // assumption being last part of url is the new container.
+        /// <summary>
+        /// Make new Azure container. 
+        /// Assumption being last part of url is the new container.
+        /// </summary>
+        /// <param name="url"></param>
         public void MakeContainer(string url)
         {
             var uri = new Uri(url);
@@ -62,7 +63,10 @@ namespace azurecopy
             return baseUrl;
         }
 
-        // override configuration. 
+        /// <summary>
+        /// Override the configuration file.
+        /// </summary>
+        /// <param name="configuration"></param>
         public void OverrideConfiguration(Dictionary<string, string> configuration)
         {
             string azureAccountKey;
@@ -74,100 +78,128 @@ namespace azurecopy
             }
         }
 
-        // default is no filepath.
-        // make parallel download later.
+        /// <summary>
+        /// Read blob based on URL.
+        /// Passes off to block or page blob specific code.
+        /// </summary>
+        /// <param name="url"></param>
+        /// <param name="filePath"></param>
+        /// <returns></returns>
         public Blob ReadBlob(string url, string filePath = "")
         {
-            Blob blob = null;
-
-            var client = AzureHelper.GetSourceCloudBlobClient( url );
-            var containerName = AzureHelper.GetContainerFromUrl(url);
-        
-            var container = client.GetContainerReference(containerName);
-            //container.CreateIfNotExists();
-
-            var blobRef = client.GetBlobReferenceFromServer( new Uri( url ) );
-            
-            // are we block?
-            var isBlockBlob = (blobRef.BlobType == Microsoft.WindowsAzure.Storage.Blob.BlobType.BlockBlob);
-
-            if (isBlockBlob)
+            try
             {
-                blob = ReadBlockBlob(blobRef, filePath);
-            }
-            else
-            {
-                blob = ReadPageBlob(blobRef, filePath);
-         
-            }
+                Blob blob = null;
+                var client = AzureHelper.GetSourceCloudBlobClient(url);
+                var containerName = AzureHelper.GetContainerFromUrl(url);
+                var container = client.GetContainerReference(containerName);
+                var blobRef = client.GetBlobReferenceFromServer(new Uri(url));
+                var isBlockBlob = (blobRef.BlobType == Microsoft.WindowsAzure.Storage.Blob.BlobType.BlockBlob);
 
-            blob.BlobOriginType = UrlType.Azure;
-            return blob;
+                if (isBlockBlob)
+                {
+                    blob = ReadBlockBlob(blobRef, filePath);
+                }
+                else
+                {
+                    blob = ReadPageBlob(blobRef, filePath);
+                }
+
+                blob.BlobOriginType = UrlType.Azure;
+                return blob;
+            }
+            catch(Exception ex)
+            {
+                throw new CloudReadException("AzureHandler:ReadBlob unable to read blob", ex);
+            }
         }
 
-
-
+        /// <summary>
+        /// Read block blob.
+        /// </summary>
+        /// <param name="blobRef"></param>
+        /// <param name="fileName"></param>
+        /// <returns></returns>
         private Blob ReadBlockBlob(ICloudBlob blobRef, string fileName = "" )
         {
-            var blob = new Blob();
-            blob.BlobSavedToFile = !string.IsNullOrEmpty(fileName);
-            blob.Name = blobRef.Name;
-            blob.FilePath = fileName;
-            blob.BlobType = DestinationBlobType.Block;
-            
-            var blockBlob = blobRef as CloudBlockBlob;
-
-            // get stream to store.
-            using (var stream = CommonHelper.GetStream(fileName))
+            try
             {
-                // no parallel yet.
-                blockBlob.DownloadToStream(stream);
+                var blob = new Blob();
+                blob.BlobSavedToFile = !string.IsNullOrEmpty(fileName); // if filename provided then the blob should be cached to file.
+                blob.Name = blobRef.Name;
+                blob.FilePath = fileName;
+                blob.BlobType = DestinationBlobType.Block;
 
-                if (!blob.BlobSavedToFile)
+                // get stream to store.
+                using (var stream = CommonHelper.GetStream(fileName))
                 {
-                    var ms = stream as MemoryStream;
-                    blob.Data = ms.ToArray();
+                    var blockBlob = blobRef as CloudBlockBlob;
+                    blockBlob.DownloadToStream(stream);
+                    if (!blob.BlobSavedToFile)
+                    {
+                        var ms = stream as MemoryStream;
+                        blob.Data = ms.ToArray();
+                    }
                 }
+                return blob;
             }
-
-            return blob;
+            catch( Exception ex)
+            {
+                throw new CloudReadException("AzureHandler:ReadBlockBlob unable to read blob", ex);
+            }
         }
 
+        /// <summary>
+        /// Read page blob.
+        /// </summary>
+        /// <param name="blobRef"></param>
+        /// <param name="fileName"></param>
+        /// <returns></returns>
         private Blob ReadPageBlob(ICloudBlob blobRef, string fileName = "")
         {
-            var blob = new Blob();
-            blob.BlobSavedToFile = !string.IsNullOrEmpty(fileName);
-            blob.Name = blobRef.Name;
-            blob.FilePath = fileName;
-            blob.BlobType = DestinationBlobType.Page;
-            var pageBlob = blobRef as CloudPageBlob;
-
-            // get stream to store.
-            using (var stream = CommonHelper.GetStream(fileName))
+            try
             {
-
-                // no parallel yet.
-                pageBlob.DownloadToStream(stream);
-
-                if (!blob.BlobSavedToFile)
+                var blob = new Blob();
+                blob.BlobSavedToFile = !string.IsNullOrEmpty(fileName);
+                blob.Name = blobRef.Name;
+                blob.FilePath = fileName;
+                blob.BlobType = DestinationBlobType.Page;
+         
+                // get stream to store.
+                using (var stream = CommonHelper.GetStream(fileName))
                 {
-                    var ms = stream as MemoryStream;
-                    blob.Data = ms.ToArray();
-                }
-            }
+                    var pageBlob = blobRef as CloudPageBlob;
+                    pageBlob.DownloadToStream(stream);
 
-            return blob;
+                    if (!blob.BlobSavedToFile)
+                    {
+                        var ms = stream as MemoryStream;
+                        blob.Data = ms.ToArray();
+                    }
+                }
+                return blob;
+            }
+            catch (Exception ex)
+            {
+                throw new CloudReadException("AzureHandler:ReadPageBlob unable to read blob", ex);
+            }
         }
 
-
-        public void WriteBlob(string url, Blob blob,   int parallelUploadFactor=1, int chunkSizeInMB=4)
+        /// <summary>
+        /// Write blob. 
+        /// Can write in parallel based on parallelUploadFactor
+        /// </summary>
+        /// <param name="url"></param>
+        /// <param name="blob"></param>
+        /// <param name="parallelUploadFactor"></param>
+        /// <param name="chunkSizeInMB"></param>
+        public void WriteBlob(string url, Blob blob, int parallelUploadFactor=1, int chunkSizeInMB=4)
         {
             Stream stream = null;
 
             try
             {
                 var client = AzureHelper.GetTargetCloudBlobClient(url);
-
                 var containerName = AzureHelper.GetContainerFromUrl(url);
                 var blobName = blob.Name;
 
@@ -197,14 +229,10 @@ namespace azurecopy
                 {
                     throw new NotImplementedException("Have not implemented page type other than block or page");
                 }
-
-
             }
-            catch (ArgumentException ex)
+            catch (Exception ex)
             {
-                // probably bad container.
-                Console.WriteLine("Argument Exception " + ex.ToString());
-                throw;
+                throw new CloudWriteException("AzureHandler::WriteBlob cannot write", ex);
             }
             finally
             {
@@ -212,14 +240,13 @@ namespace azurecopy
                 {
                     stream.Close();
                 }
-
             }
-
         }
 
         /// <summary>
         /// Upload in parallel.
         /// If total size of file is smaller than chunkSize, then simply split length by parallel factor.
+        /// FIXME: Need to retest this!!!
         /// </summary>
         /// <param name="stream"></param>
         /// <param name="blob"></param>
@@ -248,14 +275,12 @@ namespace azurecopy
                 while (count >= 0 && taskList.Count < parallelFactor)
                 {
                     var index = (numberOfBlocks - count - 1);
-
                     var chunkSizeToUpload = (int)Math.Min(chunkSize, length - (index * chunkSize));
 
                     // only upload if we have data to give.
                     // edge case where we already have uploaded all the data.
                     if (chunkSizeToUpload > 0)
                     {
-
                         chunkSizeList[index] = chunkSizeToUpload;
                         var dataBuffer = new byte[chunkSizeToUpload];
                         stream.Seek(index * chunkSize, SeekOrigin.Begin);
@@ -276,15 +301,10 @@ namespace azurecopy
                                 blob.PutBlock(blockId, memStream, null);
                             }
                             blockIdList[tempCount] = blockId;
-
                         });
-
                         taskList.Add(t);
                     }
-
                     count--;
-
-
                 }
 
                 var waitedIndex = Task.WaitAny(taskList.ToArray());
@@ -293,10 +313,7 @@ namespace azurecopy
                     taskList.RemoveAt(waitedIndex);
                 }
             }
-
-
             Task.WaitAll(taskList.ToArray());
-
             blob.PutBlockList(blockIdList.Where(t => t != null));
         }
 
