@@ -317,7 +317,14 @@ namespace azurecopy
             blob.PutBlockList(blockIdList.Where(t => t != null));
         }
 
-        // can make this concurrent... soonish. :)
+        /// <summary>
+        /// Write a block blob. Determines if should be parallel or not then calls "real" method.
+        /// </summary>
+        /// <param name="stream"></param>
+        /// <param name="blob"></param>
+        /// <param name="container"></param>
+        /// <param name="parallelFactor"></param>
+        /// <param name="chunkSizeInMB"></param>
         private void WriteBlockBlob(Stream stream, Blob blob, CloudBlobContainer container,int parallelFactor=1, int chunkSizeInMB=2)
         {
             var blobRef = container.GetBlockBlobReference(blob.Name);
@@ -337,13 +344,19 @@ namespace azurecopy
             }
         }
 
+        /// <summary>
+        /// Write page blob. Although concurrency params exist, does NOT do concurrent uploading yet.
+        /// </summary>
+        /// <param name="stream"></param>
+        /// <param name="blob"></param>
+        /// <param name="container"></param>
+        /// <param name="parallelFactor"></param>
+        /// <param name="chunkSizeInMB"></param>
         private void WritePageBlob(Stream stream, Blob blob, CloudBlobContainer container,int parallelFactor=1, int chunkSizeInMB=2)
         {
             var blobRef = container.GetPageBlobReference(blob.Name);
             blobRef.UploadFromStream(stream);
-
         }
-
 
         // assumption is that baseurl can include items PAST the container level.
         // ie a url such as: https://....../mycontainer/virtualdir1/virtualdir2   could be used.
@@ -353,13 +366,11 @@ namespace azurecopy
         public List<BasicBlobContainer> ListBlobsInContainer(string baseUrl)
         {
             var blobList = new List<BasicBlobContainer>();
-
             var client = AzureHelper.GetSourceCloudBlobClient(baseUrl);
-
             var containerName = AzureHelper.GetContainerFromUrl(baseUrl, true);
             var virtualDirectoryName = AzureHelper.GetVirtualDirectoryFromUrl(baseUrl);
             var blobName = AzureHelper.GetBlobFromUrl(baseUrl);
-
+                
             IEnumerable<IListBlobItem> azureBlobList;
             CloudBlobContainer container;
 
@@ -380,7 +391,6 @@ namespace azurecopy
                     b.BlobType = BlobEntryType.Container;
                     blobList.Add(b);
                 }
-
             }
             else
             {
@@ -390,8 +400,7 @@ namespace azurecopy
                 if (string.IsNullOrEmpty(virtualDirectoryName))
                 {
                     // add blobs
-                    azureBlobList = container.ListBlobs(useFlatBlobListing:true);
-                   
+                    azureBlobList = container.ListBlobs(useFlatBlobListing:true);  
                 }
                 else
                 {
@@ -413,26 +422,31 @@ namespace azurecopy
                     b.BlobType = BlobEntryType.Blob;
                     blobList.Add(b);
                 }
-            
             }
 
             return blobList;
         }
 
+        /// <summary>
+        /// List containers from url.
+        /// </summary>
+        /// <param name="baseUrl"></param>
+        /// <returns></returns>
         public List<BasicBlobContainer> ListContainers(string baseUrl)
         {
-            var containerList = new List<BasicBlobContainer>();
             var client = AzureHelper.GetSourceCloudBlobClient(baseUrl);
             var containers = client.ListContainers();
-            foreach( var container in containers)
-            {
-                containerList.Add(new BasicBlobContainer { BlobType = BlobEntryType.Container, Container = "", DisplayName = container.Name, Name = container.Name });
-            }
-
+            var containerList = containers.Select(container => new BasicBlobContainer { BlobType = BlobEntryType.Container, Container = "", DisplayName = container.Name, Name = container.Name }).ToList();
             return containerList;
         }
 
-        // not passing url. Url will be generated behind the scenes.
+        /// <summary>
+        /// Read blob without passing urls. Will construct based on container and blob name.
+        /// </summary>
+        /// <param name="container"></param>
+        /// <param name="blobName"></param>
+        /// <param name="filePath"></param>
+        /// <returns></returns>
         public Blob ReadBlobSimple(string container, string blobName, string filePath = "")
         {
             if (baseUrl == null)
