@@ -458,7 +458,13 @@ namespace azurecopy
             return ReadBlob(url, filePath);
         }
 
-        // not passing url.
+        /// <summary>
+        /// Write blob without passing urls. Will construct based on container and blob name.6
+        /// </summary>
+        /// <param name="container"></param>
+        /// <param name="blob"></param>
+        /// <param name="parallelUploadFactor"></param>
+        /// <param name="chunkSizeInMB"></param>
         public void WriteBlobSimple(string container, Blob blob, int parallelUploadFactor = 1, int chunkSizeInMB = 4)
         {
             if (baseUrl == null)
@@ -470,9 +476,12 @@ namespace azurecopy
             WriteBlob(url, blob, parallelUploadFactor, chunkSizeInMB);
         }
 
-        // not required to pass full url.
-        // container is possibly a container/bucket in the azure/s3 sense in addition to other directories added
-        // on.
+
+        /// <summary>
+        /// List blobs in a container without using a url.
+        /// </summary>
+        /// <param name="container"></param>
+        /// <returns></returns>
         public List<BasicBlobContainer> ListBlobsInContainerSimple(string container)
         {
             if (baseUrl == null)
@@ -484,6 +493,10 @@ namespace azurecopy
             return ListBlobsInContainer(url);
         }
 
+        /// <summary>
+        /// Make container without url.
+        /// </summary>
+        /// <param name="container"></param>
         public void MakeContainerSimple(string container)
         {
             if (string.IsNullOrEmpty(baseUrl))
