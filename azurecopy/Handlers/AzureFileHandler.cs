@@ -32,25 +32,127 @@ namespace azurecopy
     {
         private string baseUrl = null;
 
-        public AzureFileHandler(string url = null)
+        private CloudBlobClient client;
+
+        /// <summary>
+        /// base url HAS to be passed in.
+        /// </summary>
+        /// <param name="url"></param>
+        public AzureFileHandler(string url)
         {
             baseUrl = url;
+            client = AzureHelper.GetSourceCloudBlobClient(url);
         }
 
-        public void MoveBlob( string startUrl, string finishUrl)
+        /// <summary>
+        /// Make container/directory (depending on platform).
+        /// </summary>
+        /// <param name="container"></param>
+        public void MakeContainer(string containerName)
         {
+            throw new NotImplementedException();
+        }
 
+        /// <summary>
+        /// Read blob.
+        /// </summary>
+        /// <param name="containerName"></param>
+        /// <param name="blobName"></param>
+        /// <param name="cacheFilePath"></param>
+        /// <returns></returns>
+        public Blob ReadBlob(string containerName, string blobName, string cacheFilePath = "")
+        {
+            Blob blob = null;
+            var container = client.GetContainerReference(containerName);
+            var blobRef = container.GetBlobReferenceFromServer(blobName);
+
+            // are we block?
+            var isBlockBlob = (blobRef.BlobType == Microsoft.WindowsAzure.Storage.Blob.BlobType.BlockBlob);
+            if (isBlockBlob)
+            {
+                blob = ReadBlockBlob(blobRef, cacheFilePath);
+            }
+            else
+            {
+                blob = ReadPageBlob(blobRef, cacheFilePath);
+            }
+
+            blob.BlobOriginType = UrlType.Azure;
+            return blob;
+        }
+
+        /// <summary>
+        /// Write blob
+        /// </summary>
+        /// <param name="container"></param>
+        /// <param name="blobName"></param>
+        /// <param name="blob"></param>
+        /// <param name="parallelUploadFactor"></param>
+        /// <param name="chunkSizeInMB"></param>
+        public void WriteBlob(string containerName, string blobName, Blob blob, int parallelUploadFactor = 1, int chunkSizeInMB = 4)
+        {
+            Stream stream = null;
+            try
+            {
+                var container = client.GetContainerReference(containerName);
+                container.CreateIfNotExists();
+
+                // get stream to data.
+                if (blob.BlobSavedToFile)
+                {
+                    stream = new FileStream(blob.FilePath, FileMode.Open);
+                }
+                else
+                {
+                    stream = new MemoryStream(blob.Data);
+                }
+
+                // if unknown type, then will assume Block... for better or for worse.
+                if (blob.BlobType == DestinationBlobType.Block || blob.BlobType == DestinationBlobType.Unknown)
+                {
+                    WriteBlockBlob(stream, blob, container, parallelUploadFactor, chunkSizeInMB);
+                }
+                else if (blob.BlobType == DestinationBlobType.Page)
+                {
+                    WritePageBlob(stream, blob, container);
+                }
+                else
+                {
+                    throw new NotImplementedException("Have not implemented page type other than block or page");
+                }
+            }
+            catch (ArgumentException ex)
+            {
+                // probably bad container.
+                Console.WriteLine("Argument Exception " + ex.ToString());
+                throw;
+            }
+            finally
+            {
+                if (stream != null)
+                {
+                    stream.Close();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Move blob
+        /// </summary>
+        /// <param name="originContainer"></param>
+        /// <param name="destinationContainer"></param>
+        /// <param name="startBlobname"></param>
+        public void MoveBlob(string originContainer, string destinationContainer, string startBlobname)
+        {
             throw new NotImplementedException("MoveBlob not implemented");
-
         }
 
-        // make container (ie file directory).
-        public void MakeContainer(string url)
-        {
-            GetContainer(url);
-        }
-
-        public List<BasicBlobContainer> ListContainers(string baseUrl)
+        /// <summary>
+        /// List containers/directories off the root. For storage schemes that allow real directories maybe
+        /// the root will be 
+        /// </summary>
+        /// <returns></returns>
+        public List<BasicBlobContainer> ListContainers(string root)
         {
             throw new NotImplementedException("Azure File Handler list containers not implemented");
         }
@@ -91,38 +193,7 @@ namespace azurecopy
             return baseUrl;
         }
 
-        // default is no filepath.
-        // make parallel download later.
-        public Blob ReadBlob(string url, string filePath = "")
-        {
-            Blob blob = null;
-
-            var client = AzureHelper.GetSourceCloudBlobClient( url );
-            var containerName = AzureHelper.GetContainerFromUrl(url);
-        
-            var container = client.GetContainerReference(containerName);
-            //container.CreateIfNotExists();
-
-            var blobRef = client.GetBlobReferenceFromServer( new Uri( url ) );
-            
-            // are we block?
-            var isBlockBlob = (blobRef.BlobType == Microsoft.WindowsAzure.Storage.Blob.BlobType.BlockBlob);
-
-            if (isBlockBlob)
-            {
-                blob = ReadBlockBlob(blobRef, filePath);
-            }
-            else
-            {
-                blob = ReadPageBlob(blobRef, filePath);
-         
-            }
-
-            blob.BlobOriginType = UrlType.Azure;
-            return blob;
-        }
-
-
+        ///////////////////////////////////////////////////////////////////////////////////////
 
         private Blob ReadBlockBlob(ICloudBlob blobRef, string fileName = "" )
         {
@@ -176,63 +247,6 @@ namespace azurecopy
             return blob;
         }
 
-
-        public void WriteBlob(string url, Blob blob,   int parallelUploadFactor=1, int chunkSizeInMB=4)
-        {
-            Stream stream = null;
-
-            try
-            {
-                var client = AzureHelper.GetTargetCloudBlobClient(url);
-
-                var containerName = AzureHelper.GetContainerFromUrl(url);
-                var blobName = blob.Name;
-
-                var container = client.GetContainerReference(containerName);
-                container.CreateIfNotExists();
-
-                // get stream to data.
-                if (blob.BlobSavedToFile)
-                {
-                    stream = new FileStream(blob.FilePath, FileMode.Open);
-                }
-                else
-                {
-                    stream = new MemoryStream(blob.Data);
-                }
-
-                // if unknown type, then will assume Block... for better or for worse.
-                if (blob.BlobType == DestinationBlobType.Block || blob.BlobType == DestinationBlobType.Unknown)
-                {
-                    WriteBlockBlob(stream, blob, container, parallelUploadFactor, chunkSizeInMB);   
-                }
-                else if (blob.BlobType == DestinationBlobType.Page)
-                {
-                    WritePageBlob(stream, blob, container);
-                }
-                else
-                {
-                    throw new NotImplementedException("Have not implemented page type other than block or page");
-                }
-
-
-            }
-            catch (ArgumentException ex)
-            {
-                // probably bad container.
-                Console.WriteLine("Argument Exception " + ex.ToString());
-                throw;
-            }
-            finally
-            {
-                if (stream != null)
-                {
-                    stream.Close();
-                }
-
-            }
-
-        }
 
         /// <summary>
         /// Upload in parallel.
@@ -342,12 +356,21 @@ namespace azurecopy
         }
 
 
-        // assumption is that baseurl can include items PAST the container level.
-        // ie a url such as: https://....../mycontainer/virtualdir1/virtualdir2   could be used.
-        // Now, we know the first directory listed is the container (assumption?) but
-        // virtualdir1/virtualdir2 are just blob name prefixes that are used to fake
-        // a filesystem like structure.
-        public List<BasicBlobContainer> ListBlobsInContainer(string baseUrl)
+        /// <summary>
+        /// Lists all blobs in a container.
+        /// Can be supplied a blobPrefix which basically acts as virtual directory options.
+        /// eg, if we have blobs called: "virt1/virt2/myblob"    and
+        ///                              "virt1/virt2/myblob2"
+        /// Although the blob names are the complete strings mentioned above, we might like to think that the blobs
+        /// are just called myblob and myblob2. We can supply a blobPrefix of "virt1/virt2/" which we can *think* of
+        /// as a directory, but again, its just really a prefix behind the scenes.
+        /// 
+        /// For other sytems (not Azure) the blobPrefix might be real directories....  will need to investigate
+        /// </summary>
+        /// <param name="containerName"></param>
+        /// <param name="blobPrefix"></param>
+        /// <returns></returns>
+        public List<BasicBlobContainer> ListBlobsInContainer(string containerName = null, string blobPrefix = null)
         {
             var blobList = new List<BasicBlobContainer>();
 

@@ -38,7 +38,7 @@ namespace azurecopy
         /// </summary>
         /// <param name="container"></param>
         void MakeContainer(string containerName);
-
+        
         /// <summary>
         /// Read blob.
         /// </summary>
