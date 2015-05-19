@@ -1,6 +1,6 @@
 ﻿﻿//-----------------------------------------------------------------------
 // <copyright >
-//    Copyright 2013 Ken Faulkner
+//    Copyright 2015 Ken Faulkner
 //
 //    Licensed under the Apache License, Version 2.0 (the "License");
 //    you may not use this file except in compliance with the License.
@@ -25,36 +25,69 @@ using System.Threading.Tasks;
 namespace azurecopy
 {
     /// <summary>
-    /// Interface for reading and writing blobs.
-    /// For both reading and writing there are multiple options.
-    /// You can either specify the entire url that you want to read/write too
-    /// OR
-    /// You can just specify the blob you want to write, the container you want to write too and the handler 
-    /// itself creates the url for you. This may be easier in the long run (no messing about with urls) but
-    /// will keep full url option there for those who want more power.
+    /// Major rewrite. Interface will now deal with containers (directories) and blob names.
+    /// Hopefully the only URL mentioned will be in the constructor, which will be the base URL that can be
+    /// used to reconstruct full URLs (if needed).
+    /// 
+    /// Am hoping this will simplify the methods.
     /// </summary>
     public interface IBlobHandler
     {
-        // expected to pass entire url.
-        Blob ReadBlob(string url, string filePath = "");
-      
-        // expected to pass entire url
-        void WriteBlob(string url, Blob blob,  int parallelUploadFactor=1, int chunkSizeInMB=4);
+        /// <summary>
+        /// Make container/directory (depending on platform).
+        /// </summary>
+        /// <param name="container"></param>
+        void MakeContainer(string containerName);
 
+        /// <summary>
+        /// Read blob.
+        /// </summary>
+        /// <param name="containerName"></param>
+        /// <param name="blobName"></param>
+        /// <param name="cacheFilePath"></param>
+        /// <returns></returns>
+        Blob ReadBlob(string containerName, string blobName, string cacheFilePath = "");
+        
+        /// <summary>
+        /// Write blob
+        /// </summary>
+        /// <param name="container"></param>
+        /// <param name="blobName"></param>
+        /// <param name="blob"></param>
+        /// <param name="parallelUploadFactor"></param>
+        /// <param name="chunkSizeInMB"></param>
+        void WriteBlob(string containerName, string blobName, Blob blob,  int parallelUploadFactor=1, int chunkSizeInMB=4);
+        
+        /// <summary>
+        /// Move blob
+        /// </summary>
+        /// <param name="originContainer"></param>
+        /// <param name="destinationContainer"></param>
+        /// <param name="startBlobname"></param>
+        void MoveBlob(string originContainer, string destinationContainer, string startBlobname);
+       
+        /// <summary>
+        /// Lists all blobs in a container.
+        /// Can be supplied a blobPrefix which basically acts as virtual directory options.
+        /// eg, if we have blobs called: "virt1/virt2/myblob"    and
+        ///                              "virt1/virt2/myblob2"
+        /// Although the blob names are the complete strings mentioned above, we might like to think that the blobs
+        /// are just called myblob and myblob2. We can supply a blobPrefix of "virt1/virt2/" which we can *think* of
+        /// as a directory, but again, its just really a prefix behind the scenes.
+        /// 
+        /// For other sytems (not Azure) the blobPrefix might be real directories....  will need to investigate
+        /// </summary>
+        /// <param name="containerName"></param>
+        /// <param name="blobPrefix"></param>
+        /// <returns></returns>
+        List<BasicBlobContainer> ListBlobsInContainer(string containerName = null, string blobPrefix = null);
 
-        // moving blob
-        void MoveBlob(string startUrl, string finishUrl);
-
-        // make container
-        // assumption being last part of url is the new container.
-        void MakeContainer(string url);
-
-        // passing full url.
-        // can contain virtual directories such as https://....../mycontainer/virtualdir1/virtualdir2  
-        List<BasicBlobContainer> ListBlobsInContainer(string baseUrl);
-
-        // list containers/directories available
-        List<BasicBlobContainer> ListContainers(string baseUrl);
+        /// <summary>
+        /// List containers/directories off the root. For storage schemes that allow real directories maybe
+        /// the root will be 
+        /// </summary>
+        /// <returns></returns>
+        List<BasicBlobContainer> ListContainers(string root);
       
         // core URL used for this handler.
         // could be the Azure url for a given account, or the bucket/S3 url.
@@ -63,24 +96,6 @@ namespace azurecopy
         // ideally the copy methods would access this automatically (and not require urls in params)
         // but this modification will probably happen slowly.
         string GetBaseUrl();
-
-
-        // *Simple* methods which do NOT require full URL to be passed in.
-        // This will require constructor of implementation to have been passed the full URL
-        // and the simple methods are simply based off those.
-        // not passing url. Url will be generated behind the scenes.
-        Blob ReadBlobSimple(string container, string blobName, string filePath = "");
-
-        // not passing url.
-        void WriteBlobSimple(string container, Blob blob, int parallelUploadFactor = 1, int chunkSizeInMB = 4);
-
-        // not required to pass full url.
-        // for S3 the container name could be the bucket name.
-        // for azure it would be an azure container.
-        // for others it would probably be the first directory in a full path listing many directories. (eg. dir1/dir2/dir3/file.txt)
-        List<BasicBlobContainer> ListBlobsInContainerSimple(string containerName);
-
-        void MakeContainerSimple(string container);
 
         // override configuration, instead of using app.configs.
         void OverrideConfiguration(Dictionary<string, string> configuration);

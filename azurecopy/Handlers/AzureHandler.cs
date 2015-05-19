@@ -33,15 +33,19 @@ namespace azurecopy
     {
         private string baseUrl = null;
         public static readonly string AzureAccountKey = "AzureAccountKey";
-  
-        public AzureHandler(string url = null)
+        
+        // need to check overhead of creating this constantly.
+        // maybe static this later.
+        private CloudBlobClient client;
+
+        /// <summary>
+        /// base url is mandatory.
+        /// </summary>
+        /// <param name="url"></param>
+        public AzureHandler(string url)
         {
             baseUrl = url;
-        }
-
-        public void MoveBlob( string startUrl, string finishUrl)
-        {
-            throw new NotImplementedException("MoveBlob not implemented");
+            client = AzureHelper.GetSourceCloudBlobClient(url);
         }
 
         /// <summary>
@@ -49,160 +53,59 @@ namespace azurecopy
         /// Assumption being last part of url is the new container.
         /// </summary>
         /// <param name="url"></param>
-        public void MakeContainer(string url)
-        {
-            var uri = new Uri(url);
-            var containerName = uri.Segments[uri.Segments.Length - 1];
-            var client = AzureHelper.GetSourceCloudBlobClient(url);
+        public void MakeContainer(string containerName)
+        {   
             var container = client.GetContainerReference(containerName);
             container.CreateIfNotExists();
         }
 
-        public string GetBaseUrl()
-        {
-            return baseUrl;
-        }
-
         /// <summary>
-        /// Override the configuration file.
+        /// Read blob.
         /// </summary>
-        /// <param name="configuration"></param>
-        public void OverrideConfiguration(Dictionary<string, string> configuration)
-        {
-            string azureAccountKey;
-            if (configuration.TryGetValue(AzureAccountKey, out azureAccountKey))
-            {
-                ConfigHelper.AzureAccountKey = azureAccountKey;
-                ConfigHelper.SrcAzureAccountKey = azureAccountKey;
-                ConfigHelper.TargetAzureAccountKey = azureAccountKey;
-            }
-        }
-
-        /// <summary>
-        /// Read blob based on URL.
-        /// Passes off to block or page blob specific code.
-        /// </summary>
-        /// <param name="url"></param>
-        /// <param name="filePath"></param>
+        /// <param name="container"></param>
+        /// <param name="blobName"></param>
+        /// <param name="cacheFilePath"></param>
         /// <returns></returns>
-        public Blob ReadBlob(string url, string filePath = "")
+        Blob ReadBlob(string containerName, string blobName, string cacheFilePath = "")
         {
             try
             {
                 Blob blob = null;
-                var client = AzureHelper.GetSourceCloudBlobClient(url);
-                var containerName = AzureHelper.GetContainerFromUrl(url);
                 var container = client.GetContainerReference(containerName);
-                var blobRef = client.GetBlobReferenceFromServer(new Uri(url));
+                var blobRef = container.GetBlobReferenceFromServer(blobName);
                 var isBlockBlob = (blobRef.BlobType == Microsoft.WindowsAzure.Storage.Blob.BlobType.BlockBlob);
-
                 if (isBlockBlob)
                 {
-                    blob = ReadBlockBlob(blobRef, filePath);
+                    blob = ReadBlockBlob(blobRef, cacheFilePath);
                 }
                 else
                 {
-                    blob = ReadPageBlob(blobRef, filePath);
+                    blob = ReadPageBlob(blobRef, cacheFilePath);
                 }
 
                 blob.BlobOriginType = UrlType.Azure;
                 return blob;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 throw new CloudReadException("AzureHandler:ReadBlob unable to read blob", ex);
             }
         }
 
         /// <summary>
-        /// Read block blob.
+        /// Write blob
         /// </summary>
-        /// <param name="blobRef"></param>
-        /// <param name="fileName"></param>
-        /// <returns></returns>
-        private Blob ReadBlockBlob(ICloudBlob blobRef, string fileName = "" )
-        {
-            try
-            {
-                var blob = new Blob();
-                blob.BlobSavedToFile = !string.IsNullOrEmpty(fileName); // if filename provided then the blob should be cached to file.
-                blob.Name = blobRef.Name;
-                blob.FilePath = fileName;
-                blob.BlobType = DestinationBlobType.Block;
-
-                // get stream to store.
-                using (var stream = CommonHelper.GetStream(fileName))
-                {
-                    var blockBlob = blobRef as CloudBlockBlob;
-                    blockBlob.DownloadToStream(stream);
-                    if (!blob.BlobSavedToFile)
-                    {
-                        var ms = stream as MemoryStream;
-                        blob.Data = ms.ToArray();
-                    }
-                }
-                return blob;
-            }
-            catch( Exception ex)
-            {
-                throw new CloudReadException("AzureHandler:ReadBlockBlob unable to read blob", ex);
-            }
-        }
-
-        /// <summary>
-        /// Read page blob.
-        /// </summary>
-        /// <param name="blobRef"></param>
-        /// <param name="fileName"></param>
-        /// <returns></returns>
-        private Blob ReadPageBlob(ICloudBlob blobRef, string fileName = "")
-        {
-            try
-            {
-                var blob = new Blob();
-                blob.BlobSavedToFile = !string.IsNullOrEmpty(fileName);
-                blob.Name = blobRef.Name;
-                blob.FilePath = fileName;
-                blob.BlobType = DestinationBlobType.Page;
-         
-                // get stream to store.
-                using (var stream = CommonHelper.GetStream(fileName))
-                {
-                    var pageBlob = blobRef as CloudPageBlob;
-                    pageBlob.DownloadToStream(stream);
-
-                    if (!blob.BlobSavedToFile)
-                    {
-                        var ms = stream as MemoryStream;
-                        blob.Data = ms.ToArray();
-                    }
-                }
-                return blob;
-            }
-            catch (Exception ex)
-            {
-                throw new CloudReadException("AzureHandler:ReadPageBlob unable to read blob", ex);
-            }
-        }
-
-        /// <summary>
-        /// Write blob. 
-        /// Can write in parallel based on parallelUploadFactor
-        /// </summary>
-        /// <param name="url"></param>
+        /// <param name="container"></param>
+        /// <param name="blobName"></param>
         /// <param name="blob"></param>
         /// <param name="parallelUploadFactor"></param>
         /// <param name="chunkSizeInMB"></param>
-        public void WriteBlob(string url, Blob blob, int parallelUploadFactor=1, int chunkSizeInMB=4)
+        void WriteBlob(string containerName, string blobName, Blob blob,  int parallelUploadFactor=1, int chunkSizeInMB=4)
         {
             Stream stream = null;
 
             try
             {
-                var client = AzureHelper.GetTargetCloudBlobClient(url);
-                var containerName = AzureHelper.GetContainerFromUrl(url);
-                var blobName = blob.Name;
-
                 var container = client.GetContainerReference(containerName);
                 container.CreateIfNotExists();
 
@@ -219,7 +122,7 @@ namespace azurecopy
                 // if unknown type, then will assume Block... for better or for worse.
                 if (blob.BlobType == DestinationBlobType.Block || blob.BlobType == DestinationBlobType.Unknown)
                 {
-                    WriteBlockBlob(stream, blob, container, parallelUploadFactor, chunkSizeInMB);   
+                    WriteBlockBlob(stream, blob, container, parallelUploadFactor, chunkSizeInMB);
                 }
                 else if (blob.BlobType == DestinationBlobType.Page)
                 {
@@ -244,6 +147,196 @@ namespace azurecopy
         }
 
         /// <summary>
+        /// Move blob from one container to another.
+        /// </summary>
+        /// <param name="startUrl"></param>
+        /// <param name="finishUrl"></param>
+        public void MoveBlob(string originContainer, string destinationContainer, string startBlobname)
+        {
+            throw new NotImplementedException("MoveBlob not implemented");
+        }
+
+        public string GetBaseUrl()
+        {
+            return baseUrl;
+        }
+
+        /// <summary>
+        /// Override the configuration file.
+        /// </summary>
+        /// <param name="configuration"></param>
+        public void OverrideConfiguration(Dictionary<string, string> configuration)
+        {
+            string azureAccountKey;
+            if (configuration.TryGetValue(AzureAccountKey, out azureAccountKey))
+            {
+                ConfigHelper.AzureAccountKey = azureAccountKey;
+                ConfigHelper.SrcAzureAccountKey = azureAccountKey;
+                ConfigHelper.TargetAzureAccountKey = azureAccountKey;
+            }
+        }
+
+        /// <summary>
+        /// Lists all blobs in a container.
+        /// Can be supplied a blobPrefix which basically acts as virtual directory options.
+        /// eg, if we have blobs called: "virt1/virt2/myblob"    and
+        ///                              "virt1/virt2/myblob2"
+        /// Although the blob names are the complete strings mentioned above, we might like to think that the blobs
+        /// are just called myblob and myblob2. We can supply a blobPrefix of "virt1/virt2/" which we can *think* of
+        /// as a directory, but again, its just really a prefix behind the scenes.
+        /// 
+        /// For other sytems (not Azure) the blobPrefix might be real directories....  will need to investigate
+        /// </summary>
+        /// <param name="container"></param>
+        /// <param name="blobPrefix"></param>
+        /// <returns></returns>
+        public List<BasicBlobContainer> ListBlobsInContainer(string containerName= null, string blobPrefix = null)
+        {
+            var blobList = new List<BasicBlobContainer>();
+            IEnumerable<IListBlobItem> azureBlobList;
+            CloudBlobContainer container;
+
+            if (string.IsNullOrEmpty(containerName))
+            {
+                container = client.GetRootContainerReference();
+
+                // add container.
+                // Assuming no blobs at root level.
+                // incorrect assumption. FIXME!
+                var containerList = client.ListContainers();
+                foreach (var cont in containerList)
+                {
+                    var b = new BasicBlobContainer();
+                    b.Name = cont.Name;
+                    b.DisplayName = AzureHelper.GetDisplayName(cont.Name);
+                    b.Container = "";
+                    b.Url = cont.Uri.AbsoluteUri;
+                    b.BlobType = BlobEntryType.Container;
+                    blobList.Add(b);
+                }
+            }
+            else
+            {
+                container = client.GetContainerReference(containerName);
+
+                // if we were only passed the container name, then list contents of container.
+                if (string.IsNullOrEmpty(blobPrefix))
+                {
+                    // add blobs
+                    azureBlobList = container.ListBlobs(useFlatBlobListing: true);
+                }
+                else
+                {
+                    // if passed virtual directory information, then filter based off that.
+                    var vd = container.GetDirectoryReference(virtualDirectoryName);
+                    azureBlobList = vd.ListBlobs();
+                }
+
+                foreach (var blob in azureBlobList)
+                {
+                    var b = new BasicBlobContainer();
+                    var bn = AzureHelper.GetBlobFromUrl(blob.Uri.AbsoluteUri);
+                    b.Name = bn;
+                    b.DisplayName = AzureHelper.GetDisplayName(bn);
+                    b.Container = blob.Container.Name;
+                    b.Url = blob.Uri.AbsoluteUri;
+                    b.BlobType = BlobEntryType.Blob;
+                    blobList.Add(b);
+                }
+            }
+
+            return blobList;
+        }
+
+        /// <summary>
+        /// List containers from url.
+        /// </summary>
+        /// <param name="baseUrl"></param>
+        /// <returns></returns>
+        public List<BasicBlobContainer> ListContainers(string baseUrl)
+        {
+            var client = AzureHelper.GetSourceCloudBlobClient(baseUrl);
+            var containers = client.ListContainers();
+            var containerList = containers.Select(container => new BasicBlobContainer { BlobType = BlobEntryType.Container, Container = "", DisplayName = container.Name, Name = container.Name }).ToList();
+            return containerList;
+        }
+
+
+        ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+        /// <summary>
+        /// Read block blob.
+        /// </summary>
+        /// <param name="blobRef"></param>
+        /// <param name="fileName"></param>
+        /// <returns></returns>
+        private Blob ReadBlockBlob(ICloudBlob blobRef, string fileName = "")
+        {
+            try
+            {
+                var blob = new Blob();
+                blob.BlobSavedToFile = !string.IsNullOrEmpty(fileName); // if filename provided then the blob should be cached to file.
+                blob.Name = blobRef.Name;
+                blob.FilePath = fileName;
+                blob.BlobType = DestinationBlobType.Block;
+
+                // get stream to store.
+                using (var stream = CommonHelper.GetStream(fileName))
+                {
+                    var blockBlob = blobRef as CloudBlockBlob;
+                    blockBlob.DownloadToStream(stream);
+                    if (!blob.BlobSavedToFile)
+                    {
+                        var ms = stream as MemoryStream;
+                        blob.Data = ms.ToArray();
+                    }
+                }
+                return blob;
+            }
+            catch (Exception ex)
+            {
+                throw new CloudReadException("AzureHandler:ReadBlockBlob unable to read blob", ex);
+            }
+        }
+
+        /// <summary>
+        /// Read page blob.
+        /// </summary>
+        /// <param name="blobRef"></param>
+        /// <param name="fileName"></param>
+        /// <returns></returns>
+        private Blob ReadPageBlob(ICloudBlob blobRef, string fileName = "")
+        {
+            try
+            {
+                var blob = new Blob();
+                blob.BlobSavedToFile = !string.IsNullOrEmpty(fileName);
+                blob.Name = blobRef.Name;
+                blob.FilePath = fileName;
+                blob.BlobType = DestinationBlobType.Page;
+
+                // get stream to store.
+                using (var stream = CommonHelper.GetStream(fileName))
+                {
+                    var pageBlob = blobRef as CloudPageBlob;
+                    pageBlob.DownloadToStream(stream);
+
+                    if (!blob.BlobSavedToFile)
+                    {
+                        var ms = stream as MemoryStream;
+                        blob.Data = ms.ToArray();
+                    }
+                }
+                return blob;
+            }
+            catch (Exception ex)
+            {
+                throw new CloudReadException("AzureHandler:ReadPageBlob unable to read blob", ex);
+            }
+        }
+
+        /// <summary>
         /// Upload in parallel.
         /// If total size of file is smaller than chunkSize, then simply split length by parallel factor.
         /// FIXME: Need to retest this!!!
@@ -254,7 +347,7 @@ namespace azurecopy
         /// <param name="chunkSizeInMB"></param>
         private void ParallelWriteBlockBlob(Stream stream, CloudBlockBlob blob, int parallelFactor, int chunkSizeInMB)
         {
-            long chunkSize = chunkSizeInMB * 1024*1024;
+            long chunkSize = chunkSizeInMB * 1024 * 1024;
             var length = stream.Length;
 
             if (chunkSize > length)
@@ -262,7 +355,7 @@ namespace azurecopy
                 chunkSize = length / parallelFactor;
             }
 
-            var numberOfBlocks = (length / chunkSize ) +1 ;
+            var numberOfBlocks = (length / chunkSize) + 1;
             var blockIdList = new string[numberOfBlocks];
             var chunkSizeList = new int[numberOfBlocks];
             var taskList = new List<Task>();
@@ -316,7 +409,7 @@ namespace azurecopy
             Task.WaitAll(taskList.ToArray());
             blob.PutBlockList(blockIdList.Where(t => t != null));
         }
-
+        
         /// <summary>
         /// Write a block blob. Determines if should be parallel or not then calls "real" method.
         /// </summary>
@@ -325,7 +418,7 @@ namespace azurecopy
         /// <param name="container"></param>
         /// <param name="parallelFactor"></param>
         /// <param name="chunkSizeInMB"></param>
-        private void WriteBlockBlob(Stream stream, Blob blob, CloudBlobContainer container,int parallelFactor=1, int chunkSizeInMB=2)
+        private void WriteBlockBlob(Stream stream, Blob blob, CloudBlobContainer container, int parallelFactor = 1, int chunkSizeInMB = 2)
         {
             var blobRef = container.GetBlockBlobReference(blob.Name);
             blobRef.DeleteIfExists();
@@ -352,93 +445,12 @@ namespace azurecopy
         /// <param name="container"></param>
         /// <param name="parallelFactor"></param>
         /// <param name="chunkSizeInMB"></param>
-        private void WritePageBlob(Stream stream, Blob blob, CloudBlobContainer container,int parallelFactor=1, int chunkSizeInMB=2)
+        private void WritePageBlob(Stream stream, Blob blob, CloudBlobContainer container, int parallelFactor = 1, int chunkSizeInMB = 2)
         {
             var blobRef = container.GetPageBlobReference(blob.Name);
             blobRef.UploadFromStream(stream);
         }
 
-        // assumption is that baseurl can include items PAST the container level.
-        // ie a url such as: https://....../mycontainer/virtualdir1/virtualdir2   could be used.
-        // Now, we know the first directory listed is the container (assumption?) but
-        // virtualdir1/virtualdir2 are just blob name prefixes that are used to fake
-        // a filesystem like structure.
-        public List<BasicBlobContainer> ListBlobsInContainer(string baseUrl)
-        {
-            var blobList = new List<BasicBlobContainer>();
-            var client = AzureHelper.GetSourceCloudBlobClient(baseUrl);
-            var containerName = AzureHelper.GetContainerFromUrl(baseUrl, true);
-            var virtualDirectoryName = AzureHelper.GetVirtualDirectoryFromUrl(baseUrl);
-            var blobName = AzureHelper.GetBlobFromUrl(baseUrl);
-                
-            IEnumerable<IListBlobItem> azureBlobList;
-            CloudBlobContainer container;
-
-            if (string.IsNullOrEmpty(containerName))
-            {
-                container = client.GetRootContainerReference();
-
-                // add container.
-                // Assuming no blobs at root level.
-                // incorrect assumption. FIXME!
-                var containerList = client.ListContainers();
-                foreach (var cont in containerList)
-                {
-                    var b = new BasicBlobContainer();
-                    b.Name = cont.Name;
-                    b.Container = "";
-                    b.Url = cont.Uri.AbsoluteUri;
-                    b.BlobType = BlobEntryType.Container;
-                    blobList.Add(b);
-                }
-            }
-            else
-            {
-                container = client.GetContainerReference(containerName);
-
-                // if we were only passed the container name, then list contents of container.
-                if (string.IsNullOrEmpty(virtualDirectoryName))
-                {
-                    // add blobs
-                    azureBlobList = container.ListBlobs(useFlatBlobListing:true);  
-                }
-                else
-                {
-                    // if passed virtual directory information, then filter based off that.
-                    var vd = container.GetDirectoryReference(virtualDirectoryName);
-                    azureBlobList = vd.ListBlobs();
-                }
-
-                foreach (var blob in azureBlobList)
-                {
-                    var b = new BasicBlobContainer();
-                    var bn = AzureHelper.GetBlobFromUrl(blob.Uri.AbsoluteUri);
-                    b.Name = bn;
-                    var sp = bn.Split('/');
-                    var displayName = sp[ sp.Length -1];
-                    b.DisplayName = displayName;
-                    b.Container = blob.Container.Name;
-                    b.Url = blob.Uri.AbsoluteUri;
-                    b.BlobType = BlobEntryType.Blob;
-                    blobList.Add(b);
-                }
-            }
-
-            return blobList;
-        }
-
-        /// <summary>
-        /// List containers from url.
-        /// </summary>
-        /// <param name="baseUrl"></param>
-        /// <returns></returns>
-        public List<BasicBlobContainer> ListContainers(string baseUrl)
-        {
-            var client = AzureHelper.GetSourceCloudBlobClient(baseUrl);
-            var containers = client.ListContainers();
-            var containerList = containers.Select(container => new BasicBlobContainer { BlobType = BlobEntryType.Container, Container = "", DisplayName = container.Name, Name = container.Name }).ToList();
-            return containerList;
-        }
 
         /// <summary>
         /// Read blob without passing urls. Will construct based on container and blob name.
