@@ -66,7 +66,7 @@ namespace azurecopy
         /// <param name="blobName"></param>
         /// <param name="cacheFilePath"></param>
         /// <returns></returns>
-        Blob ReadBlob(string containerName, string blobName, string cacheFilePath = "")
+        public Blob ReadBlob(string containerName, string blobName, string cacheFilePath = "")
         {
             try
             {
@@ -100,7 +100,7 @@ namespace azurecopy
         /// <param name="blob"></param>
         /// <param name="parallelUploadFactor"></param>
         /// <param name="chunkSizeInMB"></param>
-        void WriteBlob(string containerName, string blobName, Blob blob,  int parallelUploadFactor=1, int chunkSizeInMB=4)
+        public void WriteBlob(string containerName, string blobName, Blob blob,  int parallelUploadFactor=1, int chunkSizeInMB=4)
         {
             Stream stream = null;
 
@@ -228,7 +228,9 @@ namespace azurecopy
                 else
                 {
                     // if passed virtual directory information, then filter based off that.
-                    var vd = container.GetDirectoryReference(virtualDirectoryName);
+
+                    // FIXME: major change fix.
+                    var vd = container.GetDirectoryReference(blobPrefix);
                     azureBlobList = vd.ListBlobs();
                 }
 
@@ -253,9 +255,8 @@ namespace azurecopy
         /// </summary>
         /// <param name="baseUrl"></param>
         /// <returns></returns>
-        public List<BasicBlobContainer> ListContainers(string baseUrl)
+        public List<BasicBlobContainer> ListContainers(string root)
         {
-            var client = AzureHelper.GetSourceCloudBlobClient(baseUrl);
             var containers = client.ListContainers();
             var containerList = containers.Select(container => new BasicBlobContainer { BlobType = BlobEntryType.Container, Container = "", DisplayName = container.Name, Name = container.Name }).ToList();
             return containerList;
