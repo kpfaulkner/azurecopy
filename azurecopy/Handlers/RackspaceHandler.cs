@@ -30,84 +30,106 @@ namespace azurecopy
     {
         private string baseUrl = null;
 
-        public RackspaceHandler(string url = null)
+        public RackspaceHandler(string url )
         {
         
         }
-        public void MoveBlob(string startUrl, string finishUrl)
+
+        /// <summary>
+        /// Make container/directory (depending on platform).
+        /// </summary>
+        /// <param name="container"></param>
+        public void MakeContainer(string containerName)
         {
-
-
-        }
-        // make container
-        // assumption being last part of url is the new container.
-        public void MakeContainer(string url)
-        {
-
+            throw new NotImplementedException();
         }
 
-        // override configuration. 
-        public void OverrideConfiguration(Dictionary<string, string> configuration)
+        /// <summary>
+        /// Read blob.
+        /// </summary>
+        /// <param name="containerName"></param>
+        /// <param name="blobName"></param>
+        /// <param name="cacheFilePath"></param>
+        /// <returns></returns>
+        public Blob ReadBlob(string containerName, string blobName, string cacheFilePath = "")
         {
-            throw new NotImplementedException("OverrideConfiguration not implemented yet");
+            throw new NotImplementedException();
         }
 
-        public List<BasicBlobContainer> ListBlobsInContainer(string baseUrl)
+
+        /// <summary>
+        /// Write blob
+        /// </summary>
+        /// <param name="container"></param>
+        /// <param name="blobName"></param>
+        /// <param name="blob"></param>
+        /// <param name="parallelUploadFactor"></param>
+        /// <param name="chunkSizeInMB"></param>
+        public void WriteBlob(string containerName, string blobName, Blob blob, int parallelUploadFactor = 1, int chunkSizeInMB = 4)
         {
-            throw new NotImplementedException("Rackspace list containers not implemented");
+            throw new NotImplementedException();
         }
 
 
+        /// <summary>
+        /// Move blob
+        /// </summary>
+        /// <param name="originContainer"></param>
+        /// <param name="destinationContainer"></param>
+        /// <param name="startBlobname"></param>
+        public void MoveBlob(string originContainer, string destinationContainer, string startBlobname)
+        {
+            throw new NotImplementedException();
+        }
+
+
+        /// <summary>
+        /// Lists all blobs in a container.
+        /// Can be supplied a blobPrefix which basically acts as virtual directory options.
+        /// eg, if we have blobs called: "virt1/virt2/myblob"    and
+        ///                              "virt1/virt2/myblob2"
+        /// Although the blob names are the complete strings mentioned above, we might like to think that the blobs
+        /// are just called myblob and myblob2. We can supply a blobPrefix of "virt1/virt2/" which we can *think* of
+        /// as a directory, but again, its just really a prefix behind the scenes.
+        /// 
+        /// For other sytems (not Azure) the blobPrefix might be real directories....  will need to investigate
+        /// </summary>
+        /// <param name="containerName"></param>
+        /// <param name="blobPrefix"></param>
+        /// <returns></returns>
+        public List<BasicBlobContainer> ListBlobsInContainer(string containerName = null, string blobPrefix = null)
+        {
+            throw new NotImplementedException();
+        }
+
+
+        /// <summary>
+        /// List containers/directories off the root. For storage schemes that allow real directories maybe
+        /// the root will be 
+        /// </summary>
+        /// <returns></returns>
+        public List<BasicBlobContainer> ListContainers(string root)
+        {
+            throw new NotImplementedException();
+        }
+
+
+        // core URL used for this handler.
+        // could be the Azure url for a given account, or the bucket/S3 url.
+        // This is purely so once a url has been used to establish a handler we can still
+        // reference it for the copy methods.
+        // ideally the copy methods would access this automatically (and not require urls in params)
+        // but this modification will probably happen slowly.
         public string GetBaseUrl()
         {
-            return baseUrl;
+            throw new NotImplementedException();
         }
 
-        public Blob ReadBlob(string url, string filePath = "")
+
+        // override configuration, instead of using app.configs.
+        public void OverrideConfiguration(Dictionary<string, string> configuration)
         {
-            throw new NotImplementedException("Sharepoint not implemented yet");
-            
+            throw new NotImplementedException();
         }
-
-        public void WriteBlob(string url, Blob blob,  int parallelUploadFactor=1, int chunkSizeInMB=4)
-        {
-            throw new NotImplementedException("Sharepoint not implemented yet");
-           
-
-        }
-
-        public List<BasicBlobContainer> ListContainers(string container)
-        {
-            throw new NotImplementedException("Sharepoint not implemented yet");
-
-        }
-
-        // not passing url. Url will be generated behind the scenes.
-        public Blob ReadBlobSimple(string container, string blobName, string filePath = "")
-        {
-            throw new NotImplementedException("Dropbox not implemented yet");
-
-        }
-
-        // not passing url.
-        public void WriteBlobSimple(string container, Blob blob, int parallelUploadFactor = 1, int chunkSizeInMB = 4)
-        {
-            throw new NotImplementedException("Dropbox not implemented yet");
-
-        }
-
-        // not required to pass full url.
-        public List<BasicBlobContainer> ListBlobsInContainerSimple(string containerName)
-        {
-            throw new NotImplementedException("Dropbox not implemented yet");
-
-        }
-
-        public void MakeContainerSimple(string container)
-        {
-            throw new NotImplementedException("MakeContainerSimple not implemented");
-        }
-
-
     }
 }
