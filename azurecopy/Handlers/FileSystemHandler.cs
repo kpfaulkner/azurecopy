@@ -79,7 +79,7 @@ namespace azurecopy
             var blob = new Blob();
             blob.BlobSavedToFile = false;   // false since we're not caching it elsewhere... but have it REALLY on FS.
             blob.BlobType = DestinationBlobType.Unknown;
-            blob.FilePath = Path.Combine( string[]( containerName, blobName));
+            blob.FilePath = Path.Combine( new List<string>{containerName, blobName}.ToArray());
             blob.BlobOriginType = UrlType.Local;
             blob.BlobSavedToFile = true;
             blob.Name = blobName;

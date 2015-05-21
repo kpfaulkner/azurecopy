@@ -408,9 +408,11 @@ namespace azurecopy
                 }
                 else
                 {
+                    throw new NotImplementedException();
+
                     // if passed virtual directory information, then filter based off that.
-                    var vd = container.GetDirectoryReference(virtualDirectoryName);
-                    azureBlobList = vd.ListBlobs();
+                    //var vd = container.GetDirectoryReference(virtualDirectoryName);
+                    //azureBlobList = vd.ListBlobs();
                 }
 
                 foreach (var blob in azureBlobList)
@@ -443,49 +445,5 @@ namespace azurecopy
             var url = baseUrl + "/" + container + "/" + blobName;
             return ReadBlob(url, filePath);
         }
-
-        // not passing url.
-        public void WriteBlobSimple(string container, Blob blob, int parallelUploadFactor = 1, int chunkSizeInMB = 4)
-        {
-            if (baseUrl == null)
-            {
-                throw new ArgumentNullException("Constructor needs base url passed");
-            }
-
-            var url = baseUrl + "/" + container + "/";
-            WriteBlob(url, blob, parallelUploadFactor, chunkSizeInMB);
-        }
-
-        // not required to pass full url.
-        // container is possibly a container/bucket in the azure/s3 sense in addition to other directories added
-        // on.
-        public List<BasicBlobContainer> ListBlobsInContainerSimple(string container)
-        {
-            if (baseUrl == null)
-            {
-                throw new ArgumentNullException("Constructor needs base url passed");
-            }
-
-            var url = baseUrl + "/" + container + "/";
-            return ListBlobsInContainer(url);
-        }
-
-        public void MakeContainerSimple(string container)
-        {
-            if (string.IsNullOrEmpty(baseUrl))
-            {
-                throw new ArgumentNullException("Constructor needs base url passed");
-            }
-
-           if (string.IsNullOrEmpty(container))
-            {
-                throw new ArgumentNullException("container name empty");
-            }
-
-            var fullUrl = baseUrl +"/" + container;
-            MakeContainer(fullUrl);
-
-        }
-
     }
 }

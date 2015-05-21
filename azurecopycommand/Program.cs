@@ -478,42 +478,42 @@ namespace azurecopycommand
 
 
         // default to local filesystem
-        public static IBlobHandler GetHandler(UrlType urlType)
+        public static IBlobHandler GetHandler(UrlType urlType, string url)
         {
             IBlobHandler blobHandler;
 
             switch (urlType)
             {
                 case UrlType.Azure:
-                    blobHandler = new AzureHandler();
+                    blobHandler = new AzureHandler(url);
                     break;
 
                 case UrlType.AzureFile:
-                    blobHandler = new AzureFileHandler();
+                    blobHandler = new AzureFileHandler(url);
                     break;
 
                 case UrlType.S3:
-                    blobHandler = new S3Handler();
+                    blobHandler = new S3Handler(url);
                     break;
 
                 case UrlType.SkyDrive:
-                    blobHandler = new SkyDriveHandler();
+                    blobHandler = new SkyDriveHandler(url);
                     break;
 
                 case UrlType.Local:
-                    blobHandler = new FileSystemHandler();
+                    blobHandler = new FileSystemHandler(url);
                     break;
                 
-                case UrlType.Sharepoint:
-                    blobHandler = new SharepointHandler();
-                    break;
+                //case UrlType.Sharepoint:
+                //    blobHandler = new SharepointHandler(url);
+                //    break;
 
                 case UrlType.Dropbox:
-                    blobHandler = new DropboxHandler();
+                    blobHandler = new DropboxHandler(url);
                     break;
 
                 default:
-                    blobHandler = new FileSystemHandler();
+                    blobHandler = new FileSystemHandler(url);
                     break;
             }
 
@@ -525,8 +525,8 @@ namespace azurecopycommand
         static void DoNormalCopy()
         {
 
-            IBlobHandler inputHandler = GetHandler(_inputUrlType);
-            IBlobHandler outputHandler = GetHandler(_outputUrlType);
+            IBlobHandler inputHandler = GetHandler(_inputUrlType, _inputUrl);
+            IBlobHandler outputHandler = GetHandler(_outputUrlType, _outputUrl);
 
 
             if (inputHandler != null && outputHandler != null)
@@ -550,9 +550,12 @@ namespace azurecopycommand
 
                     if (!ConfigHelper.UseBlobCopy)
                     {
+                        throw new NotImplementedException();
+                        var sourceContainer = "";
+                        var sourceBlobName = "";
 
                         // read blob
-                        var blob = inputHandler.ReadBlob(url, fileName);
+                        var blob = inputHandler.ReadBlob(sourceContainer, sourceBlobName, fileName);
 
                         // if blob is marked with type "Unknown" then set it to what was passed in on command line.
                         // if nothing was passed in, then default to block?
@@ -571,7 +574,9 @@ namespace azurecopycommand
                         Console.WriteLine(string.Format("Copying {0} to {1}", url, _outputUrl));
 
                         // write blob
-                        outputHandler.WriteBlob(_outputUrl, blob, ConfigHelper.ParallelFactor, ConfigHelper.ChunkSizeInMB);
+                        var destContainerName = "";
+                        var destBlobName = "";
+                        outputHandler.WriteBlob(destContainerName, destBlobName, blob, ConfigHelper.ParallelFactor, ConfigHelper.ChunkSizeInMB);
                     }
                     else
                     {
@@ -626,7 +631,7 @@ namespace azurecopycommand
 
         static void DoListContainers()
         {
-            IBlobHandler handler = GetHandler(_inputUrlType);
+            IBlobHandler handler = GetHandler(_inputUrlType, _inputUrl);
 
             try
             {
@@ -646,7 +651,7 @@ namespace azurecopycommand
 
         static void DoList()
         {
-            IBlobHandler handler = GetHandler(_inputUrlType);
+            IBlobHandler handler = GetHandler(_inputUrlType, _inputUrl);
             var blobList = handler.ListBlobsInContainer(_inputUrl);
 
             foreach (var blob in blobList)
@@ -688,7 +693,7 @@ namespace azurecopycommand
 
         private static void DoMake()
         {
-            IBlobHandler handler = GetHandler(_inputUrlType);
+            IBlobHandler handler = GetHandler(_inputUrlType, _inputUrl);
             handler.MakeContainer(_inputUrl);
         }
 

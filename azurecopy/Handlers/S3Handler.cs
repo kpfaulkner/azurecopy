@@ -130,6 +130,7 @@ namespace azurecopy
         /// <returns></returns>
         public Blob ReadBlob(string containerName, string blobName, string cacheFilePath = "")
         {
+            var bucket = S3Helper.GetBucketFromUrl(baseUrl);
             var blob = new Blob();
             blob.BlobSavedToFile = !string.IsNullOrEmpty(cacheFilePath);
             blob.FilePath = cacheFilePath;
@@ -144,7 +145,7 @@ namespace azurecopy
                     using (Stream s = getObjectResponse.ResponseStream)
                     {
                         // get stream to store.
-                        using (var stream = CommonHelper.GetStream(fileName))
+                        using (var stream = CommonHelper.GetStream(cacheFilePath))
                         {
                             byte[] data = new byte[32768];
                             int bytesRead = 0;

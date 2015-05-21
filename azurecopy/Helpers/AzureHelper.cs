@@ -236,24 +236,24 @@ namespace azurecopy.Utils
         //// Want to get everything after the container.
         //// eg if we have container name "mycontainer", and the blobUrl passed in is
         //// "http://xxxx/mycontainer/dira/dirb" then we need to return "dira/dirb"
-        //public static string GetVirtualDirectoryFromUrl(string blobUrl)
-        //{
-        //    var url = new Uri(blobUrl);
-        //    string virtualDir = "";
+        public static string GetVirtualDirectoryFromUrl(string blobUrl)
+        {
+            var url = new Uri(blobUrl);
+            string virtualDir = "";
 
-        //    if (IsDevUrl(blobUrl))
-        //    {
-        //        virtualDir = string.Join("/", url.Segments.Skip(3));
-        //    }
-        //    else
-        //    {
-        //        virtualDir = string.Join("/", url.Segments.Skip(2));
-        //    }
+            if (IsDevUrl(blobUrl))
+            {
+                virtualDir = string.Join("/", url.Segments.Skip(3));
+            }
+            else
+            {
+                virtualDir = string.Join("/", url.Segments.Skip(2));
+            }
 
-        //    virtualDir = virtualDir.TrimEnd('/');
-        //    return virtualDir;
+            virtualDir = virtualDir.TrimEnd('/');
+            return virtualDir;
 
-        //}
+        }
 
         // container lives in different part of url depending on dev or real.
         // if the url ends with a /  then assuming the url doesn't mention the blob.

@@ -35,7 +35,7 @@ namespace azurecopy
         // store so we dont have to keep retrieving it.
         private static Datatypes.SkyDriveDirectory destinationDirectory = null;
 
-        public SkyDriveHandler( string url=null)
+        public SkyDriveHandler( string url )
         {
             accessToken = SkyDriveHelper.GetAccessToken();
             baseUrl = url;
@@ -46,10 +46,15 @@ namespace azurecopy
             return baseUrl;
         }
 
-        public void MoveBlob(string startUrl, string finishUrl)
+        /// <summary>
+        /// Move blob
+        /// </summary>
+        /// <param name="originContainer"></param>
+        /// <param name="destinationContainer"></param>
+        /// <param name="startBlobname"></param>
+        public void MoveBlob(string originContainer, string destinationContainer, string startBlobname)
         {
-
-
+            throw new NotImplementedException();
         }
 
         // override configuration. 
@@ -58,33 +63,46 @@ namespace azurecopy
             throw new NotImplementedException("OverrideConfiguration not implemented yet");
         }
 
-        // make container
-        // assumption being last part of url is the new container.
-        public void MakeContainer(string url)
+        /// <summary>
+        /// Make container/directory (depending on platform).
+        /// </summary>
+        /// <param name="container"></param>
+        public void MakeContainer(string containerName)
         {
+            var url = baseUrl + "/" + containerName;
             url = url.Replace(SkyDriveHelper.OneDrivePrefix, "");
-
             var targetDirectory = SkyDriveHelper.CreateFolder(url);
 
         }
 
-        public List<BasicBlobContainer> ListContainers(string baseUrl)
+        /// <summary>
+        /// List containers/directories off the root. For storage schemes that allow real directories maybe
+        /// the root will be 
+        /// </summary>
+        /// <returns></returns>
+        public List<BasicBlobContainer> ListContainers(string root)
         {
             throw new NotImplementedException("Onedrive list containers not implemented");
         }
 
 
-        public Blob ReadBlob(string url, string filePath = "")
+        /// <summary>
+        /// Read blob.
+        /// </summary>
+        /// <param name="containerName"></param>
+        /// <param name="blobName"></param>
+        /// <param name="cacheFilePath"></param>
+        /// <returns></returns>
+        public Blob ReadBlob(string containerName, string blobName, string cacheFilePath = "")
         {
             Blob blob = new Blob();
-            string blobName = "";
-
             StringBuilder requestUriFile;
+
+            var url = baseUrl + "/" + containerName + "/" + blobName;
 
             if (url.IndexOf(SkyDriveHelper.OneDrivePrefix) != -1)
             {
                 url = url.Replace(SkyDriveHelper.OneDrivePrefix, "");
-
                 var skydriveFileEntry = SkyDriveHelper.GetSkyDriveEntryByFileNameAndDirectory(url);
                 requestUriFile = new StringBuilder(skydriveFileEntry.Source);
                 var sp = url.Split('/');
@@ -112,7 +130,7 @@ namespace azurecopy
             var s = response.GetResponseStream();
 
             // get stream to store.
-            using (var stream = CommonHelper.GetStream(filePath))
+            using (var stream = CommonHelper.GetStream(cacheFilePath))
             {
                 byte[] data = new byte[32768];
                 int bytesRead = 0;
@@ -136,10 +154,17 @@ namespace azurecopy
             return blob;
         }
 
-        // url simply is <directory>/filename   format. NOT the entire/real url.
-        // will make directories if they do not already exist.
-        public void WriteBlob(string url, Blob blob,  int parallelUploadFactor=1, int chunkSizeInMB=4)
+        /// <summary>
+        /// Write blob
+        /// </summary>
+        /// <param name="container"></param>
+        /// <param name="blobName"></param>
+        /// <param name="blob"></param>
+        /// <param name="parallelUploadFactor"></param>
+        /// <param name="chunkSizeInMB"></param>
+        public void WriteBlob(string containerName, string blobName, Blob blob, int parallelUploadFactor = 1, int chunkSizeInMB = 4)
         {
+            var url = baseUrl + "/" + containerName + "/" + blob.Name;
             url = url.Replace( SkyDriveHelper.OneDrivePrefix, "");
 
             if (destinationDirectory == null)
@@ -154,8 +179,6 @@ namespace azurecopy
                 }
             }
            
-            var blobName = blob.Name;
-
             var urlTemplate = @"https://apis.live.net/v5.0/{0}/files/{1}?access_token={2}";
             var requestUrl = string.Format(urlTemplate, destinationDirectory.Id, blobName, accessToken);
 
@@ -212,11 +235,25 @@ namespace azurecopy
         }
 
 
-        public List<BasicBlobContainer> ListBlobsInContainer(string container)
+        /// <summary>
+        /// Lists all blobs in a container.
+        /// Can be supplied a blobPrefix which basically acts as virtual directory options.
+        /// eg, if we have blobs called: "virt1/virt2/myblob"    and
+        ///                              "virt1/virt2/myblob2"
+        /// Although the blob names are the complete strings mentioned above, we might like to think that the blobs
+        /// are just called myblob and myblob2. We can supply a blobPrefix of "virt1/virt2/" which we can *think* of
+        /// as a directory, but again, its just really a prefix behind the scenes.
+        /// 
+        /// For other sytems (not Azure) the blobPrefix might be real directories....  will need to investigate
+        /// </summary>
+        /// <param name="containerName"></param>
+        /// <param name="blobPrefix"></param>
+        /// <returns></returns>
+        public List<BasicBlobContainer> ListBlobsInContainer(string containerName = null, string blobPrefix = null)
         {
             var blobList = new List<BasicBlobContainer>();
 
-            var skydriveListing = SkyDriveHelper.ListSkyDriveDirectoryContent(container);
+            var skydriveListing = SkyDriveHelper.ListSkyDriveDirectoryContent(containerName);
             foreach (var skyDriveEntry in skydriveListing)
             {
                 var blob = new BasicBlobContainer();
@@ -226,7 +263,7 @@ namespace azurecopy
 
                 // keep display name same as name until determine otherwise.
                 blob.DisplayName = blob.Name;
-                blob.Container = container;
+                blob.Container = containerName;
                 blob.Url = string.Format("{0}&blobName={1}", resolvedOneDriveEntry.Source, blob.Name);       // modify link so we can determine blob name purely from link.             
                 blobList.Add(blob);
             }
@@ -242,47 +279,6 @@ namespace azurecopy
 
             return skydriveId;
 
-        }
-
-        // not passing url. Url will be generated behind the scenes.
-        public Blob ReadBlobSimple(string container, string blobName, string filePath = "")
-        {
-            if (baseUrl == null)
-            {
-                throw new ArgumentNullException("Constructor needs base url passed");
-            }
-
-            var url = baseUrl + "/" + container + "/" + blobName;
-            return ReadBlob(url, filePath);
-        }
-
-        // not passing url.
-        public void WriteBlobSimple(string container, Blob blob, int parallelUploadFactor = 1, int chunkSizeInMB = 4)
-        {
-            if (baseUrl == null)
-            {
-                throw new ArgumentNullException("Constructor needs base url passed");
-            }
-
-            var url = baseUrl + "/" + container + "/";
-            WriteBlob(url, blob, parallelUploadFactor, chunkSizeInMB);
-        }
-
-        // not required to pass full url.
-        public List<BasicBlobContainer> ListBlobsInContainerSimple(string container)
-        {
-            if (baseUrl == null)
-            {
-                throw new ArgumentNullException("Constructor needs base url passed");
-            }
-
-            var url = baseUrl + "/" + container + "/";
-            return ListBlobsInContainer(url);
-        }
-
-        public void MakeContainerSimple(string container)
-        {
-            throw new NotImplementedException("MakeContainerSimple not implemented");
         }
 
 
