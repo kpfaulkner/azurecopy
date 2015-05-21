@@ -27,22 +27,30 @@ namespace azurecopy
     public class FileSystemHandler : IBlobHandler
     {
         private string baseUrl = null;
-        public FileSystemHandler(string url = null)
+        public FileSystemHandler(string url)
         {
             baseUrl = url;
         }
 
-        public void MoveBlob(string startUrl, string finishUrl)
+        /// <summary>
+        /// Move blob
+        /// </summary>
+        /// <param name="originContainer"></param>
+        /// <param name="destinationContainer"></param>
+        /// <param name="startBlobname"></param>
+        public void MoveBlob(string originContainer, string destinationContainer, string startBlobname)
         {
-
-
+            throw new NotImplementedException();
         }
 
-        // make container
-        // assumption being last part of url is the new container.
-        public void MakeContainer(string localFilePath)
+        /// <summary>
+        /// Make container/directory (depending on platform).
+        /// For local filesystem the containername is really a full path.
+        /// </summary>
+        /// <param name="container"></param>
+        public void MakeContainer(string containerName)
         {
-            Directory.CreateDirectory(localFilePath);
+            Directory.CreateDirectory( containerName);
 
         }
 
@@ -57,40 +65,53 @@ namespace azurecopy
             throw new NotImplementedException("OverrideConfiguration not implemented yet");
         }
 
-        // we will NOT be using the cachedFilePath (since we're just reading the file from the local 
-        // filesystem anyway).
-        // We will reference the file in the blob, but will make sure that the blob url type is set to local
-        // this will mean that any future cleaning of the cache will NOT try and erase the original file.
-        public Blob ReadBlob(string localFilePath, string cachedFilePath = "")
+        /// <summary>
+        /// Read blob.
+        /// For filesystem the containerName is really just the full path directory.
+        /// The blobName is the filename.
+        /// </summary>
+        /// <param name="containerName"></param>
+        /// <param name="blobName"></param>
+        /// <param name="cacheFilePath"></param>
+        /// <returns></returns>
+        public Blob ReadBlob(string containerName, string blobName, string cacheFilePath = "")
         {
-
             var blob = new Blob();
-            blob.BlobSavedToFile = false;
+            blob.BlobSavedToFile = false;   // false since we're not caching it elsewhere... but have it REALLY on FS.
             blob.BlobType = DestinationBlobType.Unknown;
-            blob.FilePath = localFilePath;
+            blob.FilePath = Path.Combine( string[]( containerName, blobName));
             blob.BlobOriginType = UrlType.Local;
             blob.BlobSavedToFile = true;
-            
-            var uri = new Uri(localFilePath);
-
-            blob.Name = uri.Segments[uri.Segments.Length - 1];
+            blob.Name = blobName;
             return blob;
         }
 
-        public List<BasicBlobContainer> ListContainers(string baseUrl)
+        /// <summary>
+        /// List containers/directories off the root. For storage schemes that allow real directories maybe
+        /// the root will be 
+        /// </summary>
+        /// <returns></returns>
+        public List<BasicBlobContainer> ListContainers(string root)
         {
             throw new NotImplementedException("Filesystem list containers not implemented");
         }
 
 
-        public void WriteBlob(string localFilePath, Blob blob,   int parallelUploadFactor=1, int chunkSizeInMB=4)
+        /// <summary>
+        /// Write blob
+        /// For FS the containerName is just the full path (excluding filename).
+        /// </summary>
+        /// <param name="container"></param>
+        /// <param name="blobName"></param>
+        /// <param name="blob"></param>
+        /// <param name="parallelUploadFactor"></param>
+        /// <param name="chunkSizeInMB"></param>
+        public void WriteBlob(string containerName, string blobName, Blob blob, int parallelUploadFactor = 1, int chunkSizeInMB = 4)
         {
             Stream stream = null;
-
             try
             {
-
-                var outFile = Path.Combine(localFilePath, blob.Name);
+                var outFile = Path.Combine(containerName, blob.Name);
 
                 // get stream to data.
                 if (blob.BlobSavedToFile)
@@ -106,7 +127,6 @@ namespace azurecopy
                 {
                     stream.CopyTo(writeStream);
                 }
-
             }
             catch (ArgumentException ex)
             {
@@ -122,8 +142,24 @@ namespace azurecopy
             }
         }
 
-        public List<BasicBlobContainer> ListBlobsInContainer(string baseUrl)
+        /// <summary>
+        /// Lists all blobs in a container.
+        /// Can be supplied a blobPrefix which basically acts as virtual directory options.
+        /// eg, if we have blobs called: "virt1/virt2/myblob"    and
+        ///                              "virt1/virt2/myblob2"
+        /// Although the blob names are the complete strings mentioned above, we might like to think that the blobs
+        /// are just called myblob and myblob2. We can supply a blobPrefix of "virt1/virt2/" which we can *think* of
+        /// as a directory, but again, its just really a prefix behind the scenes.
+        /// 
+        /// For other sytems (not Azure) the blobPrefix might be real directories....  will need to investigate
+        /// </summary>
+        /// <param name="containerName"></param>
+        /// <param name="blobPrefix"></param>
+        /// <returns></returns>
+        public List<BasicBlobContainer> ListBlobsInContainer(string containerName = null, string blobPrefix = null)
         {
+
+            throw new NotImplementedException("Have implementation but is not valid anymore.");
             var fileList = new List<BasicBlobContainer>();
 
             var files = Directory.EnumerateFiles(baseUrl);
@@ -141,57 +177,7 @@ namespace azurecopy
 
                 fileList.Add(f);
             }
-
             return fileList;
-
         }
-
-        public bool MatchHandler(string url)
-        {
-            return false;
-        }
-
-        // not passing url. Url will be generated behind the scenes.
-        public Blob ReadBlobSimple(string container, string blobName, string filePath = "")
-        {
-            if (baseUrl == null)
-            {
-                throw new ArgumentNullException("Constructor needs base url passed");
-            }
-
-            var url = baseUrl + "/" + container + "/" + blobName;
-            return ReadBlob(url, filePath);
-        }
-
-        // not passing url.
-        public void WriteBlobSimple(string container, Blob blob, int parallelUploadFactor = 1, int chunkSizeInMB = 4)
-        {
-            if (baseUrl == null)
-            {
-                throw new ArgumentNullException("Constructor needs base url passed");
-            }
-
-            var url = baseUrl + "/" + container + "/";
-            WriteBlob(url, blob, parallelUploadFactor, chunkSizeInMB);
-        }
-
-        // not required to pass full url.
-        public List<BasicBlobContainer> ListBlobsInContainerSimple(string container)
-        {
-            if (baseUrl == null)
-            {
-                throw new ArgumentNullException("Constructor needs base url passed");
-            }
-
-            var url = baseUrl + "/" + container + "/";
-            return ListBlobsInContainer(url);
-        }
-
-        public void MakeContainerSimple(string container)
-        {
-            throw new NotImplementedException("MakeContainerSimple not implemented");
-        }
-
-
     }
 }
