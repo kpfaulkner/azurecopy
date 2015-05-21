@@ -264,25 +264,41 @@ namespace azurecopy
 
         /// <summary>
         /// Gets container name from the full url.
-        /// This is cloud specific.
+        /// URL format for Azure is:
+        ///   https://accountname.blob.core.windows.net/containername/blobname
+        ///   OR
+        ///   https://accountname.blob.core.windows.net/containername/virt1/virt2/blobname
+        ///   
+        /// In the second case the TRUE blob name is still "virt1/virt2/blobname" but we'll be handling virtual directories
+        /// in some fashion.
         /// </summary>
         /// <param name="url"></param>
         /// <returns></returns>
         public string GetContainerNameFromUrl(string url)
         {
-            throw new NotImplementedException();
+            var sp = url.Split('/');
+            return sp[3];
         }
 
 
         /// <summary>
         /// Gets blob name from the full url.
-        /// This is cloud specific.
+        /// URL format for Azure is:
+        ///   https://accountname.blob.core.windows.net/containername/blobname
+        ///   OR
+        ///   https://accountname.blob.core.windows.net/containername/virt1/virt2/blobname
+        ///   
+        /// In the second case the TRUE blob name is still "virt1/virt2/blobname" but we'll be handling virtual directories
+        /// in some fashion.
         /// </summary>
         /// <param name="url"></param>
         /// <returns></returns>
         public string GetBlobNameFromUrl(string url)
         {
-            throw new NotImplementedException();
+            var sp = url.Split('/');
+            var blobNameElements = sp.Skip(4);
+            var blobName = string.Join("/", blobNameElements);
+            return blobName;
         }
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////
