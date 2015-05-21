@@ -37,7 +37,7 @@ namespace azurecopy
 
         // really dont like the idea of storing plain passwords.
         // need to encrypt the app.config soon.
-        public DropboxHandler( string url = null)
+        public DropboxHandler( string url)
         {
             client = DropboxHelper.GetClient();
 
@@ -49,47 +49,65 @@ namespace azurecopy
             return baseUrl;
         }
 
-        public void MoveBlob(string startUrl, string finishUrl)
+        /// <summary>
+        /// Move blob
+        /// </summary>
+        /// <param name="originContainer"></param>
+        /// <param name="destinationContainer"></param>
+        /// <param name="startBlobname"></param>
+        public void MoveBlob(string originContainer, string destinationContainer, string startBlobname)
         {
             throw new NotImplementedException("MoveBlob for DropBox not implemented");
         }
 
-        // override configuration. 
+       // override configuration, instead of using app.configs.
         public void OverrideConfiguration(Dictionary<string, string> configuration)
         {
             throw new NotImplementedException("OverrideConfiguration not implemented yet");
         }
 
-        public List<BasicBlobContainer> ListContainers(string baseUrl)
+        /// <summary>
+        /// List containers/directories off the root. For storage schemes that allow real directories maybe
+        /// the root will be 
+        /// </summary>
+        /// <returns></returns>
+        public List<BasicBlobContainer> ListContainers(string root)
         {
             throw new NotImplementedException("Dropbox list containers not implemented");
         }
 
-        // make container
-        // assumption being last part of url is the new container.
-        public void MakeContainer(string url)
+        /// <summary>
+        /// Make container/directory (depending on platform).
+        /// </summary>
+        /// <param name="container"></param>
+        public void MakeContainer(string containerName)
         {
-            var uri = new Uri(url);
-            var pathUri = uri.PathAndQuery;
-            client.CreateFolder(pathUri);
+            client.CreateFolder(containerName);
         }
 
-
-        public Blob ReadBlob(string url, string filePath = "")
-        {
-            var uri = new Uri(url);
-            var pathUri = uri.PathAndQuery;
-            
+        /// <summary>
+        /// Read blob.
+        /// </summary>
+        /// <param name="containerName"></param>
+        /// <param name="blobName"></param>
+        /// <param name="cacheFilePath"></param>
+        /// <returns></returns>
+        public Blob ReadBlob(string containerName, string blobName, string cacheFilePath = "")
+        {   
             var blob = new Blob();
 
-            blob.BlobSavedToFile = !string.IsNullOrEmpty(filePath);
-            blob.FilePath = filePath;
+            blob.BlobSavedToFile = !string.IsNullOrEmpty(cacheFilePath);
+            blob.FilePath = cacheFilePath;
             blob.BlobOriginType = UrlType.Dropbox;
-            blob.Name = uri.Segments[uri.Segments.Length - 1];
+            blob.Name = blobName;
+
+            // generate path for dropbox.
+            var dropboxPath = containerName + "/" + blobName; // FIXME: Need to verify this!!!!
+
             // get stream to store.
-            using (var stream = CommonHelper.GetStream(filePath))
+            using (var stream = CommonHelper.GetStream(cacheFilePath))
             {
-                var fileBytes = client.GetFile(pathUri);
+                var fileBytes = client.GetFile(dropboxPath);
 
                 if (!blob.BlobSavedToFile)
                 {
@@ -104,69 +122,48 @@ namespace azurecopy
             return blob;
         }
 
-        // synchronous atm. Async it later.
-        public void WriteBlob(string url, Blob blob,  int parallelUploadFactor=1, int chunkSizeInMB=4)
+        /// <summary>
+        /// Write blob
+        /// </summary>
+        /// <param name="container"></param>
+        /// <param name="blobName"></param>
+        /// <param name="blob"></param>
+        /// <param name="parallelUploadFactor"></param>
+        /// <param name="chunkSizeInMB"></param>
+        public void WriteBlob(string containerName, string blobName, Blob blob,  int parallelUploadFactor=1, int chunkSizeInMB=4)
         {
-
-            var uri = new Uri( url);
-            var container = uri.PathAndQuery;
-
             if (blob.BlobSavedToFile)
             {
                 using( var stream = new FileStream(blob.FilePath, FileMode.Open))
                 {
-                    client.UploadFile(container, blob.Name, stream);
+                    client.UploadFile(containerName, blob.Name, stream);
                 }
-
             }
             else
             {
-                client.UploadFile(container, blob.Name, blob.Data);
+                client.UploadFile(containerName, blob.Name, blob.Data);
             }
-
         }
 
-        public List<BasicBlobContainer> ListBlobsInContainer(string url)
-        {
-            // how to strip off prefix to get the container/directory?
-            var uri = new Uri(url);
-            var container = uri.PathAndQuery;
-            return ListBlobsInContainerSimple(container);
-        }
-
-        // not passing url. Url will be generated behind the scenes.
-        public Blob ReadBlobSimple(string container, string blobName, string filePath = "")
-        {
-            if (string.IsNullOrEmpty(baseUrl))
-            {
-                throw new ArgumentNullException("Constructor needs base url passed");
-            }
-
-            var url = baseUrl + "/" + container + "/" + blobName;
-
-            return ReadBlob(url, filePath);
-
-        }
-
-        // not passing url.
-        public void WriteBlobSimple(string container, Blob blob, int parallelUploadFactor = 1, int chunkSizeInMB = 4)
-        {
-            if (baseUrl == null)
-            {
-                throw new ArgumentNullException("Constructor needs base url passed");
-            }
-
-            var url = baseUrl + "/" + container + "/";
-            WriteBlob(url, blob, parallelUploadFactor, chunkSizeInMB);
-
-        }
-
-        // not required to pass full url.
-        public List<BasicBlobContainer> ListBlobsInContainerSimple(string containerName)
+        /// <summary>
+        /// Lists all blobs in a container.
+        /// Can be supplied a blobPrefix which basically acts as virtual directory options.
+        /// eg, if we have blobs called: "virt1/virt2/myblob"    and
+        ///                              "virt1/virt2/myblob2"
+        /// Although the blob names are the complete strings mentioned above, we might like to think that the blobs
+        /// are just called myblob and myblob2. We can supply a blobPrefix of "virt1/virt2/" which we can *think* of
+        /// as a directory, but again, its just really a prefix behind the scenes.
+        /// 
+        /// For other sytems (not Azure) the blobPrefix might be real directories....  will need to investigate
+        /// </summary>
+        /// <param name="containerName"></param>
+        /// <param name="blobPrefix"></param>
+        /// <returns></returns>
+        public List<BasicBlobContainer> ListBlobsInContainer(string containerName = null, string blobPrefix = null)
         {
             var dirListing = new List<BasicBlobContainer>();
 
-            var metadata = client.GetMetaData( containerName, null,false,false);
+            var metadata = client.GetMetaData(containerName, null, false, false);
 
             // generate list of dirs and files.
             foreach (var entry in metadata.Contents)
@@ -181,40 +178,14 @@ namespace azurecopy
                 if (entry.Is_Dir)
                 {
                     blob.BlobType = BlobEntryType.Container;
-                
                 }
                 else
                 {
                     blob.BlobType = BlobEntryType.Blob;
                 }
-
                 dirListing.Add(blob);
-
             }
-
             return dirListing;
         }
-
-        public void MakeContainerSimple(string container)
-        {
-            if (string.IsNullOrEmpty(baseUrl))
-            {
-                throw new ArgumentNullException("Constructor needs base url passed");
-            }
-
-            if (string.IsNullOrEmpty(container))
-            {
-                throw new ArgumentNullException("container is empty/null");
-            }
-
-            var url = baseUrl + "/" + container;
-            var uri = new Uri(url);
-            var pathUri = uri.PathAndQuery;
-            client.CreateFolder(pathUri); 
-                
-                
-        }
-
-
     }
 }

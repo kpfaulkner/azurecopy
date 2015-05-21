@@ -355,7 +355,6 @@ namespace azurecopy
 
         }
 
-
         /// <summary>
         /// Lists all blobs in a container.
         /// Can be supplied a blobPrefix which basically acts as virtual directory options.
@@ -373,13 +372,7 @@ namespace azurecopy
         public List<BasicBlobContainer> ListBlobsInContainer(string containerName = null, string blobPrefix = null)
         {
             var blobList = new List<BasicBlobContainer>();
-
-            var client = AzureHelper.GetSourceCloudBlobClient(baseUrl);
-
-            var containerName = AzureHelper.GetContainerFromUrl(baseUrl, true);
-            var virtualDirectoryName = AzureHelper.GetVirtualDirectoryFromUrl(baseUrl);
-            var blobName = AzureHelper.GetBlobFromUrl(baseUrl);
-
+            
             IEnumerable<IListBlobItem> azureBlobList;
             CloudBlobContainer container;
 
@@ -395,19 +388,19 @@ namespace azurecopy
                 {
                     var b = new BasicBlobContainer();
                     b.Name = cont.Name;
+                    b.DisplayName = AzureHelper.GetDisplayName(cont.Name);
                     b.Container = "";
                     b.Url = cont.Uri.AbsoluteUri;
                     b.BlobType = BlobEntryType.Container;
                     blobList.Add(b);
                 }
-
             }
             else
             {
                 container = client.GetContainerReference(containerName);
 
                 // if we were only passed the container name, then list contents of container.
-                if (string.IsNullOrEmpty(virtualDirectoryName))
+                if (string.IsNullOrEmpty(blobPrefix))
                 {
                     // add blobs
                     azureBlobList = container.ListBlobs(useFlatBlobListing:true);
