@@ -551,8 +551,8 @@ namespace azurecopycommand
                     if (!ConfigHelper.UseBlobCopy)
                     {
                         throw new NotImplementedException();
-                        var sourceContainer = "";
-                        var sourceBlobName = "";
+                        var sourceContainer = inputHandler.GetContainerNameFromUrl(_inputUrl);
+                        var sourceBlobName = inputHandler.GetBlobNameFromUrl(_inputUrl);
 
                         // read blob
                         var blob = inputHandler.ReadBlob(sourceContainer, sourceBlobName, fileName);
@@ -574,8 +574,8 @@ namespace azurecopycommand
                         Console.WriteLine(string.Format("Copying {0} to {1}", url, _outputUrl));
 
                         // write blob
-                        var destContainerName = "";
-                        var destBlobName = "";
+                        var destContainerName = outputHandler.GetContainerNameFromUrl(_outputUrl);
+                        var destBlobName = outputHandler.GetBlobNameFromUrl(_outputUrl);
                         outputHandler.WriteBlob(destContainerName, destBlobName, blob, ConfigHelper.ParallelFactor, ConfigHelper.ChunkSizeInMB);
                     }
                     else
