@@ -45,6 +45,29 @@ namespace azurecopy
         }
 
         /// <summary>
+        /// Gets container name from the full url.
+        /// This is cloud specific.
+        /// </summary>
+        /// <param name="url"></param>
+        /// <returns></returns>
+        public string GetContainerNameFromUrl(string url)
+        {
+            throw new NotImplementedException();
+        }
+
+
+        /// <summary>
+        /// Gets blob name from the full url.
+        /// This is cloud specific.
+        /// </summary>
+        /// <param name="url"></param>
+        /// <returns></returns>
+        public string GetBlobNameFromUrl(string url)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
         /// Read blob.
         /// </summary>
         /// <param name="containerName"></param>

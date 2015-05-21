@@ -99,5 +99,25 @@ namespace azurecopy
 
         // override configuration, instead of using app.configs.
         void OverrideConfiguration(Dictionary<string, string> configuration);
+
+        /// <summary>
+        /// Gets container name from the full url.
+        /// This is cloud specific.
+        /// </summary>
+        /// <param name="url"></param>
+        /// <returns></returns>
+        string GetContainerNameFromUrl(string url);
+
+
+        /// <summary>
+        /// Gets blob name from the full url.
+        /// This is cloud specific.
+        /// </summary>
+        /// <param name="url"></param>
+        /// <returns></returns>
+        string GetBlobNameFromUrl(string url);
+
+
+
     }
 }

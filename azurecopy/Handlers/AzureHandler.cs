@@ -262,6 +262,28 @@ namespace azurecopy
             return containerList;
         }
 
+        /// <summary>
+        /// Gets container name from the full url.
+        /// This is cloud specific.
+        /// </summary>
+        /// <param name="url"></param>
+        /// <returns></returns>
+        public string GetContainerNameFromUrl(string url)
+        {
+            throw new NotImplementedException();
+        }
+
+
+        /// <summary>
+        /// Gets blob name from the full url.
+        /// This is cloud specific.
+        /// </summary>
+        /// <param name="url"></param>
+        /// <returns></returns>
+        public string GetBlobNameFromUrl(string url)
+        {
+            throw new NotImplementedException();
+        }
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -451,25 +473,5 @@ namespace azurecopy
             var blobRef = container.GetPageBlobReference(blob.Name);
             blobRef.UploadFromStream(stream);
         }
-
-
-        /// <summary>
-        /// Read blob without passing urls. Will construct based on container and blob name.
-        /// </summary>
-        /// <param name="container"></param>
-        /// <param name="blobName"></param>
-        /// <param name="filePath"></param>
-        /// <returns></returns>
-        public Blob ReadBlobSimple(string container, string blobName, string filePath = "")
-        {
-            if (baseUrl == null)
-            {
-                throw new ArgumentNullException("Constructor needs base url passed");
-            }
-
-            var url = baseUrl + "/" + container + "/" + blobName;
-            return ReadBlob(url, filePath);
-        }
-
     }
 }
