@@ -36,7 +36,7 @@ namespace azurecopy
         public static readonly string AwsKeyIdentifier = "key";
         public static readonly string AwsSecretKeyIdentifier = "secret";
       
-        public S3Handler(string url = null)
+        public S3Handler(string url)
         {
             baseUrl = url;
         }
@@ -74,29 +74,41 @@ namespace azurecopy
             }
         }
 
-        public void MoveBlob(string startUrl, string finishUrl)
+        /// <summary>
+        /// Move blob
+        /// </summary>
+        /// <param name="originContainer"></param>
+        /// <param name="destinationContainer"></param>
+        /// <param name="startBlobname"></param>
+        public void MoveBlob(string originContainer, string destinationContainer, string startBlobname)
         {
             throw new NotImplementedException("Moving not implemented for S3 yet.");
         }
 
-        // make container
-        // assumption being last part of url is the new container.
-        // With S3 "containers" could really be the bucket for the account
-        // OR are we just considering fake subdirectories here?
-        // For now (until I decide otherwise) I'll just make it one of the
-        // fake subdirectories. 
-        // ie blob of 0 bytes.
-        public void MakeContainer(string url)
+        /// <summary>
+        /// Make container/directory (depending on platform).
+        /// assumption being last part of url is the new container.
+        /// With S3 "containers" could really be the bucket for the account
+        /// 
+        /// IMPORTANT NOTE:
+        /// 
+        /// For S3 the bucket comes from the url.
+        /// The container name is just the fake virtual directory.
+        /// ie blob of 0 bytes.
+        /// </summary>
+        /// <param name="container"></param>
+        public void MakeContainer(string containerName)
         {
-            var bucket = S3Helper.GetBucketFromUrl(url);
-            var key = S3Helper.GetKeyFromUrl(url);
-            
-            using (IAmazonS3 client = S3Helper.GenerateS3Client(ConfigHelper.AWSAccessKeyID, ConfigHelper.AWSSecretAccessKeyID, bucket))
+            var bucket = S3Helper.GetBucketFromUrl(baseUrl);
+
+            throw new NotImplementedException("Implementation now broken");
+
+            using (IAmazonS3 client = S3Helper.GenerateS3Client(ConfigHelper.AWSAccessKeyID, ConfigHelper.AWSSecretAccessKeyID, containerName))
             {
                 var putObjectRequest = new PutObjectRequest
                 {
                     BucketName = bucket,
-                    Key = key,
+                    Key = containerName,  
                     ContentBody = "",
                 };
 
@@ -110,24 +122,22 @@ namespace azurecopy
         }
 
         /// <summary>
-        /// Basic in memory copy...   just a starting point.
+        /// Read blob.
         /// </summary>
-        /// <param name="url"></param>
-        /// <param name="filePath"></param>
+        /// <param name="containerName"></param>
+        /// <param name="blobName"></param>
+        /// <param name="cacheFilePath"></param>
         /// <returns></returns>
-        public Blob ReadBlob(string url, string fileName = "")
+        public Blob ReadBlob(string containerName, string blobName, string cacheFilePath = "")
         {
-            var bucket = S3Helper.GetBucketFromUrl(url);
-            var key = S3Helper.GetKeyFromUrl(url);
             var blob = new Blob();
-
-            blob.BlobSavedToFile = !string.IsNullOrEmpty(fileName);
-            blob.FilePath = fileName;
+            blob.BlobSavedToFile = !string.IsNullOrEmpty(cacheFilePath);
+            blob.FilePath = cacheFilePath;
             blob.BlobOriginType = UrlType.S3;
 
             using (IAmazonS3 client = S3Helper.GenerateS3Client(ConfigHelper.SrcAWSAccessKeyID, ConfigHelper.SrcAWSSecretAccessKeyID, bucket))
             {
-                GetObjectRequest getObjectRequest = new GetObjectRequest() { BucketName = bucket, Key = key };
+                GetObjectRequest getObjectRequest = new GetObjectRequest() { BucketName = containerName, Key = blobName };
                 
                 using (GetObjectResponse getObjectResponse = client.GetObject(getObjectRequest))
                 {
@@ -152,25 +162,27 @@ namespace azurecopy
                             }
                         }
                     }
-                    
                 }
             }
 
-            // prune anything before the last /
-            var sp = key.Split('/');
-            blob.Name = sp.Last();
+            blob.Name = blobName;
 
             return blob;
 
         }
 
-        // FIXME: only coded for in memory blob.
-        public void WriteBlob(string url, Blob blob,   int parallelUploadFactor=1, int chunkSizeInMB=4)
+        /// <summary>
+        /// Write blob
+        /// </summary>
+        /// <param name="container"></param>
+        /// <param name="blobName"></param>
+        /// <param name="blob"></param>
+        /// <param name="parallelUploadFactor"></param>
+        /// <param name="chunkSizeInMB"></param>
+        public void WriteBlob(string containerName, string blobName, Blob blob, int parallelUploadFactor = 1, int chunkSizeInMB = 4)
         {
-            var bucket = S3Helper.GetBucketFromUrl(url);
-            var key = blob.Name;
-            var prefix = S3Helper.GetPrefixFromUrl(url);
-
+            var bucket = S3Helper.GetBucketFromUrl( baseUrl);
+            var key = blobName;
             Stream stream = null;
 
             try
@@ -190,7 +202,7 @@ namespace azurecopy
                     var putObjectRequest = new PutObjectRequest
                         {
                             BucketName = bucket,
-                            Key = prefix+key,
+                            Key = Path.Combine( containerName, blobName),
                             InputStream = stream,                   
                         };
 
@@ -202,29 +214,35 @@ namespace azurecopy
                 if (stream != null)
                 {
                     stream.Close();
-
                 }
             }
-            
         }
 
-        // lists all blobs (keys) in a bucket.
-        // baseUrl for S3 would be something like https://s3-us-west-2.amazonaws.com/mybucket/virtualdir1/virtualdir2/
-        // mybucket is the real bucket, virtualdir1 and 2 are virtual directories used for faking directory structures.
-        public List<BasicBlobContainer> ListBlobsInContainer(string baseUrl)
+        /// <summary>
+        /// Lists all blobs in a container.
+        /// Can be supplied a blobPrefix which basically acts as virtual directory options.
+        /// eg, if we have blobs called: "virt1/virt2/myblob"    and
+        ///                              "virt1/virt2/myblob2"
+        /// Although the blob names are the complete strings mentioned above, we might like to think that the blobs
+        /// are just called myblob and myblob2. We can supply a blobPrefix of "virt1/virt2/" which we can *think* of
+        /// as a directory, but again, its just really a prefix behind the scenes.
+        /// 
+        /// </summary>
+        /// <param name="containerName"></param>
+        /// <param name="blobPrefix"></param>
+        /// <returns></returns>
+        public List<BasicBlobContainer> ListBlobsInContainer(string containerName = null, string blobPrefix = null)
         {
-            var bucket = S3Helper.GetBucketFromUrl( baseUrl );
             var blobList = new List<BasicBlobContainer>();
-            var prefix = S3Helper.GetPrefixFromUrl(baseUrl);
-
+            var bucket = S3Helper.GetBucketFromUrl(baseUrl);
             using (IAmazonS3 client = S3Helper.GenerateS3Client(ConfigHelper.SrcAWSAccessKeyID, ConfigHelper.SrcAWSSecretAccessKeyID, bucket))
             {
                 var request = new ListObjectsRequest();
                      request.BucketName = bucket;
                
-                if (!string.IsNullOrEmpty(prefix))
+                if (!string.IsNullOrEmpty(containerName))
                 {
-                    request.Prefix = prefix;
+                    request.Prefix = containerName;
                 }
          
                 do
@@ -238,7 +256,7 @@ namespace azurecopy
                         {
                             //var fullPath = Path.Combine(baseUrl, obj.Key);
                             var blob = new BasicBlobContainer();
-                            blob.Name = obj.Key.Substring(prefix.Length);
+                            blob.Name = obj.Key.Substring(containerName.Length);
                             blob.Url = fullPath;
                             blob.Container = bucket;
                             blob.BlobType = BlobEntryType.Blob;
@@ -284,52 +302,12 @@ namespace azurecopy
 
         }
 
-        // not passing url. Url will be generated behind the scenes.
-        // S3 doesn't really have containers. Do I just concat these together still?
-        public Blob ReadBlobSimple(string container, string blobName, string filePath = "")
-        {
-            if (baseUrl == null)
-            {
-                throw new ArgumentNullException("Constructor needs base url passed");
-            }
-
-            var url = baseUrl;
-            if (string.IsNullOrEmpty( container))
-            {
-                url += "/" + blobName;
-            }
-            else
-            {
-                url += "/" + container + "/" + blobName;
-                
-            }
-            return ReadBlob(url, filePath);
-        }
-
-        // not passing url.
-        // does the passing in of container even make sense here? Since there are no real containers 
-        // in S3 (am NOT talking about buckets).
-        // Shouldnt it just be adding the container as a prefix to the blob name?
-        public void WriteBlobSimple(string container, Blob blob, int parallelUploadFactor = 1, int chunkSizeInMB = 4)
-        {
-            if (baseUrl == null)
-            {
-                throw new ArgumentNullException("Constructor needs base url passed");
-            }
-
-            var url = baseUrl;
-
-            // just add container as prefix to blobname.
-            // This is due to S3 not really having containers but just "prefix" that fake them.
-            if (!string.IsNullOrEmpty(container))
-            {
-                blob.Name = container + "/" + blob.Name;
-            }
-
-            WriteBlob(url, blob, parallelUploadFactor, chunkSizeInMB);
-        }
-
-        public List<BasicBlobContainer> ListContainers(string baseUrl)
+        /// <summary>
+        /// List containers/directories off the root. For storage schemes that allow real directories maybe
+        /// the root will be 
+        /// </summary>
+        /// <returns></returns>
+        public List<BasicBlobContainer> ListContainers(string root)
         {
             var containerList = new List<BasicBlobContainer>();
 
@@ -344,30 +322,6 @@ namespace azurecopy
             }
             return containerList;
         }
-
-        // not required to pass full url.
-        public List<BasicBlobContainer> ListBlobsInContainerSimple(string container)
-        {
-            //if (baseUrl == null)
-            //{
-            //    throw new ArgumentNullException("Constructor needs base url passed");
-            //}
-
-            // var url = baseUrl + "/" + container;
-            var url = string.Format("https://{0}.s3.amazonaws.com", container);
-            return ListBlobsInContainer(url);
-        }
-
-        public void MakeContainerSimple(string container)
-        {
-            if (baseUrl == null)
-            {
-                throw new ArgumentNullException("Constructor needs base url passed");
-            }
-
-            var url = baseUrl + "/" + container;
-            MakeContainer(url);
-        }
-    }
+   }
 
 }
