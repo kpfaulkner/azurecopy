@@ -157,7 +157,7 @@ namespace azurecopy.Utils
             return fileClient;
         }
 
-        private static bool IsDevUrl(string url)
+        public static bool IsDevUrl(string url)
         {
             return (url.Contains(DevAzureDetection));
         }

@@ -43,7 +43,6 @@ namespace azurecopy
             throw new NotImplementedException();
         }
 
-
         /// <summary>
         /// Gets container name from the full url.
         /// url will be something like:
@@ -61,8 +60,8 @@ namespace azurecopy
         public string GetContainerNameFromUrl(string url)
         {
             var root = Path.GetPathRoot(url);
-            var dir = Path.GetDirectoryName(url);
-            var container = root.Substring(dir.Length);
+            //var container = url.Substring(root.Length);
+            var container = url;  // should we still keep the drive? Maybe!
             return container;
         }
 
@@ -77,7 +76,6 @@ namespace azurecopy
             return Path.GetFileName(url);
         }
 
-
         /// <summary>
         /// Make container/directory (depending on platform).
         /// For local filesystem the containername is really a full path.
@@ -85,8 +83,7 @@ namespace azurecopy
         /// <param name="container"></param>
         public void MakeContainer(string containerName)
         {
-            Directory.CreateDirectory( containerName);
-
+            Directory.CreateDirectory(containerName);
         }
 
         public string GetBaseUrl()

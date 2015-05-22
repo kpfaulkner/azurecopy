@@ -33,7 +33,8 @@ namespace azurecopy
     {
         private string baseUrl = null;
         public static readonly string AzureAccountKey = "AzureAccountKey";
-        
+        public static bool IsEmulator { get; set; }
+
         // need to check overhead of creating this constantly.
         // maybe static this later.
         private CloudBlobClient client;
@@ -46,6 +47,11 @@ namespace azurecopy
         {
             baseUrl = url;
             client = AzureHelper.GetSourceCloudBlobClient(url);
+
+            if (AzureHelper.IsDevUrl(url))
+            {
+                IsEmulator = true;
+            }
         }
 
         /// <summary>
@@ -276,8 +282,16 @@ namespace azurecopy
         /// <returns></returns>
         public string GetContainerNameFromUrl(string url)
         {
-            var sp = url.Split('/');
-            return sp[3];
+            if (IsEmulator)
+            {
+                var sp = url.Split('/');
+                return sp[4];
+            }
+            else
+            {
+                var sp = url.Split('/');
+                return sp[3];
+            }
         }
 
 

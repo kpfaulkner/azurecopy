@@ -164,7 +164,6 @@ namespace azurecopycommand
         {
             UrlType urlType = UrlType.Local;
 
-
             if (AzureHelper.MatchHandler(url))
             {
                 urlType = UrlType.Azure;
@@ -694,7 +693,8 @@ namespace azurecopycommand
         private static void DoMake()
         {
             IBlobHandler handler = GetHandler(_inputUrlType, _inputUrl);
-            handler.MakeContainer(_inputUrl);
+            var containerName = handler.GetContainerNameFromUrl(_inputUrl);
+            handler.MakeContainer(containerName);
         }
 
         private static void DisplayExamples()
