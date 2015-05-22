@@ -46,15 +46,25 @@ namespace azurecopy
 
         /// <summary>
         /// Gets container name from the full url.
-        /// This is cloud specific.
+        /// url will be something like:
+        ///     c:\temp\myfile.txt
+        ///     or
+        ///     c:\temp\temp2\myfile.txt
+        ///     
+        /// In these cases the blob will be called "myfile.txt" and the container would be
+        /// temp or temp\temp2
+        /// 
+        /// Need to figure out if this should just be a single string OR a collection of strings?
         /// </summary>
         /// <param name="url"></param>
         /// <returns></returns>
         public string GetContainerNameFromUrl(string url)
         {
-            throw new NotImplementedException();
+            var root = Path.GetPathRoot(url);
+            var dir = Path.GetDirectoryName(url);
+            var container = root.Substring(dir.Length);
+            return container;
         }
-
 
         /// <summary>
         /// Gets blob name from the full url.
@@ -64,7 +74,7 @@ namespace azurecopy
         /// <returns></returns>
         public string GetBlobNameFromUrl(string url)
         {
-            throw new NotImplementedException();
+            return Path.GetFileName(url);
         }
 
 
