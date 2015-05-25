@@ -61,7 +61,7 @@ namespace azurecopy
         {
             var root = Path.GetPathRoot(url);
             //var container = url.Substring(root.Length);
-            var container = url;  // should we still keep the drive? Maybe!
+            var container = Path.GetDirectoryName( url);  // should we still keep the drive? Maybe!
             return container;
         }
 
@@ -190,8 +190,6 @@ namespace azurecopy
         /// <returns></returns>
         public List<BasicBlobContainer> ListBlobsInContainer(string containerName = null, string blobPrefix = null)
         {
-
-            throw new NotImplementedException("Have implementation but is not valid anymore.");
             var fileList = new List<BasicBlobContainer>();
 
             var files = Directory.EnumerateFiles(baseUrl);

@@ -39,6 +39,9 @@ namespace azurecopy
         // maybe static this later.
         private CloudBlobClient client;
 
+        private string defaultContainerName { get; set; }
+        private string defaultBlobPrefix { get; set; }
+
         /// <summary>
         /// base url is mandatory.
         /// </summary>
@@ -46,6 +49,9 @@ namespace azurecopy
         public AzureHandler(string url)
         {
             baseUrl = url;
+            defaultContainerName = GetContainerNameFromUrl(url);
+            defaultBlobPrefix = GetBlobPrefixFromUrl(url);
+
             client = AzureHelper.GetSourceCloudBlobClient(url);
 
             if (AzureHelper.IsDevUrl(url))
@@ -54,6 +60,7 @@ namespace azurecopy
             }
         }
 
+       
         /// <summary>
         /// Make new Azure container. 
         /// Assumption being last part of url is the new container.
@@ -202,6 +209,16 @@ namespace azurecopy
             IEnumerable<IListBlobItem> azureBlobList;
             CloudBlobContainer container;
 
+            if (string.IsNullOrWhiteSpace(containerName))
+            {
+                containerName = defaultContainerName;
+            }
+
+            if (string.IsNullOrWhiteSpace(blobPrefix))
+            {
+                blobPrefix = defaultBlobPrefix;
+            }
+
             if (string.IsNullOrEmpty(containerName))
             {
                 container = client.GetRootContainerReference();
@@ -233,9 +250,6 @@ namespace azurecopy
                 }
                 else
                 {
-                    // if passed virtual directory information, then filter based off that.
-
-                    // FIXME: major change fix.
                     var vd = container.GetDirectoryReference(blobPrefix);
                     azureBlobList = vd.ListBlobs();
                 }
@@ -294,6 +308,22 @@ namespace azurecopy
             }
         }
 
+        private string GetBlobPrefixFromUrl(string url)
+        {
+            if (IsEmulator)
+            {
+                var sp = url.Split('/');
+                return string.Join("/", sp.Skip(5));
+            }
+            else
+            {
+                var sp = url.Split('/');
+                return string.Join("/", sp.Skip(4));
+            }
+        }
+
+
+
 
         /// <summary>
         /// Gets blob name from the full url.
@@ -310,9 +340,20 @@ namespace azurecopy
         public string GetBlobNameFromUrl(string url)
         {
             var sp = url.Split('/');
-            var blobNameElements = sp.Skip(4);
-            var blobName = string.Join("/", blobNameElements);
-            return blobName;
+            if (IsEmulator)
+            {
+                var blobNameElements = sp.Skip(5);
+                var blobName = string.Join("/", blobNameElements);
+                return blobName;
+
+            }
+            else
+            {
+
+                var blobNameElements = sp.Skip(4);
+                var blobName = string.Join("/", blobNameElements);
+                return blobName;
+            }
         }
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////

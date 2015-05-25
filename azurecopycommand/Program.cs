@@ -527,60 +527,63 @@ namespace azurecopycommand
             IBlobHandler inputHandler = GetHandler(_inputUrlType, _inputUrl);
             IBlobHandler outputHandler = GetHandler(_outputUrlType, _outputUrl);
 
-
             if (inputHandler != null && outputHandler != null)
             {
-
                 // handle multiple files.
                 //currently sequentially.
-                var sourceBlobList = GetSourceBlobList(inputHandler, _inputUrl);
+                var sourceBlobList = GetSourceBlobList(inputHandler);
 
-                // currently sequential.
-                // TODO: make concurrent.
-                foreach (var url in sourceBlobList)
+                foreach (var blob in sourceBlobList)
                 {
                     var fileName = "";
                     if (ConfigHelper.AmDownloading)
                     {
-                        fileName = GenerateFileName(ConfigHelper.DownloadDirectory, url);
+                        fileName = GenerateFileName(ConfigHelper.DownloadDirectory, blob.Name);
                     }
 
-                    var outputUrl = GenerateOutputUrl(_outputUrl, url);
+                    //var outputUrl = GenerateOutputUrl(_outputUrl, url);
 
                     if (!ConfigHelper.UseBlobCopy)
                     {
-                        throw new NotImplementedException();
                         var sourceContainer = inputHandler.GetContainerNameFromUrl(_inputUrl);
                         var sourceBlobName = inputHandler.GetBlobNameFromUrl(_inputUrl);
 
                         // read blob
-                        var blob = inputHandler.ReadBlob(sourceContainer, sourceBlobName, fileName);
+                        var inputBlob = inputHandler.ReadBlob(sourceContainer, sourceBlobName, fileName);
 
                         // if blob is marked with type "Unknown" then set it to what was passed in on command line.
                         // if nothing was passed in, then default to block?
-                        if (blob.BlobType == DestinationBlobType.Unknown)
+                        if (inputBlob.BlobType == DestinationBlobType.Unknown)
                         {
                             if (_destinationBlobType != DestinationBlobType.Unknown)
                             {
-                                blob.BlobType = _destinationBlobType;
+                                inputBlob.BlobType = _destinationBlobType;
                             }
                             else
                             {
-                                blob.BlobType = DestinationBlobType.Block;
+                                inputBlob.BlobType = DestinationBlobType.Block;
                             }
                         }
 
-                        Console.WriteLine(string.Format("Copying {0} to {1}", url, _outputUrl));
+                        Console.WriteLine(string.Format("Copying blob to {0}", _outputUrl));
 
                         // write blob
                         var destContainerName = outputHandler.GetContainerNameFromUrl(_outputUrl);
                         var destBlobName = outputHandler.GetBlobNameFromUrl(_outputUrl);
-                        outputHandler.WriteBlob(destContainerName, destBlobName, blob, ConfigHelper.ParallelFactor, ConfigHelper.ChunkSizeInMB);
+
+                        // if no destination blob name given, then just use the original
+                        if (string.IsNullOrWhiteSpace(destBlobName))
+                        {
+                            destBlobName = blob.Name;
+                        }
+
+                        outputHandler.WriteBlob(destContainerName, destBlobName, inputBlob, ConfigHelper.ParallelFactor, ConfigHelper.ChunkSizeInMB);
                     }
                     else
                     {
-                        Console.WriteLine("using blob copy {0} to {1} of type {2}", url, outputUrl, _destinationBlobType);
-                        AzureBlobCopyHandler.StartCopy(url, outputUrl, _destinationBlobType);
+                        throw new NotImplementedException();
+                        //Console.WriteLine("using blob copy {0} to {1} of type {2}", url, outputUrl, _destinationBlobType);
+                        //AzureBlobCopyHandler.StartCopy(url, outputUrl, _destinationBlobType);
                     }
                 }
 
@@ -604,28 +607,41 @@ namespace azurecopycommand
 
         }
 
-        private static List<string> GetSourceBlobList(IBlobHandler inputHandler, string url)
+        /// <summary>
+        /// Get all possible blobs for the handler (which had the original url passed into the constructor).
+        /// </summary>
+        /// <param name="inputHandler"></param>
+        /// <param name="url"></param>
+        /// <returns></returns>
+        private static List<BasicBlobContainer> GetSourceBlobList(IBlobHandler inputHandler)
         {
-            var blobList = new List<string>();
+            var blobList = new List<BasicBlobContainer>();
+            var containerName = inputHandler.GetContainerNameFromUrl(inputHandler.GetBaseUrl());
 
-            if (CommonHelper.IsABlob(url))
+            if (CommonHelper.IsABlob(inputHandler.GetBaseUrl()))
             {
-                blobList.Add(url);
+                var blobName = inputHandler.GetBlobNameFromUrl( inputHandler.GetBaseUrl());
+                var blob = new BasicBlobContainer{
+                    Name = blobName,
+                    DisplayName = blobName,
+                    BlobType = BlobEntryType.Blob,
+                    Url = inputHandler.GetBaseUrl(),
+                    Container = containerName
+                };
+
+                blobList.Add(blob);
             }
             else
             {
-                blobList = inputHandler.ListBlobsInContainer(url).Select(b => b.Url).ToList();
+                blobList = inputHandler.ListBlobsInContainer(containerName);
             }
-
 
             return blobList;
         }
 
         static void DoBlobCopy()
         {
-
             AzureBlobCopyHandler.StartCopy(_inputUrl, _outputUrl, _destinationBlobType);
-
         }
 
         static void DoListContainers()
@@ -657,7 +673,6 @@ namespace azurecopycommand
             {
                 Console.WriteLine( string.Format("{0}  ({1})", blob.DisplayName, blob.Url));
             }
-
         }
 
         static void Process()
@@ -714,13 +729,9 @@ namespace azurecopycommand
         }
 
 
-        private static string GenerateFileName(string downloadDirectory, string url)
+        private static string GenerateFileName(string downloadDirectory, string blobName)
         {
-            var u = new Uri(url);
-            var blobName = "";
-            blobName = u.Segments[u.Segments.Length - 1];
             var fullPath = Path.Combine(downloadDirectory, blobName);
-
             return fullPath;
         }
 
