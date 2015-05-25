@@ -85,6 +85,18 @@ namespace azurecopy
         // metadata/properties. Blob information that is NOT part of the core blob itself.
         public Dictionary<string, string> MetaData { get; set; }
 
+        // Display name... which is really just the base name of a virtual file name.
+        // eg. If a blob really has the name dir1/dir2/myfile.txt  (ie we're faking directories)
+        // then the DisplayName will be myfile.txt
+        // Can use this for display purposes but also use it as the name when writing to other storage services.
+        public string DisplayName
+        {
+            get
+            {
+                return Name.Split('/').Last();
+            }
+        }
+
         public BlobBase()
         {
         

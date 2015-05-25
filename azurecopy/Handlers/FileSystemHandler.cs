@@ -143,7 +143,7 @@ namespace azurecopy
             Stream stream = null;
             try
             {
-                var outFile = Path.Combine(containerName, blob.Name);
+                var outFile = Path.Combine(containerName, blobName);
 
                 // get stream to data.
                 if (blob.BlobSavedToFile)

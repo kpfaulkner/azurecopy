@@ -546,10 +546,9 @@ namespace azurecopycommand
                     if (!ConfigHelper.UseBlobCopy)
                     {
                         var sourceContainer = inputHandler.GetContainerNameFromUrl(_inputUrl);
-                        var sourceBlobName = inputHandler.GetBlobNameFromUrl(_inputUrl);
 
                         // read blob
-                        var inputBlob = inputHandler.ReadBlob(sourceContainer, sourceBlobName, fileName);
+                        var inputBlob = inputHandler.ReadBlob(sourceContainer, blob.Name, fileName);
 
                         // if blob is marked with type "Unknown" then set it to what was passed in on command line.
                         // if nothing was passed in, then default to block?
@@ -574,7 +573,7 @@ namespace azurecopycommand
                         // if no destination blob name given, then just use the original
                         if (string.IsNullOrWhiteSpace(destBlobName))
                         {
-                            destBlobName = blob.Name;
+                            destBlobName = inputBlob.DisplayName;
                         }
 
                         outputHandler.WriteBlob(destContainerName, destBlobName, inputBlob, ConfigHelper.ParallelFactor, ConfigHelper.ChunkSizeInMB);
