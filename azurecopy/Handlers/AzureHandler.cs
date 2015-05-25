@@ -135,11 +135,11 @@ namespace azurecopy
                 // if unknown type, then will assume Block... for better or for worse.
                 if (blob.BlobType == DestinationBlobType.Block || blob.BlobType == DestinationBlobType.Unknown)
                 {
-                    WriteBlockBlob(stream, blob, container, parallelUploadFactor, chunkSizeInMB);
+                    WriteBlockBlob(stream, blobName, blob, container, parallelUploadFactor, chunkSizeInMB);
                 }
                 else if (blob.BlobType == DestinationBlobType.Page)
                 {
-                    WritePageBlob(stream, blob, container);
+                    WritePageBlob(stream, blobName, blob, container);
                 }
                 else
                 {
@@ -512,9 +512,9 @@ namespace azurecopy
         /// <param name="container"></param>
         /// <param name="parallelFactor"></param>
         /// <param name="chunkSizeInMB"></param>
-        private void WriteBlockBlob(Stream stream, Blob blob, CloudBlobContainer container, int parallelFactor = 1, int chunkSizeInMB = 2)
+        private void WriteBlockBlob(Stream stream, string blobName, Blob blob, CloudBlobContainer container, int parallelFactor = 1, int chunkSizeInMB = 2)
         {
-            var blobRef = container.GetBlockBlobReference(blob.Name);
+            var blobRef = container.GetBlockBlobReference(blobName);
             blobRef.DeleteIfExists();
 
             // use "parallel" option even if parallelfactor == 1.
@@ -539,9 +539,9 @@ namespace azurecopy
         /// <param name="container"></param>
         /// <param name="parallelFactor"></param>
         /// <param name="chunkSizeInMB"></param>
-        private void WritePageBlob(Stream stream, Blob blob, CloudBlobContainer container, int parallelFactor = 1, int chunkSizeInMB = 2)
+        private void WritePageBlob(Stream stream, string blobName, Blob blob, CloudBlobContainer container, int parallelFactor = 1, int chunkSizeInMB = 2)
         {
-            var blobRef = container.GetPageBlobReference(blob.Name);
+            var blobRef = container.GetPageBlobReference(blobName);
             blobRef.UploadFromStream(stream);
         }
     }

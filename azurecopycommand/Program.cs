@@ -570,11 +570,13 @@ namespace azurecopycommand
                         var destContainerName = outputHandler.GetContainerNameFromUrl(_outputUrl);
                         var destBlobName = outputHandler.GetBlobNameFromUrl(_outputUrl);
 
+                        destBlobName += inputBlob.DisplayName;
+
                         // if no destination blob name given, then just use the original
-                        if (string.IsNullOrWhiteSpace(destBlobName))
-                        {
-                            destBlobName = inputBlob.DisplayName;
-                        }
+                        //if (string.IsNullOrWhiteSpace(destBlobName))
+                        //{
+                        //    destBlobName = inputBlob.DisplayName;
+                        //}
 
                         outputHandler.WriteBlob(destContainerName, destBlobName, inputBlob, ConfigHelper.ParallelFactor, ConfigHelper.ChunkSizeInMB);
                     }
