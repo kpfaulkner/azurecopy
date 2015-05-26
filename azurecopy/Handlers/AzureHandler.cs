@@ -49,15 +49,16 @@ namespace azurecopy
         public AzureHandler(string url)
         {
             baseUrl = url;
+            if (AzureHelper.IsDevUrl(url))
+            {
+                IsEmulator = true;
+            }
+
             defaultContainerName = GetContainerNameFromUrl(url);
             defaultBlobPrefix = GetBlobPrefixFromUrl(url);
 
             client = AzureHelper.GetSourceCloudBlobClient(url);
 
-            if (AzureHelper.IsDevUrl(url))
-            {
-                IsEmulator = true;
-            }
         }
 
        
@@ -349,7 +350,6 @@ namespace azurecopy
             }
             else
             {
-
                 var blobNameElements = sp.Skip(4);
                 var blobName = string.Join("/", blobNameElements);
                 return blobName;

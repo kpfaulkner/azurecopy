@@ -31,10 +31,11 @@ namespace azurecopy
 
     public class AzureBlobCopyHandler
     {
-        private static string GeneratedAccessibleUrl( string sourceUrl)
+        private static string GeneratedAccessibleUrl( BasicBlobContainer origBlob)
         {
-            var url = sourceUrl;
-            
+            var sourceUrl = origBlob.Url + "/" + origBlob.Name;
+            string url = "";
+
             // if S3, then generate signed url.
             if (S3Helper.MatchHandler(sourceUrl))
             {
@@ -60,10 +61,9 @@ namespace azurecopy
 
 
         // Copy from complete URL (assume URL is complete at this stage) to destination blob.
-        public static void StartCopy(string sourceUrl, string DestinationUrl, DestinationBlobType destBlobType)
+        public static void StartCopy(BasicBlobContainer origBlob, string DestinationUrl, DestinationBlobType destBlobType)
         {
             var client = AzureHelper.GetTargetCloudBlobClient(DestinationUrl);
-
             var opt = client.GetServiceProperties();
 
             var containerName = AzureHelper.GetContainerFromUrl( DestinationUrl);
@@ -73,7 +73,7 @@ namespace azurecopy
             container.CreateIfNotExists();
 
             ICloudBlob blob = null;
-            var url = GeneratedAccessibleUrl(sourceUrl);
+            var url = GeneratedAccessibleUrl(origBlob);
 
             // include unknown for now. Unsure.
             if (destBlobType == DestinationBlobType.Block || destBlobType == DestinationBlobType.Unknown)

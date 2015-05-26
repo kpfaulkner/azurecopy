@@ -582,9 +582,8 @@ namespace azurecopycommand
                     }
                     else
                     {
-                        throw new NotImplementedException();
                         //Console.WriteLine("using blob copy {0} to {1} of type {2}", url, outputUrl, _destinationBlobType);
-                        //AzureBlobCopyHandler.StartCopy(url, outputUrl, _destinationBlobType);
+                        AzureBlobCopyHandler.StartCopy(blob, _outputUrl, _destinationBlobType);
                     }
                 }
 
@@ -640,11 +639,6 @@ namespace azurecopycommand
             return blobList;
         }
 
-        static void DoBlobCopy()
-        {
-            AzureBlobCopyHandler.StartCopy(_inputUrl, _outputUrl, _destinationBlobType);
-        }
-
         static void DoListContainers()
         {
             IBlobHandler handler = GetHandler(_inputUrlType, _inputUrl);
@@ -668,7 +662,10 @@ namespace azurecopycommand
         static void DoList()
         {
             IBlobHandler handler = GetHandler(_inputUrlType, _inputUrl);
-            var blobList = handler.ListBlobsInContainer(_inputUrl);
+
+            var containerName = handler.GetContainerNameFromUrl(_inputUrl);
+            var blobPrefix = handler.GetBlobNameFromUrl(_inputUrl);
+            var blobList = handler.ListBlobsInContainer(containerName, blobPrefix);
 
             foreach (var blob in blobList)
             {
