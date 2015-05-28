@@ -56,12 +56,9 @@ namespace azurecopy
 
             defaultContainerName = GetContainerNameFromUrl(url);
             defaultBlobPrefix = GetBlobPrefixFromUrl(url);
-
             client = AzureHelper.GetSourceCloudBlobClient(url);
-
         }
 
-       
         /// <summary>
         /// Make new Azure container. 
         /// Assumption being last part of url is the new container.

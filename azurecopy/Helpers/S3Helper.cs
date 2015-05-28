@@ -65,6 +65,32 @@ namespace azurecopy.Utils
             return rd;
         }
 
+        /// <summary>
+        /// Format URL into s3.aws.com/bucketname regardless of format it comes in with.
+        /// Not foolproof, but should handle the common cases.
+        /// FIXME: Will need to revisit.
+        /// </summary>
+        /// <param name="url"></param>
+        /// <returns></returns>
+        public static string FormatUrl(string url)
+        {
+            var uri = new Uri(url);
+            var sp = uri.DnsSafeHost.Split('.');
+
+            // is this dumb?
+            if (sp.Length == 4)
+            {
+                // assuming bucketname.s3.amazonaws.com 
+                // then reformat it.
+                var newHost = string.Join(".", sp.Skip(1));
+                var newUrl = string.Format("{0}://{1}/{2}{3}", uri.Scheme , newHost ,sp[0], uri.PathAndQuery);
+
+                return newUrl;
+            }
+
+            return url;
+        }
+
         // assuming URL is in form :https://bucketname.s3.amazonaws.com
         public static string GetBucketFromUrl(string url)
         {

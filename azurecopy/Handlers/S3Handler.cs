@@ -35,36 +35,41 @@ namespace azurecopy
         public static readonly string AwsRegionIdentifier = "region";
         public static readonly string AwsKeyIdentifier = "key";
         public static readonly string AwsSecretKeyIdentifier = "secret";
-      
+
+        private string defaultKey { get; set; }
+
+        // Base url.
+        // We want to store the URLs in format of s3.aws.com/bucketname
+        // if the passed url is bucketname.s3.aws.com then we need to modify
+        // before storing it in the baseUrl.
         public S3Handler(string url)
         {
-            baseUrl = url;
+            baseUrl = S3Helper.FormatUrl(url);
+            defaultKey = GetDefaultKey(baseUrl);
         }
-
 
         /// <summary>
         /// Gets container name from the full url.
-        /// This is cloud specific.
-        /// </summary>
+        /// The bucket is part of the domain name.
+        /// Do I want to return virtual dirs here... or just bucket?
         /// <param name="url"></param>
         /// <returns></returns>
         public string GetContainerNameFromUrl(string url)
         {
-            throw new NotImplementedException();
+            var sp = url.Split('/');
+            return sp[3];
         }
-
 
         /// <summary>
         /// Gets blob name from the full url.
-        /// This is cloud specific.
         /// </summary>
         /// <param name="url"></param>
         /// <returns></returns>
         public string GetBlobNameFromUrl(string url)
         {
-            throw new NotImplementedException();
+            var sp = url.Split('/');
+            return string.Join("/",sp.Skip(4));
         }
-
 
         // override configuration. 
         public void OverrideConfiguration( Dictionary<string,string> configuration)
@@ -348,6 +353,17 @@ namespace azurecopy
             }
             return containerList;
         }
+
+
+        // url wil be something like https://s3.com/mybucket/vdir1/vdir2/myfile
+        // where the keyname is vdir1/vdir2/myfile.
+        private string GetDefaultKey(string url)
+        {
+            var sp = url.Split('/');
+            var key = string.Join("/", sp.Skip(4));
+            return key;
+        }
+
    }
 
 }
