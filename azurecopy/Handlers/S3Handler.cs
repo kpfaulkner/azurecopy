@@ -129,20 +129,9 @@ namespace azurecopy
         /// <param name="container"></param>
         public void MakeContainer(string containerName)
         {
-            var bucket = S3Helper.GetBucketFromUrl(baseUrl);
-
-            throw new NotImplementedException("Implementation now broken");
-
             using (IAmazonS3 client = S3Helper.GenerateS3Client(ConfigHelper.AWSAccessKeyID, ConfigHelper.AWSSecretAccessKeyID, containerName))
             {
-                var putObjectRequest = new PutObjectRequest
-                {
-                    BucketName = bucket,
-                    Key = containerName,  
-                    ContentBody = "",
-                };
-
-                client.PutObject(putObjectRequest);
+                client.PutBucket(containerName);         
             }
         }
 
@@ -160,7 +149,7 @@ namespace azurecopy
         /// <returns></returns>
         public Blob ReadBlob(string containerName, string blobName, string cacheFilePath = "")
         {
-            var bucket = S3Helper.GetBucketFromUrl(baseUrl);
+            var bucket = containerName;
             var blob = new Blob();
             blob.BlobSavedToFile = !string.IsNullOrEmpty(cacheFilePath);
             blob.FilePath = cacheFilePath;
@@ -212,7 +201,7 @@ namespace azurecopy
         /// <param name="chunkSizeInMB"></param>
         public void WriteBlob(string containerName, string blobName, Blob blob, int parallelUploadFactor = 1, int chunkSizeInMB = 4)
         {
-            var bucket = S3Helper.GetBucketFromUrl( baseUrl);
+            var bucket = containerName;
             var key = blobName;
             Stream stream = null;
 
@@ -233,7 +222,7 @@ namespace azurecopy
                     var putObjectRequest = new PutObjectRequest
                         {
                             BucketName = bucket,
-                            Key = Path.Combine( containerName, blobName),
+                            Key = blobName,
                             InputStream = stream,                   
                         };
 
@@ -264,8 +253,8 @@ namespace azurecopy
         /// <returns></returns>
         public List<BasicBlobContainer> ListBlobsInContainer(string containerName = null, string blobPrefix = null)
         {
+            var bucket = containerName;
             var blobList = new List<BasicBlobContainer>();
-            var bucket = S3Helper.GetBucketFromUrl(baseUrl);
             using (IAmazonS3 client = S3Helper.GenerateS3Client(ConfigHelper.SrcAWSAccessKeyID, ConfigHelper.SrcAWSSecretAccessKeyID, bucket))
             {
                 var request = new ListObjectsRequest();

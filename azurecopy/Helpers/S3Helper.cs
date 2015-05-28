@@ -91,16 +91,11 @@ namespace azurecopy.Utils
             return url;
         }
 
-        // assuming URL is in form :https://bucketname.s3.amazonaws.com
+        // assuming URL is in form https://s3.amazonaws.com/bucketname
         public static string GetBucketFromUrl(string url)
         {
-            var u = new Uri( url );
-            
-            // used for https://bucketname.s3.amazonaws.com/  format.
-            var bucket = u.DnsSafeHost.Split('.')[0];
-            return bucket;
+            return url.Split('/')[3];
         }
-
 
         public static string GetKeyFromUrl(string url)
         {
