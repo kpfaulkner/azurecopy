@@ -258,11 +258,11 @@ namespace azurecopy
             using (IAmazonS3 client = S3Helper.GenerateS3Client(ConfigHelper.SrcAWSAccessKeyID, ConfigHelper.SrcAWSSecretAccessKeyID, bucket))
             {
                 var request = new ListObjectsRequest();
-                     request.BucketName = bucket;
-               
-                if (!string.IsNullOrEmpty(containerName))
+                request.BucketName = bucket;
+
+                if (!string.IsNullOrEmpty(blobPrefix))
                 {
-                    request.Prefix = containerName;
+                    request.Prefix = blobPrefix;
                 }
          
                 do
@@ -270,24 +270,27 @@ namespace azurecopy
                     ListObjectsResponse response = client.ListObjects(request);
                     foreach (var obj in response.S3Objects)
                     {
-                        var fullPath = GenerateUrl(baseUrl, bucket, obj.Key);
+                        //var fullPath = GenerateUrl(baseUrl, bucket, obj.Key);
+                        var fullPath = baseUrl + obj.Key;
 
                         if (!fullPath.EndsWith("/"))
                         {
                             //var fullPath = Path.Combine(baseUrl, obj.Key);
                             var blob = new BasicBlobContainer();
-                            blob.Name = obj.Key.Substring(containerName.Length);
+                            blob.Name = obj.Key;
                             blob.Url = fullPath;
                             blob.Container = bucket;
                             blob.BlobType = BlobEntryType.Blob;
-                            if (blob.Name.Contains('/'))
-                            {
-                                blob.DisplayName = blob.Name.Split('/')[1];
-                            }
-                            else
-                            {
-                                blob.DisplayName = blob.Name;
-                            }
+                            blob.DisplayName = S3Helper.GetDisplayName(blob.Name);
+
+                            //if (blob.Name.Contains('/'))
+                            //{
+                            //    blob.DisplayName = blob.Name.Split('/')[1];
+                            //}
+                            //else
+                            //{
+                            //    blob.DisplayName = blob.Name;
+                            //}
                             blobList.Add(blob);
                         }
                     }

@@ -106,6 +106,13 @@ namespace azurecopy.Utils
             return blobName;
         }
 
+        public static string GetDisplayName(string fullBlobName)
+        {
+            var sp = fullBlobName.Split('/');
+            var displayName = sp[sp.Length - 1];
+            return displayName;
+
+        }
         public static bool MatchHandler(string url)
         {
             return url.Contains(AmazonDetection);
