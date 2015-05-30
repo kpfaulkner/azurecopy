@@ -669,7 +669,7 @@ namespace azurecopycommand
 
             foreach (var blob in blobList)
             {
-                Console.WriteLine( string.Format("{0}  ({1})", blob.DisplayName, blob.Url));
+                Console.WriteLine( string.Format("{0}  ({1} {2})", blob.DisplayName, blob.Name, blob.Url));
             }
         }
 
