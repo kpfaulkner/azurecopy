@@ -41,7 +41,7 @@ namespace azurecopy
         {
             client = DropboxHelper.GetClient();
 
-            baseUrl = null;
+            baseUrl = url;
         }
 
         public string GetBaseUrl()
@@ -58,9 +58,9 @@ namespace azurecopy
         /// <returns></returns>
         public string GetContainerNameFromUrl(string url)
         {
-            throw new NotImplementedException();
+            var sp = url.Split('/');
+            return string.Join("/", sp.Skip(3));
         }
-
 
         /// <summary>
         /// Gets blob name from the full url.
@@ -70,7 +70,8 @@ namespace azurecopy
         /// <returns></returns>
         public string GetBlobNameFromUrl(string url)
         {
-            throw new NotImplementedException();
+            var sp = url.Split('/');
+            return sp.Last();
         }
 
 
