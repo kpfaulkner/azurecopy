@@ -58,8 +58,19 @@ namespace azurecopy
         /// <returns></returns>
         public string GetContainerNameFromUrl(string url)
         {
-            var sp = url.Split('/');
-            return string.Join("/", sp.Skip(3));
+            // if ends if / then no blob name.
+            if (url.EndsWith("/"))
+            {
+                var sp = url.Split('/');
+                return string.Join("/", sp.Skip(3));
+            }
+            else
+            {
+                var sp = url.Split('/');
+                var len = sp.Length;
+                return string.Join("/", sp.Skip(3).Take(len - 4));   // skip beginning and blob name at the end.
+
+            }
         }
 
         /// <summary>
