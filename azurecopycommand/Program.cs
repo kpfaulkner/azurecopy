@@ -292,6 +292,7 @@ namespace azurecopycommand
                         case ListContainersFlag:
                             i++;
                             _inputUrl = GetArgument(args, i);
+                            _inputUrl = SanitizeUrl(_inputUrl);
                             _inputUrlType = GetUrlType(_inputUrl);
                             _listContainer = true;
                             _action = Action.ListContainers;
@@ -441,6 +442,21 @@ namespace azurecopycommand
                 Console.WriteLine(UsageString);
             }
 
+        }
+
+        /// <summary>
+        /// Currently just add trailing / 
+        /// </summary>
+        /// <param name="_inputUrl"></param>
+        /// <returns></returns>
+        private static string SanitizeUrl(string _inputUrl)
+        {
+            if (_inputUrl.EndsWith("/"))
+            {
+                return _inputUrl;
+            }
+
+            return _inputUrl + "/";
         }
 
         private static void ConfigureOneDrive()
