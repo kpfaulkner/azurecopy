@@ -129,7 +129,7 @@ namespace azurecopy
         /// <param name="container"></param>
         public void MakeContainer(string containerName)
         {
-            using (IAmazonS3 client = S3Helper.GenerateS3Client(ConfigHelper.AWSAccessKeyID, ConfigHelper.AWSSecretAccessKeyID, containerName))
+            using (IAmazonS3 client = S3Helper.GenerateS3Client(ConfigHelper.AWSAccessKeyID, ConfigHelper.AWSSecretAccessKeyID))
             {
                 client.PutBucket(containerName);         
             }
