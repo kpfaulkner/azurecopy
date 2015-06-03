@@ -200,7 +200,8 @@ namespace azurecopy
         {
             var dirListing = new List<BasicBlobContainer>();
 
-            var metadata = client.GetMetaData(containerName, null, false, false);
+            //var metadata = client.GetMetaData(containerName, null, false, false);
+            var metadata = client.GetMetaData(containerName);
 
             // generate list of dirs and files.
             foreach (var entry in metadata.Contents)

@@ -31,6 +31,19 @@ namespace azurecopy
 
     public class AzureBlobCopyHandler
     {
+        /// <summary>
+        /// Makes a usable URL for a blob. This will need to handle security on the source blob.
+        /// Each cloud provider is different.
+        /// Cloud providers developed:
+        ///     Azure
+        ///     S3
+        ///     
+        /// Cloud providers soon:
+        ///     Dropbox
+        ///     Onedrive
+        /// </summary>
+        /// <param name="origBlob"></param>
+        /// <returns></returns>
         private static string GeneratedAccessibleUrl( BasicBlobContainer origBlob)
         {
             var sourceUrl = origBlob.Url + "/" + origBlob.Name;
@@ -50,9 +63,11 @@ namespace azurecopy
                 policy.SharedAccessStartTime = DateTime.UtcNow.AddMinutes(-1);
                 policy.SharedAccessExpiryTime = DateTime.UtcNow.AddMinutes( ConfigHelper.SharedAccessSignatureDurationInSeconds / 60 );
                 policy.Permissions = SharedAccessBlobPermissions.Read;
-
                 var blob = client.GetBlobReferenceFromServer( new Uri(sourceUrl));
                 url = sourceUrl+ blob.GetSharedAccessSignature(policy);
+            } else if (DropboxHelper.MatchHandler(sourceUrl))
+            {
+                throw new NotImplementedException("Blobcopy against dropbox is not implemented yet");
             }
 
             return url;
