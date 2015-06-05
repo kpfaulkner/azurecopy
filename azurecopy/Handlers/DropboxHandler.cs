@@ -145,7 +145,7 @@ namespace azurecopy
             using (var stream = CommonHelper.GetStream(cacheFilePath))
             {
                 var fileBytes = client.GetFile(dropboxPath);
-
+               
                 if (!blob.BlobSavedToFile)
                 {
                     blob.Data = fileBytes;

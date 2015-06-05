@@ -397,10 +397,7 @@ namespace azurecopy.Helpers
         {
             var url2 = GenerateSkyDriveURL(url, true);
             var file = (SkyDriveFile)ListSkyDriveWithUrl<SkyDriveFile>(url2);
-
-
             return file;
-
         }
 
         public static ReturnType ListSkyDriveWithUrl<ReturnType>(string url)

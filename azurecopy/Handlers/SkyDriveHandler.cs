@@ -50,7 +50,17 @@ namespace azurecopy
         /// <returns></returns>
         public string GetContainerNameFromUrl(string url)
         {
-            throw new NotImplementedException();
+            url = url.Substring(6);
+
+            if (url.EndsWith("/"))
+            {
+                return url;
+            }
+            else
+            {
+                var sp = url.Split('/');
+                return string.Join("/", sp.Take(sp.Length - 1));
+            }
         }
 
 
@@ -98,7 +108,6 @@ namespace azurecopy
             var url = baseUrl + "/" + containerName;
             url = url.Replace(SkyDriveHelper.OneDrivePrefix, "");
             var targetDirectory = SkyDriveHelper.CreateFolder(url);
-
         }
 
         /// <summary>
@@ -110,7 +119,6 @@ namespace azurecopy
         {
             throw new NotImplementedException("Onedrive list containers not implemented");
         }
-
 
         /// <summary>
         /// Read blob.
