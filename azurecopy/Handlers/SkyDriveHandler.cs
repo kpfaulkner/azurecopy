@@ -72,8 +72,15 @@ namespace azurecopy
         /// <returns></returns>
         public string GetBlobNameFromUrl(string url)
         {
-            var sp = url.Split('/');
-            return sp[3];
+            if (url.EndsWith("/"))
+            {
+                return string.Empty;
+            }
+            else
+            {
+                var sp = url.Split('/');
+                return sp[3];
+            }
         }
 
 
@@ -198,14 +205,14 @@ namespace azurecopy
         /// <param name="chunkSizeInMB"></param>
         public void WriteBlob(string containerName, string blobName, Blob blob, int parallelUploadFactor = 1, int chunkSizeInMB = 4)
         {
-            var url = baseUrl + "/" + containerName + "/" + blob.Name;
+            var url = containerName + "/" + blob.Name;
             url = url.Replace( SkyDriveHelper.OneDrivePrefix, "");
 
             if (destinationDirectory == null)
             {
                 // check if target folder exists.
                 // if not, create it.
-                destinationDirectory = SkyDriveHelper.GetSkyDriveDirectory(url);
+                destinationDirectory = SkyDriveHelper.GetSkyDriveDirectory(containerName);
 
                 if (destinationDirectory == null)
                 {
