@@ -408,6 +408,10 @@ namespace azurecopycommand
                             i++;
                             _inputUrl = GetArgument(args, i);
                             _inputUrlType = GetUrlType(_inputUrl);
+
+                            // any modification of the URL (S3)
+                            _inputUrl = ModifyUrl(_inputUrl, _inputUrlType);
+
                             if (_action == Action.None)
                             {
                                 _action = Action.NormalCopy;
@@ -418,6 +422,9 @@ namespace azurecopycommand
                             i++;
                             _outputUrl = GetArgument(args, i);
                             _outputUrlType = GetUrlType(_outputUrl);
+
+                            // any modification of the URL (S3)
+                            _outputUrl = ModifyUrl(_outputUrl, _outputUrlType);
                             if (_action == Action.None)
                             {
                                 _action = Action.NormalCopy;
@@ -442,6 +449,18 @@ namespace azurecopycommand
                 Console.WriteLine(UsageString);
             }
 
+        }
+
+        private static string ModifyUrl(string outputUrl, UrlType outputUrlType)
+        {
+            if (outputUrlType == UrlType.S3)
+            {
+                return S3Helper.FormatUrl(outputUrl);
+            }
+            else
+            {
+                return outputUrl;
+            }
         }
 
         /// <summary>
