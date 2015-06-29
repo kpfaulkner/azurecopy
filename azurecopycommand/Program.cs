@@ -617,7 +617,6 @@ namespace azurecopycommand
                     }
                     else
                     {
-                        //Console.WriteLine("using blob copy {0} to {1} of type {2}", url, outputUrl, _destinationBlobType);
                         AzureBlobCopyHandler.StartCopy(blob, _outputUrl, _destinationBlobType);
                     }
                 }
@@ -771,9 +770,6 @@ namespace azurecopycommand
 
         static void Main(string[] args)
         {
-            //var sh = new SkyDriveHandler();
-            //SkyDriveHelper.CreateFolder("/temp/test1/test2");
-
             ParseArguments(args);
 
             var sw = new Stopwatch();

@@ -36,7 +36,7 @@ namespace azurecopy
         /// Each cloud provider is different.
         /// Cloud providers developed:
         ///     Azure
-        ///     S3
+        ///     S3xx
         ///     
         /// Cloud providers soon:
         ///     Dropbox
@@ -67,7 +67,13 @@ namespace azurecopy
                 url = sourceUrl+ blob.GetSharedAccessSignature(policy);
             } else if (DropboxHelper.MatchHandler(sourceUrl))
             {
-                throw new NotImplementedException("Blobcopy against dropbox is not implemented yet");
+                // FIXME. Check that this works properly... seem ridiculously easy!
+                var client = DropboxHelper.GetClient();
+                var sharedUrlResource = client.GetShare(sourceUrl);
+                return sharedUrlResource.Url;
+            } else if (SkyDriveHelper.MatchHandler( sourceUrl))
+            {
+                throw new NotImplementedException("Blobcopy against onedrive is not implemented yet");
             }
 
             return url;
