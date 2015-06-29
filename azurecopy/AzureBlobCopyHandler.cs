@@ -46,7 +46,7 @@ namespace azurecopy
         /// <returns></returns>
         private static string GeneratedAccessibleUrl( BasicBlobContainer origBlob)
         {
-            var sourceUrl = origBlob.Url + "/" + origBlob.Name;
+            var sourceUrl = origBlob.Url; // +"/" + origBlob.Name;
             string url = "";
 
             // if S3, then generate signed url.
@@ -67,10 +67,15 @@ namespace azurecopy
                 url = sourceUrl+ blob.GetSharedAccessSignature(policy);
             } else if (DropboxHelper.MatchHandler(sourceUrl))
             {
-                // FIXME. Check that this works properly... seem ridiculously easy!
+                // need shorter url. (no base url);
+                var uri = new Uri(sourceUrl);
+                var shortUrl = uri.PathAndQuery;
+
                 var client = DropboxHelper.GetClient();
-                var sharedUrlResource = client.GetShare(sourceUrl);
-                return sharedUrlResource.Url;
+                var sharedUrlResource = client.GetShare(shortUrl, false);
+
+                return sharedUrlResource.Url.Replace("dl=0", "dl=1");
+
             } else if (SkyDriveHelper.MatchHandler( sourceUrl))
             {
                 throw new NotImplementedException("Blobcopy against onedrive is not implemented yet");
@@ -99,7 +104,7 @@ namespace azurecopy
             // include unknown for now. Unsure.
             if (destBlobType == DestinationBlobType.Block || destBlobType == DestinationBlobType.Unknown)
             {
-                blob = container.GetBlockBlobReference(blobName);
+                blob = container.GetBlockBlobReference(origBlob.DisplayName);
                 
             } else if (destBlobType == DestinationBlobType.Page)
             {
