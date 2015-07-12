@@ -71,22 +71,9 @@ namespace azurecopy
                 // need shorter url. (no base url);
                 var uri = new Uri(sourceUrl);
                 var shortUrl = uri.PathAndQuery;
-
                 var client = DropboxHelper.GetClient();
-                var sharedUrlResource = client.GetShare(shortUrl, false);
-
-                var u = sharedUrlResource.Url.Replace("dl=0", "dl=1");
-
-                HttpClientHandler httpClientHandler = new HttpClientHandler();
-                httpClientHandler.AllowAutoRedirect = false;
-
-                var httpClient = new HttpClient( httpClientHandler);
-                var t = httpClient.GetAsync(u);
-                t.Wait();
-
-                var r = t.Result;
-                return r.Headers.Location.AbsoluteUri;
-
+                var media = client.GetMedia(shortUrl);
+                return media.Url;
             } else if (SkyDriveHelper.MatchHandler( sourceUrl))
             {
                 throw new NotImplementedException("Blobcopy against onedrive is not implemented yet");
