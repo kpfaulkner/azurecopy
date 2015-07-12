@@ -25,6 +25,7 @@ using Microsoft.WindowsAzure.Storage.Blob;
 using azurecopy.Utils;
 using System.Threading;
 using azurecopy.Helpers;
+using System.Net.Http;
 
 namespace azurecopy
 {
@@ -74,7 +75,17 @@ namespace azurecopy
                 var client = DropboxHelper.GetClient();
                 var sharedUrlResource = client.GetShare(shortUrl, false);
 
-                return sharedUrlResource.Url.Replace("dl=0", "dl=1");
+                var u = sharedUrlResource.Url.Replace("dl=0", "dl=1");
+
+                HttpClientHandler httpClientHandler = new HttpClientHandler();
+                httpClientHandler.AllowAutoRedirect = false;
+
+                var httpClient = new HttpClient( httpClientHandler);
+                var t = httpClient.GetAsync(u);
+                t.Wait();
+
+                var r = t.Result;
+                return r.Headers.Location.AbsoluteUri;
 
             } else if (SkyDriveHelper.MatchHandler( sourceUrl))
             {
@@ -100,6 +111,7 @@ namespace azurecopy
 
             ICloudBlob blob = null;
             var url = GeneratedAccessibleUrl(origBlob);
+
 
             // include unknown for now. Unsure.
             if (destBlobType == DestinationBlobType.Block || destBlobType == DestinationBlobType.Unknown)
