@@ -1,3 +1,6 @@
+
+AppVeyor: [![AppVeyor](https://ci.appveyor.com/project/KenFaulkner/azurecopy)](https://ci.appveyor.com/project/KenFaulkner/azurecopy)
+
 Azure Copy
 ----------
 
