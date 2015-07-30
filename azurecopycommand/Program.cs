@@ -285,6 +285,9 @@ namespace azurecopycommand
                             i++;
                             _inputUrl = GetArgument(args, i);
                             _inputUrlType = GetUrlType(_inputUrl);
+
+                            // any modification of the URL (S3)
+                            _inputUrl = ModifyUrl(_inputUrl, _inputUrlType);
                             _listContainer = true;
                             _action = Action.List;
                             break;
@@ -294,6 +297,9 @@ namespace azurecopycommand
                             _inputUrl = GetArgument(args, i);
                             _inputUrl = SanitizeUrl(_inputUrl);
                             _inputUrlType = GetUrlType(_inputUrl);
+                            // any modification of the URL (S3)
+                            _inputUrl = ModifyUrl(_inputUrl, _inputUrlType);
+
                             _listContainer = true;
                             _action = Action.ListContainers;
                             break;
