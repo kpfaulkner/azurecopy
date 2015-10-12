@@ -54,7 +54,7 @@ namespace azurecopy
             if (S3Helper.MatchHandler(sourceUrl))
             {
                 var bucket = S3Helper.GetBucketFromUrl(sourceUrl);
-                var key = S3Helper.GetKeyFromUrl(sourceUrl);
+                var key = origBlob.Name;
                 url = S3Helper.GeneratePreSignedUrl(bucket, key);
             } else if (AzureHelper.MatchHandler( sourceUrl))
             {
@@ -99,11 +99,15 @@ namespace azurecopy
             ICloudBlob blob = null;
             var url = GeneratedAccessibleUrl(origBlob);
 
+            if (string.IsNullOrEmpty(blobName))
+            {
+                blobName = origBlob.DisplayName.Split('/').Last();
+            }
 
             // include unknown for now. Unsure.
             if (destBlobType == DestinationBlobType.Block || destBlobType == DestinationBlobType.Unknown)
             {
-                blob = container.GetBlockBlobReference(origBlob.DisplayName);
+                blob = container.GetBlockBlobReference(blobName);
                 
             } else if (destBlobType == DestinationBlobType.Page)
             {
