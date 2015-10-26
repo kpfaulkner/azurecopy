@@ -1,6 +1,6 @@
 ﻿TODO:
 
-+ Neaten IBlobHandler interface and implementations.
+* Neaten IBlobHandler interface and implementations.
 + Standardize coping to/from directories (do paths have to end in \ etc?)
 + General neatening up of code. (vaaaaaaaaague)
 + Make sure Apache license details at top of all files.
