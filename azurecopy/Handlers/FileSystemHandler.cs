@@ -132,6 +132,7 @@ namespace azurecopy
         /// <summary>
         /// Write blob
         /// For FS the containerName is just the full path (excluding filename).
+        /// Need to create directories where appropriate.
         /// </summary>
         /// <param name="container"></param>
         /// <param name="blobName"></param>
@@ -144,6 +145,9 @@ namespace azurecopy
             try
             {
                 var outFile = Path.Combine(containerName, blobName);
+
+                var directory = Path.GetDirectoryName(outFile);
+                Directory.CreateDirectory(directory);
 
                 // get stream to data.
                 if (blob.BlobSavedToFile)
@@ -188,7 +192,7 @@ namespace azurecopy
         /// <param name="containerName"></param>
         /// <param name="blobPrefix"></param>
         /// <returns></returns>
-        public List<BasicBlobContainer> ListBlobsInContainer(string containerName = null, string blobPrefix = null)
+        public List<BasicBlobContainer> ListBlobsInContainer(string containerName = null, string blobPrefix = null, bool debug = false)
         {
             var fileList = new List<BasicBlobContainer>();
 

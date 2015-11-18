@@ -37,6 +37,7 @@ namespace azurecopy
         public static readonly string AwsSecretKeyIdentifier = "secret";
 
         private string defaultKey { get; set; }
+        private string defaultBlobPrefix { get; set; }
 
         // Base url.
         // We want to store the URLs in format of s3.aws.com/bucketname
@@ -46,7 +47,19 @@ namespace azurecopy
         {
             baseUrl = S3Helper.FormatUrl(url);
             defaultKey = GetDefaultKey(baseUrl);
+            defaultBlobPrefix = GetBlobPrefixFromUrl(baseUrl);
         }
+
+        private string GetBlobPrefixFromUrl(string url)
+        {
+            var sp = url.Split('/');
+            return string.Join("/", sp.Skip(4));
+        }
+
+
+
+
+
 
         /// <summary>
         /// Gets container name from the full url.
@@ -251,7 +264,7 @@ namespace azurecopy
         /// <param name="containerName"></param>
         /// <param name="blobPrefix"></param>
         /// <returns></returns>
-        public List<BasicBlobContainer> ListBlobsInContainer(string containerName = null, string blobPrefix = null)
+        public List<BasicBlobContainer> ListBlobsInContainer(string containerName = null, string blobPrefix = null, bool debug = false)
         {
             var bucket = containerName;
             var blobList = new List<BasicBlobContainer>();
@@ -260,11 +273,17 @@ namespace azurecopy
                 var request = new ListObjectsRequest();
                 request.BucketName = bucket;
 
+                if (string.IsNullOrWhiteSpace(blobPrefix))
+                {
+                    blobPrefix = defaultBlobPrefix;
+                }
+
                 if (!string.IsNullOrEmpty(blobPrefix))
                 {
                     request.Prefix = blobPrefix;
                 }
          
+                // FIXME... check virtual directories workhere.
                 do
                 {
                     ListObjectsResponse response = client.ListObjects(request);
@@ -282,15 +301,7 @@ namespace azurecopy
                             blob.Container = bucket;
                             blob.BlobType = BlobEntryType.Blob;
                             blob.DisplayName = S3Helper.GetDisplayName(blob.Name);
-
-                            //if (blob.Name.Contains('/'))
-                            //{
-                            //    blob.DisplayName = blob.Name.Split('/')[1];
-                            //}
-                            //else
-                            //{
-                            //    blob.DisplayName = blob.Name;
-                            //}
+                            blob.BlobPrefix = blobPrefix;
                             blobList.Add(blob);
                         }
                     }

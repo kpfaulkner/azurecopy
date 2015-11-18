@@ -66,6 +66,9 @@ namespace azurecopy
 
         public BlobEntryType BlobType { get; set; }
 
+        // prefix associated with this blob
+        public string BlobPrefix { get; set; }
+
     }
 
     public class BlobBase

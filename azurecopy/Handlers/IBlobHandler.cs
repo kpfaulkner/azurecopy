@@ -80,7 +80,7 @@ namespace azurecopy
         /// <param name="containerName"></param>
         /// <param name="blobPrefix"></param>
         /// <returns></returns>
-        List<BasicBlobContainer> ListBlobsInContainer(string containerName = null, string blobPrefix = null);
+        List<BasicBlobContainer> ListBlobsInContainer(string containerName = null, string blobPrefix = null, bool debug=false);
 
         /// <summary>
         /// List containers/directories off the root. For storage schemes that allow real directories maybe

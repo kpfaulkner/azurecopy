@@ -520,6 +520,11 @@ namespace azurecopycommand
         // default to local filesystem
         public static IBlobHandler GetHandler(UrlType urlType, string url)
         {
+            if (DebugMode)
+            {
+                Console.WriteLine("GetHandler start");
+            }
+
             IBlobHandler blobHandler;
 
             switch (urlType)
@@ -556,6 +561,13 @@ namespace azurecopycommand
                     blobHandler = new FileSystemHandler(url);
                     break;
             }
+
+            if (DebugMode)
+            {
+                Console.WriteLine("GetHandler retrieved " + blobHandler.GetType().ToString());
+            }
+
+
 
             return blobHandler;
         }
@@ -611,7 +623,9 @@ namespace azurecopycommand
                         var destContainerName = outputHandler.GetContainerNameFromUrl(_outputUrl);
                         var destBlobName = outputHandler.GetBlobNameFromUrl(_outputUrl);
 
-                        destBlobName += inputBlob.DisplayName;
+                        // take the inputBlob name and remove the default prefix.
+
+                        destBlobName += inputBlob.Name.Substring(blob.BlobPrefix.Length);
 
                         // if no destination blob name given, then just use the original
                         //if (string.IsNullOrWhiteSpace(destBlobName))
@@ -699,13 +713,19 @@ namespace azurecopycommand
         }
 
 
-        static void DoList()
+        static void DoList(bool debugMode)
         {
             IBlobHandler handler = GetHandler(_inputUrlType, _inputUrl);
 
             var containerName = handler.GetContainerNameFromUrl(_inputUrl);
+
+            if (DebugMode)
+            {
+                Console.WriteLine("container name " + containerName);
+            }
+
             var blobPrefix = handler.GetBlobNameFromUrl(_inputUrl);
-            var blobList = handler.ListBlobsInContainer(containerName, blobPrefix);
+            var blobList = handler.ListBlobsInContainer(containerName, blobPrefix, DebugMode);
 
             foreach (var blob in blobList)
             {
@@ -713,7 +733,7 @@ namespace azurecopycommand
             }
         }
 
-        static void Process()
+        static void Process(bool debugMode)
         {
             switch (_action)
             {
@@ -722,7 +742,7 @@ namespace azurecopycommand
                     break;
 
                 case Action.List:
-                    DoList();
+                    DoList(debugMode);
                     break;
 
                 case Action.ListContainers:
@@ -783,7 +803,7 @@ namespace azurecopycommand
             try
             {
                 sw.Start();
-                Process();
+                Process(DebugMode);
                 sw.Stop();
                 Console.WriteLine("Operation took {0} ms", sw.ElapsedMilliseconds);
             }

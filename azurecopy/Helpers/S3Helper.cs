@@ -66,7 +66,7 @@ namespace azurecopy.Utils
         }
 
         /// <summary>
-        /// Format URL into s3.aws.com/bucketname regardless of format it comes in with.
+        /// Format URL into s3.amazonaws.com/bucketname regardless of format it comes in with.
         /// Not foolproof, but should handle the common cases.
         /// FIXME: Will need to revisit.
         /// </summary>

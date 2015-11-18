@@ -186,7 +186,6 @@ namespace azurecopy.Utils
         public static string GetBlobFromUrl(string blobUrl)
         {
             var blobName = GetVirtualDirectoryFromUrl(blobUrl);
-
             return blobName;
         }
 
@@ -241,13 +240,15 @@ namespace azurecopy.Utils
             var url = new Uri(blobUrl);
             string virtualDir = "";
 
+            // removed / from join due to making virtual directories look like vdir1//myfile    
+            // and the double slash would cause issues during blob reading.
             if (IsDevUrl(blobUrl))
             {
-                virtualDir = string.Join("/", url.Segments.Skip(3));
+                virtualDir = string.Join("", url.Segments.Skip(3));
             }
             else
             {
-                virtualDir = string.Join("/", url.Segments.Skip(2));
+                virtualDir = string.Join("", url.Segments.Skip(2));
             }
 
             virtualDir = virtualDir.TrimEnd('/');

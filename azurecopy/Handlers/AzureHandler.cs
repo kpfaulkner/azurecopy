@@ -201,7 +201,7 @@ namespace azurecopy
         /// <param name="container"></param>
         /// <param name="blobPrefix"></param>
         /// <returns></returns>
-        public List<BasicBlobContainer> ListBlobsInContainer(string containerName= null, string blobPrefix = null)
+        public List<BasicBlobContainer> ListBlobsInContainer(string containerName = null, string blobPrefix = null, bool debug = false)
         {
             var blobList = new List<BasicBlobContainer>();
             IEnumerable<IListBlobItem> azureBlobList;
@@ -256,6 +256,7 @@ namespace azurecopy
                 {
                     var b = new BasicBlobContainer();
                     var bn = AzureHelper.GetBlobFromUrl(blob.Uri.AbsoluteUri);
+                    b.BlobPrefix = blobPrefix;
                     b.Name = bn;
                     b.DisplayName = AzureHelper.GetDisplayName(bn);
                     b.Container = blob.Container.Name;
