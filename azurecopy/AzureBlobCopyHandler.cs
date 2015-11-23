@@ -101,7 +101,7 @@ namespace azurecopy
 
             if (string.IsNullOrEmpty(blobName))
             {
-                blobName = origBlob.DisplayName.Split('/').Last();
+                blobName = origBlob.Name.Substring(origBlob.BlobPrefix.Length);
             }
 
             // include unknown for now. Unsure.
