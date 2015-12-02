@@ -34,14 +34,15 @@ namespace azurecopy
         private DropNetClient client;
         private UserLogin accessToken;
         private string url;
+        private string defaultBlobPrefix { get; set; }
 
         // really dont like the idea of storing plain passwords.
         // need to encrypt the app.config soon.
         public DropboxHandler( string url)
         {
             client = DropboxHelper.GetClient();
-
             baseUrl = url;
+            defaultBlobPrefix = GetBlobPrefixFromUrl(url);
         }
 
         public string GetBaseUrl()
@@ -49,6 +50,12 @@ namespace azurecopy
             return baseUrl;
         }
 
+        // https://dropbox.com/mydir/
+        private string GetBlobPrefixFromUrl(string url)
+        {
+            var sp = url.Split('/');
+            return string.Join("/", sp.Skip(3));
+        }
 
         /// <summary>
         /// Gets container name from the full url.
@@ -139,7 +146,8 @@ namespace azurecopy
             blob.Name = blobName;
 
             // generate path for dropbox.
-            var dropboxPath = containerName + "/" + blobName; // FIXME: Need to verify this!!!!
+            //var dropboxPath = containerName + "/" + blobName; // FIXME: Need to verify this!!!!
+            var dropboxPath = blobName; // FIXME: Need to verify this!!!!
 
             // get stream to store.
             using (var stream = CommonHelper.GetStream(cacheFilePath))
@@ -169,29 +177,79 @@ namespace azurecopy
         /// <param name="chunkSizeInMB"></param>
         public void WriteBlob(string containerName, string blobName, Blob blob,  int parallelUploadFactor=1, int chunkSizeInMB=4)
         {
+            // strip filesystem slashes...   replace with web based.
+            var fullPath = GenerateFullPath(containerName, blobName);
+            var dir = GenerateDir(fullPath);
+            var fileName = GenerateFileName(fullPath);
+            MakeDirectories(dir);
             if (blob.BlobSavedToFile)
             {
                 using( var stream = new FileStream(blob.FilePath, FileMode.Open))
                 {
-                    client.UploadFile(containerName, blob.Name, stream);
+                    client.UploadFile(dir, blob.Name, stream);
                 }
             }
             else
             {
-                client.UploadFile(containerName, blob.Name, blob.Data);
+                client.UploadFile(dir, fileName, blob.Data);
+            }
+        }
+
+        private string GenerateFileName(string fullPath)
+        {
+            return fullPath.Split('/').Last();
+        }
+
+        private string GenerateDir(string fullPath)
+        {
+            var sp = fullPath.Split('/');
+            return string.Join("/", sp.Take(sp.Length - 1));
+        }
+
+        private string GenerateFullPath(string containerName, string blobName)
+        {
+            var newContaineName = containerName.Replace(@"\",@"/");
+            var newBlobName = blobName.Replace(@"\", @"/");
+            var fullPath = newContaineName +  newBlobName;
+            return fullPath;
+        }
+
+        /// <summary>
+        /// make directories in dropbox.
+        /// Needs to create parent then children.
+        /// </summary>
+        /// <param name="dir"></param>
+        private void MakeDirectories(string dir)
+        {
+            var dirs = dir.Split(Path.DirectorySeparatorChar);
+            var fullDirectory = string.Empty;
+            foreach( var d in dirs)
+            {
+                try
+                {
+                    if (!string.IsNullOrWhiteSpace(d))
+                    {
+                        if (!string.IsNullOrWhiteSpace(fullDirectory))
+                        {
+                            fullDirectory += "/";
+                        }
+                        fullDirectory += d;
+                        client.CreateFolder(fullDirectory);
+                    }
+                }
+                catch( Exception ex)
+                {
+                    // dir possibly exists
+                    // need to do this better.
+                }
             }
         }
 
         /// <summary>
         /// Lists all blobs in a container.
-        /// Can be supplied a blobPrefix which basically acts as virtual directory options.
-        /// eg, if we have blobs called: "virt1/virt2/myblob"    and
-        ///                              "virt1/virt2/myblob2"
-        /// Although the blob names are the complete strings mentioned above, we might like to think that the blobs
-        /// are just called myblob and myblob2. We can supply a blobPrefix of "virt1/virt2/" which we can *think* of
-        /// as a directory, but again, its just really a prefix behind the scenes.
-        /// 
-        /// For other sytems (not Azure) the blobPrefix might be real directories....  will need to investigate
+        /// Recurse directories to get all contents.
+        /// Either do it here, or when reading blob (and it turns out to be a directory).
+        /// Always recursing might not always be wanted, but think its a good default (for now).
         /// </summary>
         /// <param name="containerName"></param>
         /// <param name="blobPrefix"></param>
@@ -203,6 +261,11 @@ namespace azurecopy
             //var metadata = client.GetMetaData(containerName, null, false, false);
             var metadata = client.GetMetaData(containerName);
 
+            if (string.IsNullOrWhiteSpace(blobPrefix))
+            {
+                blobPrefix = defaultBlobPrefix;
+            }
+
             // generate list of dirs and files.
             foreach (var entry in metadata.Contents)
             {
@@ -210,18 +273,25 @@ namespace azurecopy
                 var blob = new BasicBlobContainer();
                 blob.Container = containerName;
                 blob.DisplayName = entry.Name;
-                blob.Name = entry.Name;
+                
                 blob.Url = entry.Path;
-
+                blob.BlobPrefix = blobPrefix;
+                
                 if (entry.Is_Dir)
                 {
                     blob.BlobType = BlobEntryType.Container;
+                    var recursiveBlobList = ListBlobsInContainer(containerName + entry.Name+"/", blobPrefix, debug);
+                    dirListing.AddRange(recursiveBlobList);
                 }
                 else
                 {
+                    //var name = entry.Name.StartsWith("/") ? entry.Name : "/" + entry.Name;
+                    var name = entry.Name;
+                    blob.Name =  containerName + name;
                     blob.BlobType = BlobEntryType.Blob;
+                    dirListing.Add(blob);
                 }
-                dirListing.Add(blob);
+                
             }
             return dirListing;
         }

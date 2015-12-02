@@ -786,13 +786,11 @@ namespace azurecopycommand
             
         }
 
-
         private static string GenerateFileName(string downloadDirectory, string blobName)
         {
             var fullPath = Path.Combine(downloadDirectory, blobName);
             return fullPath;
         }
-
 
         static void Main(string[] args)
         {
