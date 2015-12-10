@@ -625,7 +625,14 @@ namespace azurecopycommand
 
                         // take the inputBlob name and remove the default prefix.
 
-                        destBlobName += inputBlob.Name.Substring(blob.BlobPrefix.Length);
+                        if (!string.IsNullOrEmpty(blob.BlobPrefix))
+                        {
+                            destBlobName += inputBlob.Name.Substring(blob.BlobPrefix.Length);
+                        }
+                        else
+                        {
+                            destBlobName += inputBlob.Name;
+                        }
 
                         // if no destination blob name given, then just use the original
                         //if (string.IsNullOrWhiteSpace(destBlobName))

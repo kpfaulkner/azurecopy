@@ -249,7 +249,7 @@ namespace azurecopy
                 else
                 {
                     var vd = container.GetDirectoryReference(blobPrefix);
-                    azureBlobList = vd.ListBlobs();
+                    azureBlobList = ListVirtualDirectoryBlobs(vd); 
                 }
 
                 foreach (var blob in azureBlobList)
@@ -263,6 +263,27 @@ namespace azurecopy
                     b.Url = blob.Uri.AbsoluteUri;
                     b.BlobType = BlobEntryType.Blob;
                     blobList.Add(b);
+                }
+            }
+
+            return blobList;
+        }
+
+        private List<IListBlobItem> ListVirtualDirectoryBlobs(CloudBlobDirectory dir)
+        {
+            var blobList = new List<IListBlobItem>();
+
+            foreach (var blob in dir.ListBlobs())
+            {
+                if (blob.GetType() == typeof(CloudBlockBlob) || blob.GetType() == typeof(CloudPageBlob) )
+                {
+                    blobList.Add(blob);
+                }
+
+                if (blob.GetType() == typeof(CloudBlobDirectory))
+                {
+                    var subList = ListVirtualDirectoryBlobs((CloudBlobDirectory)blob);
+                    blobList.AddRange(subList);
                 }
             }
 
