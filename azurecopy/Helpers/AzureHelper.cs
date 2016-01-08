@@ -73,15 +73,37 @@ namespace azurecopy.Utils
             }
             else
             {
-                var credentials = new Microsoft.WindowsAzure.Storage.Auth.StorageCredentials(accountName, accountKey);
-                storageAccount = new CloudStorageAccount(credentials, true);
+                storageAccount = GetCloudStorageAccount(accountKey, accountName);
             }
 
             return storageAccount;
-
         }
 
-        public static CloudBlobClient GetCloudBlobClient(string url, bool isSrc )
+        public static CloudStorageAccount GetCloudStorageAccount(string accountKey, string accountName)
+        {
+            CloudStorageAccount storageAccount;
+
+            var credentials = new Microsoft.WindowsAzure.Storage.Auth.StorageCredentials(accountName, accountKey);
+            storageAccount = new CloudStorageAccount(credentials, true);
+
+            return storageAccount;
+        }
+
+
+        public static CloudBlobClient GetCloudBlobClient(string accountName, string accountKey)
+        {
+            var storageAccount = GetCloudStorageAccount( accountKey, accountName);
+            var blobClient = storageAccount.CreateCloudBlobClient();
+
+            // retry policy.
+            // could do with a little work.
+            IRetryPolicy linearRetryPolicy = new LinearRetry(TimeSpan.FromSeconds(ConfigHelper.RetryAttemptDelayInSeconds), ConfigHelper.MaxRetryAttempts);
+            blobClient.RetryPolicy = linearRetryPolicy;
+
+            return blobClient;
+        }
+
+        public static CloudBlobClient GetCloudBlobClient(string url, bool isSrc, string accountKey = null)
         {
             CloudBlobClient blobClient = null;
 
@@ -98,15 +120,18 @@ namespace azurecopy.Utils
             {
                 
                 var accountName = GetAccountNameFromUrl(url);
-                string accountKey = ConfigHelper.AzureAccountKey;
 
-                if (isSrc)
+                if (string.IsNullOrWhiteSpace(accountKey))
                 {
-                    accountKey = ConfigHelper.SrcAzureAccountKey;
-                }
-                else
-                {
-                    accountKey = ConfigHelper.TargetAzureAccountKey;
+
+                    if (isSrc)
+                    {
+                        accountKey = ConfigHelper.SrcAzureAccountKey;
+                    }
+                    else
+                    {
+                        accountKey = ConfigHelper.TargetAzureAccountKey;
+                    }
                 }
 
                 var storageAccount = GetCloudStorageAccount(url, accountKey, accountName);

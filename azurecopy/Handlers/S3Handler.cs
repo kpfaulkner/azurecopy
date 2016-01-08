@@ -50,16 +50,22 @@ namespace azurecopy
             defaultBlobPrefix = GetBlobPrefixFromUrl(baseUrl);
         }
 
+        public S3Handler(string url, string awsKey, string awsKeySecret) : this(url)
+        {
+            // overwrite everything.
+            ConfigHelper.AWSAccessKeyID = awsKey;
+            ConfigHelper.SrcAWSAccessKeyID = awsKey;
+            ConfigHelper.TargetAWSAccessKeyID = awsKey;
+            ConfigHelper.AWSSecretAccessKeyID = awsKeySecret;
+            ConfigHelper.SrcAWSSecretAccessKeyID = awsKeySecret;
+            ConfigHelper.TargetAWSSecretAccessKeyID = awsKeySecret;
+        }
+
         private string GetBlobPrefixFromUrl(string url)
         {
             var sp = url.Split('/');
             return string.Join("/", sp.Skip(4));
         }
-
-
-
-
-
 
         /// <summary>
         /// Gets container name from the full url.

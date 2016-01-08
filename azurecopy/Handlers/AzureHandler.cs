@@ -35,9 +35,9 @@ namespace azurecopy
         public static readonly string AzureAccountKey = "AzureAccountKey";
         public static bool IsEmulator { get; set; }
 
-        // need to check overhead of creating this constantly.
-        // maybe static this later.
-        private CloudBlobClient client;
+        // specifically public so it can be overwritten at a later time.
+        // currently need this for creating customer clients (via other configs).
+        public CloudBlobClient client;
 
         private string defaultContainerName { get; set; }
         private string defaultBlobPrefix { get; set; }
@@ -57,6 +57,16 @@ namespace azurecopy
             defaultContainerName = GetContainerNameFromUrl(url);
             defaultBlobPrefix = GetBlobPrefixFromUrl(url);
             client = AzureHelper.GetSourceCloudBlobClient(url);
+        }
+
+        /// <summary>
+        /// Used to overwrite the default azure client. 
+        /// </summary>
+        /// <param name="accountName"></param>
+        /// <param name="accountKey"></param>
+        public void CreateCustomAzureClient(string accountName, string accountKey)
+        {
+            client = AzureHelper.GetCloudBlobClient(accountName, accountKey);
         }
 
         /// <summary>

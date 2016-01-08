@@ -124,7 +124,7 @@ namespace azurecopy.Helpers
             SrcAWSAccessKeyID = GetConfigValue<string>("SrcAWSAccessKeyID", string.Empty);
             SrcAWSSecretAccessKeyID = GetConfigValue<string>("SrcAWSSecretAccessKeyID", string.Empty);
 
-            TargetAzureAccountKey = GetConfigValue<string>("TargetAzureAccountKey", string.Empty);
+            TargetAzureAccountKey = GetConfigValue<string>("TargetAWSAccessKeyID", string.Empty);
             TargetAWSAccessKeyID = GetConfigValue<string>("TargetAWSAccessKeyID", string.Empty);
             TargetAWSSecretAccessKeyID = GetConfigValue<string>("TargetAWSSecretAccessKeyID", string.Empty);
 
