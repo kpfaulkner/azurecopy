@@ -57,9 +57,12 @@ namespace azurecopy.Utils
             rd["us-east-1"] = Amazon.RegionEndpoint.USEast1;
             rd["eu-west-1"] = Amazon.RegionEndpoint.EUWest1;
             rd["ap-southeast-1"] = Amazon.RegionEndpoint.APSoutheast1;
-            rd["ap-southeast-1"] = Amazon.RegionEndpoint.APSoutheast2;
+            rd["ap-southeast-2"] = Amazon.RegionEndpoint.APSoutheast2;
             rd["ap-northeast-1"] = Amazon.RegionEndpoint.APNortheast1;
             rd["sa-east-1"] = Amazon.RegionEndpoint.SAEast1;
+            rd["eu-central-1"] = Amazon.RegionEndpoint.EUCentral1;
+            rd["eu-west-1"] = Amazon.RegionEndpoint.EUWest1;
+
             rd[""] = Amazon.RegionEndpoint.USEast1;   // default...
           
             return rd;
@@ -148,7 +151,7 @@ namespace azurecopy.Utils
             if (!string.IsNullOrEmpty(bucketName))
             {
                 var regionForBucket = client.GetBucketLocation(bucketName);
-
+                
                 // if default US region then location will be null. Replace it with string.Empty for region lookup.
                 client = Amazon.AWSClientFactory.CreateAmazonS3Client(accessKey, secretKey, RegionDict[regionForBucket.Location ?? string.Empty]);
             }
