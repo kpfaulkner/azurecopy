@@ -37,3 +37,6 @@
 * blobcopy can handle wildcards (multi copy)
 * use blobcopy API: http://blogs.msdn.com/b/windowsazurestorage/archive/2012/06/12/introducing-asynchronous-cross-account-copy-blob.aspx
 * monitor blob copy progress.
+
+
+- Note: To get download stats, use https://api.github.com/repos/kpfaulkner/azurecopy/releases

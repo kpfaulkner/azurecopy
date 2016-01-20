@@ -83,15 +83,16 @@ namespace azurecopy
 
         }
 
-
-        // Copy from complete URL (assume URL is complete at this stage) to destination blob.
+        // have destination location.
+        // have original blob name and prefix
+        // new name should be destination name + (blob.name - blob.prefix) 
         public static void StartCopy(BasicBlobContainer origBlob, string DestinationUrl, DestinationBlobType destBlobType)
         {
             var client = AzureHelper.GetTargetCloudBlobClient(DestinationUrl);
             var opt = client.GetServiceProperties();
 
             var containerName = AzureHelper.GetContainerFromUrl( DestinationUrl);
-            var blobName = AzureHelper.GetBlobFromUrl( DestinationUrl );
+            var destBlobPrefix = AzureHelper.GetBlobFromUrl( DestinationUrl );
 
             var container = client.GetContainerReference( containerName );
             container.CreateIfNotExists();
@@ -99,9 +100,24 @@ namespace azurecopy
             ICloudBlob blob = null;
             var url = GeneratedAccessibleUrl(origBlob);
 
-            if (string.IsNullOrEmpty(blobName))
+            string blobName;
+
+            string blobWithoutPrefix = string.Empty;
+
+            if (!string.IsNullOrWhiteSpace(origBlob.BlobPrefix) && origBlob.Name.Length > origBlob.BlobPrefix.Length)
             {
-                blobName = origBlob.Name.Substring(origBlob.BlobPrefix.Length);
+                blobWithoutPrefix = origBlob.Name.Substring(origBlob.BlobPrefix.Length);
+            }
+
+            if (!string.IsNullOrWhiteSpace(blobWithoutPrefix))
+            {
+                blobName = string.Format("{0}/{1}", destBlobPrefix, blobWithoutPrefix);
+            }
+            else
+            {
+                // need to get just filename. ie last element of /
+                var actualBlobName = origBlob.Name.Split('/').Last();
+                blobName = string.Format("{0}/{1}", destBlobPrefix, actualBlobName);
             }
 
             // include unknown for now. Unsure.
