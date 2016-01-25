@@ -631,7 +631,16 @@ namespace azurecopycommand
                         }
                         else
                         {
-                            destBlobName += inputBlob.Name;
+                            // if destBlobName ends with / then its a prefix.
+                            // if it does not, then its an absolute blob name (ie when the blob was copied then it was also being renamed).
+                            if (destBlobName.EndsWith("/"))
+                            {
+                                destBlobName += inputBlob.Name;
+                            }
+                            else
+                            {
+                                // leave alone... use told us the blobname to use.
+                            }
                         }
 
                         // if no destination blob name given, then just use the original
