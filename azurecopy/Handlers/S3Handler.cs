@@ -38,6 +38,7 @@ namespace azurecopy
 
         private string defaultKey { get; set; }
         private string defaultBlobPrefix { get; set; }
+        private bool baseUrlProvided = false;
 
         // Base url.
         // We want to store the URLs in format of s3.aws.com/bucketname
@@ -45,9 +46,19 @@ namespace azurecopy
         // before storing it in the baseUrl.
         public S3Handler(string url)
         {
-            baseUrl = S3Helper.FormatUrl(url);
-            defaultKey = GetDefaultKey(baseUrl);
-            defaultBlobPrefix = GetBlobPrefixFromUrl(baseUrl);
+            if (!string.IsNullOrEmpty(url))
+            {
+                baseUrl = S3Helper.FormatUrl(url);
+                defaultKey = GetDefaultKey(baseUrl);
+                defaultBlobPrefix = GetBlobPrefixFromUrl(baseUrl);
+                baseUrlProvided = true;
+            }
+            else
+            {
+                baseUrl = "s3.amazonaws.com";
+                defaultKey = string.Empty;
+                defaultBlobPrefix = string.Empty;
+            }
         }
 
         public S3Handler(string url, string awsKey, string awsKeySecret) : this(url)
@@ -295,8 +306,16 @@ namespace azurecopy
                     ListObjectsResponse response = client.ListObjects(request);
                     foreach (var obj in response.S3Objects)
                     {
-                        //var fullPath = GenerateUrl(baseUrl, bucket, obj.Key);
-                        var fullPath = baseUrl + obj.Key;
+                        string fullPath;
+                        if (baseUrlProvided)
+                        {
+                            //var fullPath = GenerateUrl(baseUrl, bucket, obj.Key);
+                            fullPath = baseUrl + obj.Key;
+                        }
+                        else
+                        {
+                            fullPath = string.Format("https://{0}/{1}/{2}", baseUrl, containerName, obj.Key);
+                        }
 
                         if (!fullPath.EndsWith("/"))
                         {
