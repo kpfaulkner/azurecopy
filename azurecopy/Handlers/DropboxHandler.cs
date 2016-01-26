@@ -31,7 +31,7 @@ namespace azurecopy
     public class DropboxHandler : IBlobHandler
     {
         private string baseUrl = null;
-        private DropNetClient client;
+        public DropNetClient client { get; set; }
         private UserLogin accessToken;
         private string url;
         private string defaultBlobPrefix { get; set; }
@@ -40,6 +40,7 @@ namespace azurecopy
         // need to encrypt the app.config soon.
         public DropboxHandler( string url)
         {
+            // Create default client. Can override later if required.
             client = DropboxHelper.GetClient();
             baseUrl = url;
             defaultBlobPrefix = GetBlobPrefixFromUrl(url);

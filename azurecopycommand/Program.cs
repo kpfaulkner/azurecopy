@@ -639,7 +639,16 @@ namespace azurecopycommand
                             }
                             else
                             {
-                                // leave alone... use told us the blobname to use.
+                                // if destBlobName is empty then take it from blob.
+                                // else it appears we were told the name to use so leave it.
+                                if (string.IsNullOrWhiteSpace( destBlobName))
+                                {
+                                    destBlobName = inputBlob.Name;
+                                }
+                                else
+                                {
+                                    // leave it.
+                                }
                             }
                         }
 
