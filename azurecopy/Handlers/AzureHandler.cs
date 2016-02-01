@@ -238,10 +238,10 @@ namespace azurecopy
                 foreach (var cont in containerList)
                 {
                     var b = new BasicBlobContainer();
-                    b.Name = cont.Name;
+                    b.Name = Uri.UnescapeDataString(cont.Name);
                     b.DisplayName = AzureHelper.GetDisplayName(cont.Name);
                     b.Container = "";
-                    b.Url = cont.Uri.AbsoluteUri;
+                    b.Url = Uri.UnescapeDataString(cont.Uri.AbsoluteUri);
                     b.BlobType = BlobEntryType.Container;
                     blobList.Add(b);
                 }
@@ -267,10 +267,10 @@ namespace azurecopy
                     var b = new BasicBlobContainer();
                     var bn = AzureHelper.GetBlobFromUrl(blob.Uri.AbsoluteUri);
                     b.BlobPrefix = blobPrefix;
-                    b.Name = bn;
+                    b.Name = Uri.UnescapeDataString(bn);
                     b.DisplayName = AzureHelper.GetDisplayName(bn);
                     b.Container = blob.Container.Name;
-                    b.Url = blob.Uri.AbsoluteUri;
+                    b.Url = Uri.UnescapeDataString(blob.Uri.AbsoluteUri);
                     b.BlobType = BlobEntryType.Blob;
                     blobList.Add(b);
                 }

@@ -34,6 +34,8 @@ namespace azurecopy.Helpers
 
         public static DropNetClient client { get; set; }
 
+        // Shouldn't be constructing client here in static constructor.
+        // needs to be 1) not static (need multiple of these)... 2) generated maybe in the GetClient() method.
         static DropboxHelper()
         {
             if (client == null)

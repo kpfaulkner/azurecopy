@@ -40,10 +40,13 @@ namespace azurecopy
         // need to encrypt the app.config soon.
         public DropboxHandler( string url)
         {
-            // Create default client. Can override later if required.
-            client = DropboxHelper.GetClient();
-            baseUrl = url;
-            defaultBlobPrefix = GetBlobPrefixFromUrl(url);
+            if (!string.IsNullOrWhiteSpace(url))
+            {
+                // Create default client. Can override later if required.
+                client = DropboxHelper.GetClient();
+                baseUrl = url;
+                defaultBlobPrefix = GetBlobPrefixFromUrl(url);
+            }
         }
 
         public string GetBaseUrl()
@@ -118,7 +121,41 @@ namespace azurecopy
         /// <returns></returns>
         public List<BasicBlobContainer> ListContainers(string root)
         {
-            throw new NotImplementedException("Dropbox list containers not implemented");
+            var dirListing = new List<BasicBlobContainer>();
+            var containerName = "";
+            var blobPrefix = "";
+
+            //var metadata = client.GetMetaData(containerName, null, false, false);
+            var metadata = client.GetMetaData();
+            
+            // generate list of dirs and files.
+            foreach (var entry in metadata.Contents)
+            {
+                // basic blob info.
+                var blob = new BasicBlobContainer();
+                blob.Container = containerName;
+                blob.DisplayName = entry.Name;
+
+                blob.Url = entry.Path;
+                blob.BlobPrefix = blobPrefix;
+
+                if (entry.Is_Dir)
+                {
+                    blob.BlobType = BlobEntryType.Container;
+                    blob.Name = entry.Name;
+                    dirListing.Add(blob);
+                }
+                else
+                {
+                    //var name = entry.Name.StartsWith("/") ? entry.Name : "/" + entry.Name;
+                    var name = entry.Name;
+                    blob.Name = containerName + name;
+                    blob.BlobType = BlobEntryType.Blob;
+                    dirListing.Add(blob);
+                }
+
+            }
+            return dirListing;
         }
 
         /// <summary>
@@ -147,8 +184,10 @@ namespace azurecopy
             blob.Name = blobName;
 
             // generate path for dropbox.
-            //var dropboxPath = containerName + "/" + blobName; // FIXME: Need to verify this!!!!
-            var dropboxPath = blobName; // FIXME: Need to verify this!!!!
+
+            // why this confusion? Need to check...  
+            var dropboxPath = containerName + "/" + blobName; // FIXME: Need to verify this!!!!
+            //var dropboxPath = blobName; // FIXME: Need to verify this!!!!
 
             // get stream to store.
             using (var stream = CommonHelper.GetStream(cacheFilePath))
@@ -209,9 +248,20 @@ namespace azurecopy
 
         private string GenerateFullPath(string containerName, string blobName)
         {
-            var newContaineName = containerName.Replace(@"\",@"/");
+            var newContainerName = containerName.Replace(@"\",@"/");
             var newBlobName = blobName.Replace(@"\", @"/");
-            var fullPath = newContaineName +  newBlobName;
+
+            var fullPath = string.Empty;
+
+            if (newContainerName.EndsWith("/"))
+            {
+                fullPath = newContainerName + newBlobName;
+
+            }
+            else
+            {
+                fullPath = newContainerName + "/"+newBlobName;
+            }
             return fullPath;
         }
 
@@ -260,7 +310,7 @@ namespace azurecopy
             var dirListing = new List<BasicBlobContainer>();
 
             //var metadata = client.GetMetaData(containerName, null, false, false);
-            var metadata = client.GetMetaData(containerName);
+            var metadata = client.GetMetaData(path:containerName);
 
             if (string.IsNullOrWhiteSpace(blobPrefix))
             {
@@ -275,20 +325,31 @@ namespace azurecopy
                 blob.Container = containerName;
                 blob.DisplayName = entry.Name;
                 
-                blob.Url = entry.Path;
+                blob.Url = "https://dropbox.com"+entry.Path;
                 blob.BlobPrefix = blobPrefix;
                 
                 if (entry.Is_Dir)
                 {
                     blob.BlobType = BlobEntryType.Container;
-                    var recursiveBlobList = ListBlobsInContainer(containerName + entry.Name+"/", blobPrefix, debug);
+
+                    var newContainerName = string.Empty;
+                    if (containerName.EndsWith("/"))
+                    {
+                        newContainerName = containerName + entry.Name + "/";
+                    }
+                    else
+                    {
+                        newContainerName = containerName + "/" + entry.Name + "/";
+                    }
+
+                    var recursiveBlobList = ListBlobsInContainer(newContainerName, blobPrefix, debug);
                     dirListing.AddRange(recursiveBlobList);
                 }
                 else
                 {
                     //var name = entry.Name.StartsWith("/") ? entry.Name : "/" + entry.Name;
                     var name = entry.Name;
-                    blob.Name =  containerName + name;
+                    blob.Name =  name;
                     blob.BlobType = BlobEntryType.Blob;
                     dirListing.Add(blob);
                 }
