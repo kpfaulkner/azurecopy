@@ -89,6 +89,7 @@ namespace azurecopy
         /// <returns></returns>
         public Blob ReadBlob(string containerName, string blobName, string cacheFilePath = "")
         {
+            Console.WriteLine("ReadBlob {0} {1} {2}", containerName, blobName, cacheFilePath);
             try
             {
                 Blob blob = null;

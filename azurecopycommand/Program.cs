@@ -44,7 +44,7 @@ namespace azurecopycommand
                     -v : verbose
                     -i <url>: input url
                     -o <url>: output url
-                    -d : debug (show stack traces etc)
+                    -db : debug (show stack traces etc)
                     -d <local path>: download to filesystem before uploading to output url. (use for big blobs)
                     -blobcopy : use blobcopy API for when Azure is output url.
                     -list <url>: list blobs in bucket/container. eg. -list https://s3.amazonaws.com/mycontainer 
@@ -593,7 +593,7 @@ namespace azurecopycommand
                     {
                         fileName = GenerateFileName(ConfigHelper.DownloadDirectory, blob.Name);
                     }
-
+                        
                     //var outputUrl = GenerateOutputUrl(_outputUrl, url);
 
                     if (!ConfigHelper.UseBlobCopy)
@@ -832,7 +832,7 @@ namespace azurecopycommand
             }
             catch(Exception ex)
             {
-                Console.WriteLine("Unknown error generated. Please report to Github page https://github.com/kpfaulkner/azurecopy/issues .  Can view underlying stacktrace by adding -db flag.");
+                Console.WriteLine("Unknown error generated. Please report to Github page https://github.com/kpfaulkner/azurecopy/issues .  Can view underlying stacktrace by adding -db flag. " + ex.ToString());
 
                 if (DebugMode)
                 {
