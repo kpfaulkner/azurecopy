@@ -117,7 +117,15 @@ namespace azurecopy
             {
                 // need to get just filename. ie last element of /
                 var actualBlobName = origBlob.Name.Split('/').Last();
-                blobName = string.Format("{0}/{1}", destBlobPrefix, actualBlobName);
+
+                if (string.IsNullOrWhiteSpace(destBlobPrefix))
+                {
+                    blobName = actualBlobName;
+                }
+                else
+                {
+                    blobName = string.Format("{0}/{1}", destBlobPrefix, actualBlobName);
+                }
             }
 
             // include unknown for now. Unsure.
