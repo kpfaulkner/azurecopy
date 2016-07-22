@@ -305,10 +305,8 @@ namespace azurecopy
         /// <param name="containerName"></param>
         /// <param name="blobPrefix"></param>
         /// <returns></returns>
-        public List<BasicBlobContainer> ListBlobsInContainer(string containerName = null, string blobPrefix = null, bool debug = false)
+        public IEnumerable<BasicBlobContainer> ListBlobsInContainer(string containerName = null, string blobPrefix = null, bool debug = false)
         {
-            var dirListing = new List<BasicBlobContainer>();
-
             //var metadata = client.GetMetaData(containerName, null, false, false);
             var metadata = client.GetMetaData(path:containerName);
 
@@ -343,7 +341,10 @@ namespace azurecopy
                     }
 
                     var recursiveBlobList = ListBlobsInContainer(newContainerName, blobPrefix, debug);
-                    dirListing.AddRange(recursiveBlobList);
+                    foreach( var d in recursiveBlobList)
+                    {
+                        yield return d;
+                    }
                 }
                 else
                 {
@@ -351,11 +352,9 @@ namespace azurecopy
                     var name = entry.Name;
                     blob.Name =  name;
                     blob.BlobType = BlobEntryType.Blob;
-                    dirListing.Add(blob);
-                }
-                
+                    yield return blob;
+                }                
             }
-            return dirListing;
         }
     }
 }

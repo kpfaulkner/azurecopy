@@ -281,10 +281,9 @@ namespace azurecopy
         /// <param name="containerName"></param>
         /// <param name="blobPrefix"></param>
         /// <returns></returns>
-        public List<BasicBlobContainer> ListBlobsInContainer(string containerName = null, string blobPrefix = null, bool debug = false)
+        public IEnumerable<BasicBlobContainer> ListBlobsInContainer(string containerName = null, string blobPrefix = null, bool debug = false)
         {
             var bucket = containerName;
-            var blobList = new List<BasicBlobContainer>();
             using (IAmazonS3 client = S3Helper.GenerateS3Client(ConfigHelper.SrcAWSAccessKeyID, ConfigHelper.SrcAWSSecretAccessKeyID, bucket))
             {
                 var request = new ListObjectsRequest();
@@ -327,7 +326,9 @@ namespace azurecopy
                             blob.BlobType = BlobEntryType.Blob;
                             blob.DisplayName = S3Helper.GetDisplayName(blob.Name);
                             blob.BlobPrefix = blobPrefix;
-                            blobList.Add(blob);
+                            
+                            yield return blob;
+                            //blobList.Add(blob);
                         }
                     }
 
@@ -342,8 +343,6 @@ namespace azurecopy
 
                 } while (request != null);
             }
-
-            return blobList;
         }
 
         // generates full url to object.

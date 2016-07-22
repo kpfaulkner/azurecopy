@@ -394,10 +394,8 @@ namespace azurecopy
         /// <param name="containerName"></param>
         /// <param name="blobPrefix"></param>
         /// <returns></returns>
-        public List<BasicBlobContainer> ListBlobsInContainer(string containerName = null, string blobPrefix = null, bool debug = false)
-        {
-            var blobList = new List<BasicBlobContainer>();
-            
+        public IEnumerable<BasicBlobContainer> ListBlobsInContainer(string containerName = null, string blobPrefix = null, bool debug = false)
+        {            
             IEnumerable<IListBlobItem> azureBlobList;
             CloudBlobContainer container;
 
@@ -417,7 +415,7 @@ namespace azurecopy
                     b.Container = "";
                     b.Url = cont.Uri.AbsoluteUri;
                     b.BlobType = BlobEntryType.Container;
-                    blobList.Add(b);
+                    yield return b;
                 }
             }
             else
@@ -451,12 +449,9 @@ namespace azurecopy
                     b.Container = blob.Container.Name;
                     b.Url = blob.Uri.AbsoluteUri;
                     b.BlobType = BlobEntryType.Blob;
-                    blobList.Add(b);
+                    yield return b;
                 }
-            
             }
-
-            return blobList;
         }
 
         // not passing url. Url will be generated behind the scenes.

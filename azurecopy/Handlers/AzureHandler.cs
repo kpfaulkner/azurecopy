@@ -212,9 +212,8 @@ namespace azurecopy
         /// <param name="container"></param>
         /// <param name="blobPrefix"></param>
         /// <returns></returns>
-        public List<BasicBlobContainer> ListBlobsInContainer(string containerName = null, string blobPrefix = null, bool debug = false)
+        public IEnumerable<BasicBlobContainer> ListBlobsInContainer(string containerName = null, string blobPrefix = null, bool debug = false)
         {
-            var blobList = new List<BasicBlobContainer>();
             IEnumerable<IListBlobItem> azureBlobList;
             CloudBlobContainer container;
 
@@ -244,7 +243,8 @@ namespace azurecopy
                     b.Container = "";
                     b.Url = Uri.UnescapeDataString(cont.Uri.AbsoluteUri);
                     b.BlobType = BlobEntryType.Container;
-                    blobList.Add(b);
+
+                    yield return b;
                 }
             }
             else
@@ -273,11 +273,9 @@ namespace azurecopy
                     b.Container = blob.Container.Name;
                     b.Url = Uri.UnescapeDataString(blob.Uri.AbsoluteUri);
                     b.BlobType = BlobEntryType.Blob;
-                    blobList.Add(b);
+                    yield return b;
                 }
             }
-
-            return blobList;
         }
 
         private List<IListBlobItem> ListVirtualDirectoryBlobs(CloudBlobDirectory dir)

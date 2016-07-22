@@ -281,10 +281,8 @@ namespace azurecopy
         /// <param name="containerName"></param>
         /// <param name="blobPrefix"></param>
         /// <returns></returns>
-        public List<BasicBlobContainer> ListBlobsInContainer(string containerName = null, string blobPrefix = null, bool debug = false)
+        public IEnumerable<BasicBlobContainer> ListBlobsInContainer(string containerName = null, string blobPrefix = null, bool debug = false)
         {
-            var blobList = new List<BasicBlobContainer>();
-
             var skydriveListing = SkyDriveHelper.ListSkyDriveDirectoryContent(containerName);
             foreach (var skyDriveEntry in skydriveListing)
             {
@@ -296,11 +294,9 @@ namespace azurecopy
                 // keep display name same as name until determine otherwise.
                 blob.DisplayName = blob.Name;
                 blob.Container = containerName;
-                blob.Url = string.Format("{0}&blobName={1}", resolvedOneDriveEntry.Source, blob.Name);       // modify link so we can determine blob name purely from link.             
-                blobList.Add(blob);
+                blob.Url = string.Format("{0}&blobName={1}", resolvedOneDriveEntry.Source, blob.Name);       // modify link so we can determine blob name purely from link.            
+                yield return blob; 
             }
-            return blobList;
-
         }
 
         private string GetSkyDriveDirectoryId(string directoryName)

@@ -192,10 +192,8 @@ namespace azurecopy
         /// <param name="containerName"></param>
         /// <param name="blobPrefix"></param>
         /// <returns></returns>
-        public List<BasicBlobContainer> ListBlobsInContainer(string containerName = null, string blobPrefix = null, bool debug = false)
+        public IEnumerable<BasicBlobContainer> ListBlobsInContainer(string containerName = null, string blobPrefix = null, bool debug = false)
         {
-            var fileList = new List<BasicBlobContainer>();
-
             var files = Directory.EnumerateFiles(baseUrl);
 
             foreach( var file in files)
@@ -208,10 +206,8 @@ namespace azurecopy
                 f.DisplayName = name;
                 f.Url = file;
                 f.Name = name;
-
-                fileList.Add(f);
+                yield return f;
             }
-            return fileList;
         }
     }
 }

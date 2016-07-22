@@ -692,9 +692,8 @@ namespace azurecopycommand
         /// <param name="inputHandler"></param>
         /// <param name="url"></param>
         /// <returns></returns>
-        private static List<BasicBlobContainer> GetSourceBlobList(IBlobHandler inputHandler)
+        private static IEnumerable<BasicBlobContainer> GetSourceBlobList(IBlobHandler inputHandler)
         {
-            var blobList = new List<BasicBlobContainer>();
             var containerName = inputHandler.GetContainerNameFromUrl(inputHandler.GetBaseUrl());
 
             if (CommonHelper.IsABlob(inputHandler.GetBaseUrl()))
@@ -708,14 +707,17 @@ namespace azurecopycommand
                     Container = containerName
                 };
 
-                blobList.Add(blob);
+                yield return blob;
+                //blobList.Add(blob);
             }
             else
             {
-                blobList = inputHandler.ListBlobsInContainer(containerName);
+                var res = inputHandler.ListBlobsInContainer(containerName);
+                foreach( var i in res)
+                {
+                    yield return i;
+                }
             }
-
-            return blobList;
         }
 
         static void DoListContainers()
