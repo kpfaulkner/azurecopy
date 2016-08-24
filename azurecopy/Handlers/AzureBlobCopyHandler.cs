@@ -1,4 +1,4 @@
-﻿﻿//-----------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------
 // <copyright >
 //    Copyright 2013 Ken Faulkner
 //
@@ -18,18 +18,19 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 using azurecopy.Utils;
 using System.Threading;
 using azurecopy.Helpers;
-using System.Net.Http;
 
 namespace azurecopy
 {
-
+    public class BlobCopyData
+    {
+        public string CopyID { get; set; }
+        public ICloudBlob Blob { get; set; }
+    }
+    
     public class AzureBlobCopyHandler
     {
         /// <summary>
@@ -86,7 +87,7 @@ namespace azurecopy
         // have destination location.
         // have original blob name and prefix
         // new name should be destination name + (blob.name - blob.prefix) 
-        public static void StartCopy(BasicBlobContainer origBlob, string DestinationUrl, DestinationBlobType destBlobType)
+        public static BlobCopyData StartCopy(BasicBlobContainer origBlob, string DestinationUrl, DestinationBlobType destBlobType)
         {
             var client = AzureHelper.GetTargetCloudBlobClient(DestinationUrl);
             var opt = client.GetServiceProperties();
@@ -140,7 +141,11 @@ namespace azurecopy
 
             if (blob != null)
             {
-                var res = blob.StartCopyFromBlob(new Uri(url));
+                // return copyID incase user wants to kill the process later.
+                var copyID = blob.StartCopyFromBlob(new Uri(url));
+
+                var bcd = new BlobCopyData { CopyID = copyID, Blob = blob };
+                return bcd;
             }
             else
             {
@@ -149,12 +154,16 @@ namespace azurecopy
 
         }
 
+        public static void AbortCopy(string copyID)
+        {
+
+        }
+
         public static void MonitorBlobCopy(string destinationUrl)
         {
             var copyComplete = false;
             while (!copyComplete)
             {
-
                 var failedBlobList = AzureHelper.ListBlobsInContainer(destinationUrl, Microsoft.WindowsAzure.Storage.Blob.CopyStatus.Failed);
                 var abortedBlobList = AzureHelper.ListBlobsInContainer(destinationUrl, Microsoft.WindowsAzure.Storage.Blob.CopyStatus.Aborted);
                 var pendingBlobList = AzureHelper.ListBlobsInContainer(destinationUrl, Microsoft.WindowsAzure.Storage.Blob.CopyStatus.Pending);

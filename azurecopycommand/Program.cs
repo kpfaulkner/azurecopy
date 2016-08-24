@@ -1,4 +1,4 @@
-﻿﻿//-----------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------
 // <copyright >
 //    Copyright 2013 Ken Faulkner
 //
@@ -18,23 +18,39 @@
 using azurecopy;
 using azurecopy.Helpers;
 using azurecopy.Utils;
+using Microsoft.WindowsAzure.Storage.Blob;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace azurecopycommand
 {
-
+    
     public enum Action { None, NormalCopy, BlobCopy, List, ListContainers, Examples, Make }
+
+    public delegate bool HandlerRoutine(CtrlTypes CtrlType);
+
+    public enum CtrlTypes
+    {
+        CTRL_C_EVENT = 0,
+        CTRL_BREAK_EVENT,
+        CTRL_CLOSE_EVENT,
+        CTRL_LOGOFF_EVENT = 5,
+        CTRL_SHUTDOWN_EVENT
+    }
 
     class Program
     {
+        [DllImport("Kernel32")]
+        public static extern bool SetConsoleCtrlHandler(HandlerRoutine Handler, bool Add);
+        
         const string SkyDriveOAuthUrl = "https://login.live.com/oauth20_authorize.srf?client_id=00000000480EE365&scope=wl.offline_access,wl.skydrive,wl.skydrive_update&response_type=code&redirect_uri=https%3A%2F%2Flogin.live.com%2Foauth20_desktop.srf";
 
         const string UsageString =
@@ -51,7 +67,7 @@ namespace azurecopycommand
                     -lc <url> : list containers for account. eg -lc https://testacc.blob.core.windows.net
                     -pu : parallel upload
                     -cs : chunk size used for parallel upload (in MB).
-                    -m : Monitor progress of copy when in 'blobcopy' mode (ie -blobcopy flag was used). Program will not exit until all pending copies are complete.
+                    -dm : Do NOT monitor progress of copy when in 'blobcopy' mode (ie -blobcopy flag was used). Program will exit before all pending copies are complete.
                     -destblobtype page|block : Destination blob type. Used when destination url is Azure and input url was NOT azure. eg S3 to Azure. 
                     -ak | -azurekey : Azure account key.
                     -s3k | -s3accesskey : S3 access key.
@@ -85,7 +101,7 @@ namespace azurecopycommand
         const string BlobCopyFlag = "-blobcopy";
         const string ListContainerBlobsFlag = "-list";
         const string ListContainersFlag = "-lc";
-        const string MonitorBlobCopyFlag = "-m";
+        const string MonitorBlobCopyFlag = "-dm";
         const string ParallelUploadFlag = "-pu";
         const string ChunkSizeFlag = "-cs";
         const string RetryAttemptDelayInSecondsFlag = "-rd";
@@ -147,7 +163,11 @@ namespace azurecopycommand
 
         // destination blob...  can only assign if source is NOT azure and destination IS azure.
         static DestinationBlobType _destinationBlobType = DestinationBlobType.Unknown;
-
+        
+        // list of copyid's used for blobcopy API.
+        // will be required if want to cancel copy.
+        static List<BlobCopyData> blobCopyDataList = new List<BlobCopyData>();
+        
         static string GetArgument(string[] args, int i)
         {
             if (i < args.Length)
@@ -586,6 +606,7 @@ namespace azurecopycommand
                 //currently sequentially.
                 var sourceBlobList = GetSourceBlobList(inputHandler);
 
+
                 foreach (var blob in sourceBlobList)
                 {
                     var fileName = "";
@@ -662,7 +683,10 @@ namespace azurecopycommand
                     }
                     else
                     {
-                        AzureBlobCopyHandler.StartCopy(blob, _outputUrl, _destinationBlobType);
+                        Console.WriteLine("Copy blob " + blob.DisplayName);
+                        var bcd = AzureBlobCopyHandler.StartCopy(blob, _outputUrl, _destinationBlobType);
+                        Console.WriteLine("BlobCopy ID " + bcd.CopyID);
+                        blobCopyDataList.Add(bcd);
                     }
                 }
 
@@ -819,6 +843,45 @@ namespace azurecopycommand
             return fullPath;
         }
 
+        private static bool ConsoleCtrlCheck(CtrlTypes ctrlType)
+        {
+            // abort all blobcopy operations.
+            if (blobCopyDataList.Any())
+            {
+                try
+                {
+                    Console.WriteLine("Aborting blob copy operations");
+
+                    var taskList = new List<Task>();
+                    // abort all.
+                    foreach (var bcd in blobCopyDataList)
+                    {
+                        try
+                        {
+                            var t = bcd.Blob.AbortCopyAsync(bcd.CopyID);
+                            taskList.Add(t);
+
+                        }
+                        catch(Exception ex)
+                        {
+                            Console.WriteLine("inner exception");
+                        }
+                    }
+
+                    Task.WaitAll(taskList.ToArray());
+                }
+                catch(Exception ex)
+                {
+                    Console.WriteLine("Unable to abort copying. Possibly completed already");
+                    Environment.Exit(1);
+                }
+            }
+
+            Environment.Exit(0);
+
+            return true;
+        }
+
         static void Main(string[] args)
         {
             ParseArguments(args);
@@ -827,6 +890,8 @@ namespace azurecopycommand
 
             try
             {
+                SetConsoleCtrlHandler(new HandlerRoutine(ConsoleCtrlCheck), true);
+
                 sw.Start();
                 Process(DebugMode);
                 sw.Stop();

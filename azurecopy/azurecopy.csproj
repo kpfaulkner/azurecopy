@@ -162,7 +162,7 @@
     <Compile Include="Helpers\DropboxHelper.cs" />
     <Compile Include="Handlers\RackspaceHandler.cs" />
     <Compile Include="Datatypes\Blob.cs" />
-    <Compile Include="AzureBlobCopyHandler.cs" />
+    <Compile Include="Handlers\AzureBlobCopyHandler.cs" />
     <Compile Include="Datatypes\BlobBase.cs" />
     <Compile Include="Handlers\DropboxHandler.cs" />
     <Compile Include="Handlers\SharepointHandler.cs" />

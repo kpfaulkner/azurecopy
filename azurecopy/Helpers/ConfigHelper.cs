@@ -174,7 +174,7 @@ namespace azurecopy.Helpers
             AmDownloading = GetConfigValue<bool>("AmDownloading", false);
             UseBlobCopy = GetConfigValue<bool>("UseBlobCopy", false);
             ListContainer = GetConfigValue<bool>("ListContainer", false);
-            MonitorBlobCopy = GetConfigValue<bool>("MonitorBlobCopy", false);
+            MonitorBlobCopy = GetConfigValue<bool>("MonitorBlobCopy", true); // monitor by default.
             ParallelFactor = GetConfigValue<int>("ParallelFactor", 1);
             ChunkSizeInMB = GetConfigValue<int>("ChunkSizeInMB", 2);
 

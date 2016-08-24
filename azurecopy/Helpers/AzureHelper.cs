@@ -191,7 +191,6 @@ namespace azurecopy.Utils
         {
             var client = AzureHelper.GetSourceCloudBlobClient(containerUrl);
             var containerName = AzureHelper.GetContainerFromUrl(containerUrl);
-
             var container = client.GetContainerReference(containerName);
             var blobList = container.ListBlobs( useFlatBlobListing:true, blobListingDetails:BlobListingDetails.Copy);
             return blobList;
