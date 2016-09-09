@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <link href='https://fonts.googleapis.com/css?family=Chivo:900' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-dark.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <title>Azurecopy by kpfaulkner</title>
+  </head>
+
+  <body>
+    <div id="container">
+      <div class="inner">
+
+        <header>
+          <h1>Azurecopy</h1>
+          <h2>Copy blobs between azure, s3, Onedrive, Dropbox and local storage</h2>
+        </header>
+
+        <section id="downloads" class="clearfix">
+          <a href="https://github.com/kpfaulkner/azurecopy/zipball/master" id="download-zip" class="button"><span>Download .zip</span></a>
+          <a href="https://github.com/kpfaulkner/azurecopy/tarball/master" id="download-tar-gz" class="button"><span>Download .tar.gz</span></a>
+          <a href="https://github.com/kpfaulkner/azurecopy" id="view-on-github" class="button"><span>View on GitHub</span></a>
+        </section>
+
+        <hr>
+
+        <section id="main_content">
+          <h1>
+<a id="azure-copy" class="anchor" href="#azure-copy" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Azure Copy</h1>
+
+<p>Allows easy copying between S3, Azure, Dropbox, Sharepoint Online, OneDrive and local filesystem. </p>
+
+<h2>
+<a id="configuration" class="anchor" href="#configuration" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Configuration</h2>
+
+<p>To access each cloud provider various keys/passwords will needed to be added to the azurecopy.exe.config (or app.config if you're coding your own). The AppSetting keys to use are:</p>
+
+<p>Azure:
+</p>
+
+<p>S3:
+
+
+</p>
+
+<p>OneDrive: (yes yes, it still says skydrive in the config).
+
+</p>
+
+<p>Dropbox:
+
+</p>
+
+<p>Sharepoint Online:
+
+</p>
+
+<p>For Azure,S3 and Sharepoint Online you simply copy the configuration values from the appropriate portal to the azurecopy.exe.config file directly. If you are unsure where to find these configuration values
+please feel free to contact me at <a href="mailto:ken.faulkner@gmail.com">ken.faulkner@gmail.com</a> and I can direct you.</p>
+
+<p>For OneDrive and Dropbox the configuration is a little more invovled.</p>
+
+<p>For OneDrive you need to issue the command:</p>
+
+<p>azurecopy -configonedrive</p>
+
+<p>and then follow the instructions. This basically involves copying a URL to a browser, accepting the OneDrive prompt saying you allow AzureCopy to access your OneDrive account and then copying part of the response 
+URL back into the command prompt. The instructions will be clearly displayed in the command prompt.</p>
+
+<p>For Dropbox you need to issue the command:</p>
+
+<p>azurecopy -configdropbox </p>
+
+<p>Again, follow the instructions and the config file will be automatically modified for you.</p>
+
+<h2>
+<a id="examples" class="anchor" href="#examples" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Examples:</h2>
+
+<p>S3 to Azure using regular copy:   azurecopy.exe -i <a href="https://mybucket.s3.amazonaws.com/myblob">https://mybucket.s3.amazonaws.com/myblob</a> -o <a href="https://myaccount.blob.core.windows.net/mycontainer">https://myaccount.blob.core.windows.net/mycontainer</a>
+S3 to Azure using blob copy api (better for local bandwidth: azurecopy.exe -i <a href="https://mybucket.s3.amazonaws.com/myblob">https://mybucket.s3.amazonaws.com/myblob</a> -o <a href="https://myaccount.blob.core.windows.net/mycontainer">https://myaccount.blob.core.windows.net/mycontainer</a> -blobcopy
+Azure to S3: azurecopy.exe -i <a href="https://myaccount.blob.core.windows.net/mycontainer/myblob">https://myaccount.blob.core.windows.net/mycontainer/myblob</a> -o <a href="https://mybucket.s3.amazonaws.com/">https://mybucket.s3.amazonaws.com/</a> 
+List contents in S3 bucket: azurecopy.exe -list <a href="https://mybucket.s3.amazonaws.com/">https://mybucket.s3.amazonaws.com/</a>
+List contents in Azure container: azurecopy.exe -list <a href="https://myaccount.blob.core.windows.net/mycontainer/">https://myaccount.blob.core.windows.net/mycontainer/</a> 
+Onedrive to local using regular copy: azurecopy.exe -i sky://temp/myfile.txt -o c:\temp\");
+Dropbox to local using regular copy: azurecopy.exe -i <a href="https://dropbox.com/temp/myfile.txt">https://dropbox.com/temp/myfile.txt</a> -o c:\temp\</p>
+
+<p>More examples will be added directly to AzureCopy which you can see by running the command:</p>
+
+<p>azurecopy -examples</p>
+        </section>
+
+        <footer>
+          Azurecopy is maintained by <a href="https://github.com/kpfaulkner">kpfaulkner</a><br>
+          This page was generated by <a href="https://pages.github.com">GitHub Pages</a>. Tactile theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.
+        </footer>
+
+        
+      </div>
+    </div>
+  </body>
+</html>
