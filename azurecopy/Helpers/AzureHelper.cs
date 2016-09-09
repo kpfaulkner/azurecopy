@@ -29,9 +29,8 @@ using Microsoft.WindowsAzure.Storage.File;
 
 namespace azurecopy.Utils
 {
-    public static class AzureHelper
+    public class AzureHelper : IAzureHelper
     {
-
         public static string AzureStorageConnectionString { get; set; }
 
         const string AzureDetection = "blob.core.windows.net";
@@ -52,18 +51,17 @@ namespace azurecopy.Utils
             TargetFileClient = null;
         }
 
-        public static CloudBlobClient GetSourceCloudBlobClient(string url)
+        public CloudBlobClient GetSourceCloudBlobClient(string url)
         {
             return GetCloudBlobClient(url, true);
         }
-
-
-        public static CloudBlobClient GetTargetCloudBlobClient(string url)
+        
+        public CloudBlobClient GetTargetCloudBlobClient(string url)
         {
             return GetCloudBlobClient(url, false);
         }
 
-        public static CloudStorageAccount GetCloudStorageAccount( string url, string accountKey, string accountName)
+        public CloudStorageAccount GetCloudStorageAccount( string url, string accountKey, string accountName)
         {
             CloudStorageAccount storageAccount;
 
@@ -79,7 +77,7 @@ namespace azurecopy.Utils
             return storageAccount;
         }
 
-        public static CloudStorageAccount GetCloudStorageAccount(string accountKey, string accountName)
+        public CloudStorageAccount GetCloudStorageAccount(string accountKey, string accountName)
         {
             CloudStorageAccount storageAccount;
 
@@ -90,7 +88,7 @@ namespace azurecopy.Utils
         }
 
 
-        public static CloudBlobClient GetCloudBlobClient(string accountName, string accountKey)
+        public CloudBlobClient GetCloudBlobClient(string accountName, string accountKey)
         {
             var storageAccount = GetCloudStorageAccount( accountKey, accountName);
             var blobClient = storageAccount.CreateCloudBlobClient();
@@ -103,7 +101,7 @@ namespace azurecopy.Utils
             return blobClient;
         }
 
-        public static CloudBlobClient GetCloudBlobClient(string url, bool isSrc, string accountKey = null)
+        public CloudBlobClient GetCloudBlobClient(string url, bool isSrc, string accountKey = null)
         {
             CloudBlobClient blobClient = null;
 
@@ -147,7 +145,7 @@ namespace azurecopy.Utils
             return blobClient;
         }
 
-        public static CloudFileClient GetCloudFileClient(string url, bool isSrc)
+        public CloudFileClient GetCloudFileClient(string url, bool isSrc)
         {
             CloudFileClient fileClient = null;
 
@@ -182,12 +180,12 @@ namespace azurecopy.Utils
             return fileClient;
         }
 
-        public static bool IsDevUrl(string url)
+        public bool IsDevUrl(string url)
         {
             return (url.Contains(DevAzureDetection));
         }
 
-        public static IEnumerable<IListBlobItem> ListBlobsInContainer(string containerUrl)
+        public IEnumerable<IListBlobItem> ListBlobsInContainer(string containerUrl)
         {
             var client = AzureHelper.GetSourceCloudBlobClient(containerUrl);
             var containerName = AzureHelper.GetContainerFromUrl(containerUrl);
@@ -196,7 +194,7 @@ namespace azurecopy.Utils
             return blobList;
         }
 
-        public static List<string> ListBlobsInContainer(string containerUrl, CopyStatus copyStatusFilter)
+        public List<string> ListBlobsInContainer(string containerUrl, CopyStatus copyStatusFilter)
         {   
             var blobList = ListBlobsInContainer(containerUrl);
 
@@ -207,13 +205,13 @@ namespace azurecopy.Utils
         // currently just use the virtual directory code to get the blob url.
         // same concept, basically everything after the container.
         // This will obviously need to change.
-        public static string GetBlobFromUrl(string blobUrl)
+        public string GetBlobFromUrl(string blobUrl)
         {
             var blobName = GetVirtualDirectoryFromUrl(blobUrl);
             return blobName;
         }
 
-        public static string GetAccountNameFromUrl(string blobUrl)
+        public string GetAccountNameFromUrl(string blobUrl)
         {
             var account = "";
 
@@ -226,17 +224,17 @@ namespace azurecopy.Utils
             return account;
         }
 
-        public static bool MatchHandler(string url)
+        public bool MatchHandler(string url)
         {
             return url.Contains(AzureDetection) || url.Contains(DevAzureDetection);
         }
 
-        public static bool MatchFileHandler(string url)
+        public bool MatchFileHandler(string url)
         {
             return url.Contains(AzureFileDetection);
         }
 
-        public static BasicBlobContainer AzureContainerToBasicBlobContainer(CloudBlobContainer container)
+        public BasicBlobContainer AzureContainerToBasicBlobContainer(CloudBlobContainer container)
         {
             var basicBlob = new BasicBlobContainer()
             {
@@ -249,7 +247,7 @@ namespace azurecopy.Utils
             return basicBlob;
         }
 
-        public static string GetDisplayName(string fullBlobName)
+        public string GetDisplayName(string fullBlobName)
         {
             var sp = fullBlobName.Split('/');
             var displayName = sp[sp.Length - 1];
@@ -259,7 +257,7 @@ namespace azurecopy.Utils
         //// Want to get everything after the container.
         //// eg if we have container name "mycontainer", and the blobUrl passed in is
         //// "http://xxxx/mycontainer/dira/dirb" then we need to return "dira/dirb"
-        public static string GetVirtualDirectoryFromUrl(string blobUrl)
+        public string GetVirtualDirectoryFromUrl(string blobUrl)
         {
             var url = new Uri(blobUrl);
             string virtualDir = "";
@@ -284,7 +282,7 @@ namespace azurecopy.Utils
         // if the url ends with a /  then assuming the url doesn't mention the blob.
         // blobUrl can contain multiple levels of / due to virtual directories 
         // may be referenced.
-        public static string GetContainerFromUrl(string blobUrl, bool assumeNoBlob = false)
+        public string GetContainerFromUrl(string blobUrl, bool assumeNoBlob = false)
         { 
             var url = new Uri(blobUrl);
             string container = "";  // there may be no container.

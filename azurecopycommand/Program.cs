@@ -860,7 +860,6 @@ namespace azurecopycommand
                         {
                             var t = bcd.Blob.AbortCopyAsync(bcd.CopyID);
                             taskList.Add(t);
-
                         }
                         catch(Exception ex)
                         {

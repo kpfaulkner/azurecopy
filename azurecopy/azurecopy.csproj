@@ -82,6 +82,10 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Autofac, Version=4.1.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <HintPath>..\packages\Autofac.4.1.0\lib\net45\Autofac.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="AWSSDK, Version=2.3.36.0, Culture=neutral, PublicKeyToken=9f476d3089b52be3, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\AWSSDK.2.3.36.0\lib\net45\AWSSDK.dll</HintPath>
@@ -158,6 +162,8 @@
     <Compile Include="Exceptions\CloudReadException.cs" />
     <Compile Include="Handlers\AzureFileHandler.cs" />
     <Compile Include="Handlers\AzureHandler.cs" />
+    <Compile Include="Helpers\IAzureHelper.cs" />
+    <Compile Include="Helpers\IS3Helper.cs" />
     <Compile Include="Helpers\SharepointHelper.cs" />
     <Compile Include="Helpers\DropboxHelper.cs" />
     <Compile Include="Handlers\RackspaceHandler.cs" />
