@@ -606,19 +606,22 @@ namespace azurecopycommand
                 //currently sequentially.
                 var sourceBlobList = GetSourceBlobList(inputHandler);
 
-
-                foreach (var blob in sourceBlobList)
+                if (ConfigHelper.UseBlobCopy)
                 {
-                    var fileName = "";
-                    if (ConfigHelper.AmDownloading)
+                    AzureBlobCopyHandler.StartCopyList(sourceBlobList, _outputUrl, _destinationBlobType);
+                }
+                else
+                {
+                    foreach (var blob in sourceBlobList)
                     {
-                        fileName = GenerateFileName(ConfigHelper.DownloadDirectory, blob.Name);
-                    }
-                        
-                    //var outputUrl = GenerateOutputUrl(_outputUrl, url);
+                        var fileName = "";
+                        if (ConfigHelper.AmDownloading)
+                        {
+                            fileName = GenerateFileName(ConfigHelper.DownloadDirectory, blob.Name);
+                        }
 
-                    if (!ConfigHelper.UseBlobCopy)
-                    {
+                        //var outputUrl = GenerateOutputUrl(_outputUrl, url);
+
                         var sourceContainer = inputHandler.GetContainerNameFromUrl(_inputUrl);
 
                         // read blob
@@ -662,7 +665,7 @@ namespace azurecopycommand
                             {
                                 // if destBlobName is empty then take it from blob.
                                 // else it appears we were told the name to use so leave it.
-                                if (string.IsNullOrWhiteSpace( destBlobName))
+                                if (string.IsNullOrWhiteSpace(destBlobName))
                                 {
                                     destBlobName = inputBlob.Name;
                                 }
@@ -681,19 +684,6 @@ namespace azurecopycommand
 
                         outputHandler.WriteBlob(destContainerName, destBlobName, inputBlob, ConfigHelper.ParallelFactor, ConfigHelper.ChunkSizeInMB);
                     }
-                    else
-                    {
-                        Console.WriteLine("Copy blob " + blob.DisplayName);
-                        var bcd = AzureBlobCopyHandler.StartCopy(blob, _outputUrl, _destinationBlobType);
-                        Console.WriteLine("BlobCopy ID " + bcd.CopyID);
-                        blobCopyDataList.Add(bcd);
-                    }
-                }
-
-                // if blob copy and monitoring
-                if (ConfigHelper.UseBlobCopy && ConfigHelper.MonitorBlobCopy)
-                {
-                    AzureBlobCopyHandler.MonitorBlobCopy(_outputUrl);
                 }
             }
         }

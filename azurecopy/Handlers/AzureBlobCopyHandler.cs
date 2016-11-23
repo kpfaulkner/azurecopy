@@ -33,6 +33,19 @@ namespace azurecopy
     
     public class AzureBlobCopyHandler
     {
+        // used to tweak blobcopy timeouts.
+        static int maxExecutionTimeInMins;
+        static int maxServerTimeoutInMins;
+        static int blobCopyBatchSize;
+
+        static AzureBlobCopyHandler()
+        {
+            maxExecutionTimeInMins = ConfigHelper.MaxExecutionTimeInMins;
+            maxServerTimeoutInMins = ConfigHelper.MaxServerTimeoutInMins;
+            blobCopyBatchSize = ConfigHelper.BlobCopyBatchSize;
+
+        }
+
         /// <summary>
         /// Makes a usable URL for a blob. This will need to handle security on the source blob.
         /// Each cloud provider is different.
@@ -84,11 +97,58 @@ namespace azurecopy
 
         }
 
+        /// <summary>
+        /// Start copying all the blobs using BlobCopy API.
+        /// Will break it into batches.
+        /// </summary>
+        /// <param name="origBlobList"></param>
+        /// <param name="destinationUrl"></param>
+        /// <param name="destBlobType"></param>
+        public static void StartCopyList(IEnumerable<BasicBlobContainer> origBlobList, string destinationUrl, DestinationBlobType destBlobType)
+        {
+            var blobCopyDataList = new List<BlobCopyData>();
+
+            var count = 0;
+
+            // break into batches
+            foreach (var blob in origBlobList)
+            {
+                Console.WriteLine("Copy blob " + blob.DisplayName);
+                var bcd = AzureBlobCopyHandler.StartCopy(blob, destinationUrl, destBlobType);
+                Console.WriteLine("BlobCopy ID " + bcd.CopyID);
+                blobCopyDataList.Add(bcd);
+
+                count++;
+
+                if (count > blobCopyBatchSize)
+                {
+                    // if blob copy and monitoring
+                    if (ConfigHelper.MonitorBlobCopy)
+                    {
+                        AzureBlobCopyHandler.MonitorBlobCopy(destinationUrl);
+                    }
+
+                    count = 0;
+                }
+
+            }
+
+            if (count > 0)
+            {
+                // if blob copy and monitoring
+                if (ConfigHelper.MonitorBlobCopy)
+                {
+                    AzureBlobCopyHandler.MonitorBlobCopy(destinationUrl);
+                }
+            }            
+        }
+
         // have destination location.
         // have original blob name and prefix
         // new name should be destination name + (blob.name - blob.prefix) 
         public static BlobCopyData StartCopy(BasicBlobContainer origBlob, string DestinationUrl, DestinationBlobType destBlobType)
         {
+            
             var client = AzureHelper.GetTargetCloudBlobClient(DestinationUrl);
             var opt = client.GetServiceProperties();
 
@@ -141,11 +201,26 @@ namespace azurecopy
 
             if (blob != null)
             {
-                // return copyID incase user wants to kill the process later.
-                var copyID = blob.StartCopyFromBlob(new Uri(url));
+                try
+                {
+                    // crazy large values, want to try and debug an issue.
+                    var brOptions = new BlobRequestOptions();
+                    brOptions.MaximumExecutionTime = new TimeSpan(0, maxExecutionTimeInMins, 0);
+                    brOptions.ServerTimeout = new TimeSpan(0, maxServerTimeoutInMins, 0);
 
-                var bcd = new BlobCopyData { CopyID = copyID, Blob = blob };
-                return bcd;
+                    // return copyID incase user wants to kill the process later.
+                    var copyID = blob.StartCopyFromBlob(new Uri(url), options: brOptions);
+
+                    var bcd = new BlobCopyData { CopyID = copyID, Blob = blob };
+                    return bcd;
+                }
+                catch(Exception ex)
+                {
+                    Console.WriteLine("StartCopyFromBlob error msg " + ex.Message);
+                    Console.WriteLine("StartCopyFromBlob error stack " + ex.StackTrace);
+                    throw;
+
+                }
             }
             else
             {

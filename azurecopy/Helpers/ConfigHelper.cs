@@ -84,6 +84,12 @@ namespace azurecopy.Helpers
         // we want a time limit on how long that signature is valid
         public static int SharedAccessSignatureDurationInSeconds { get; set; }
 
+
+        // blobcopy timings
+        public static int MaxExecutionTimeInMins { get; set; }
+        public static int MaxServerTimeoutInMins { get; set; }
+        public static int BlobCopyBatchSize { get; set; }
+
         static ConfigHelper()
         {
             ReadConfig();
@@ -195,9 +201,14 @@ namespace azurecopy.Helpers
 
             // SAS timeout
             SharedAccessSignatureDurationInSeconds = GetConfigValue<int>("SharedAccessSignatureDurationInSeconds", 600);
-        }
 
-        public static void SaveConfig()
+            // blobcopy timeout
+            MaxExecutionTimeInMins = GetConfigValue<int>("MaxExecutionTimeInMins", 60);
+            MaxServerTimeoutInMins = GetConfigValue<int>("MaxServerTimeoutInMins", 60);
+            BlobCopyBatchSize = GetConfigValue<int>("BlobCopyBatchSize", 100);
+    }
+
+    public static void SaveConfig()
         {
             Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
             SetConfigValue(config, "AzureAccountKey",AzureAccountKey);
@@ -233,8 +244,11 @@ namespace azurecopy.Helpers
             SetConfigValue(config, "AWSRegion", AWSRegion.ToString());
             SetConfigValue(config, "SrcAWSRegion", SrcAWSRegion.ToString());
             SetConfigValue(config, "TargetAWSRegion", TargetAWSRegion.ToString());
-            
 
+            SetConfigValue(config, "MaxExecutionTimeInMins", MaxExecutionTimeInMins.ToString());
+            SetConfigValue(config, "MaxServerTimeoutInMins", MaxServerTimeoutInMins.ToString());
+            SetConfigValue(config, "BlobCopyBatchSize", BlobCopyBatchSize.ToString());
+            
             config.Save(ConfigurationSaveMode.Modified);
             ConfigurationManager.RefreshSection("appSettings");
         }
