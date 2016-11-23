@@ -122,12 +122,13 @@ namespace azurecopy
 
                 if (count > blobCopyBatchSize)
                 {
+                    Console.WriteLine("New Batch");
                     // if blob copy and monitoring
                     if (ConfigHelper.MonitorBlobCopy)
                     {
                         AzureBlobCopyHandler.MonitorBlobCopy(destinationUrl);
                     }
-
+                    
                     count = 0;
                 }
 
@@ -138,6 +139,7 @@ namespace azurecopy
                 // if blob copy and monitoring
                 if (ConfigHelper.MonitorBlobCopy)
                 {
+                    Console.WriteLine("New Batch");
                     AzureBlobCopyHandler.MonitorBlobCopy(destinationUrl);
                 }
             }            
