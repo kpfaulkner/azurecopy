@@ -37,6 +37,9 @@ namespace azurecopy.Utils
             // get stream to data.
             if (!string.IsNullOrEmpty(fileName))
             {
+                string directory = Path.GetDirectoryName(fileName);
+                if (!Directory.Exists(directory))  Directory.CreateDirectory(directory);
+
                 stream = new FileStream(fileName, FileMode.Create);
             }
             else
