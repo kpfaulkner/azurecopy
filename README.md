@@ -49,18 +49,37 @@ azurecopy -configdropbox
 Again, follow the instructions and the config file will be automatically modified for you.
 
 
-Examples:
+### Examples:
 
 
-S3 to Azure using regular copy:   azurecopy.exe -i https://mybucket.s3.amazonaws.com/myblob -o https://myaccount.blob.core.windows.net/mycontainer
-S3 to Azure using blob copy api (better for local bandwidth: azurecopy.exe -i https://mybucket.s3.amazonaws.com/myblob -o https://myaccount.blob.core.windows.net/mycontainer -blobcopy
-Azure to S3: azurecopy.exe -i https://myaccount.blob.core.windows.net/mycontainer/myblob -o https://mybucket.s3.amazonaws.com/ 
-List contents in S3 bucket: azurecopy.exe -list https://mybucket.s3.amazonaws.com/
-List contents in Azure container: azurecopy.exe -list https://myaccount.blob.core.windows.net/mycontainer/ 
-Onedrive to local using regular copy: azurecopy.exe -i sky://temp/myfile.txt -o c:\\temp\\");
-Dropbox to local using regular copy: azurecopy.exe -i https://dropbox.com/temp/myfile.txt -o c:\\temp\\
+- S3 to Azure using regular copy:   
 
-More examples will be added directly to AzureCopy which you can see by running the command:
+`azurecopy.exe -i https://mybucket.s3.amazonaws.com/myblob -o https://myaccount.blob.core.windows.net/mycontainer`
 
-azurecopy -examples
+- S3 to Azure using blob copy api (better for local bandwidth:
 
+`azurecopy.exe -i https://mybucket.s3.amazonaws.com/myblob -o https://myaccount.blob.core.windows.net/mycontainer -blobcopy`
+
+- Azure to S3: 
+
+`azurecopy.exe -i https://myaccount.blob.core.windows.net/mycontainer/myblob -o https://mybucket.s3.amazonaws.com/`
+
+- List contents in S3 bucket: 
+
+`azurecopy.exe -list https://mybucket.s3.amazonaws.com/`
+
+- List contents in Azure container: 
+
+`azurecopy.exe -list https://myaccount.blob.core.windows.net/mycontainer/`
+
+- Onedrive to local using regular copy: 
+
+`azurecopy.exe -i sky://temp/myfile.txt -o c:\\temp\\"`
+
+- Dropbox to local using regular copy: 
+
+`azurecopy.exe -i https://dropbox.com/temp/myfile.txt -o c:\\temp\\`
+
+- More examples will be added directly to AzureCopy which you can see by running the command:
+
+`azurecopy -examples`
