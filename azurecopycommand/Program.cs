@@ -620,8 +620,6 @@ namespace azurecopycommand
                             fileName = GenerateFileName(ConfigHelper.DownloadDirectory, blob.Name);
                         }
 
-                        //var outputUrl = GenerateOutputUrl(_outputUrl, url);
-
                         var sourceContainer = inputHandler.GetContainerNameFromUrl(_inputUrl);
 
                         // read blob
@@ -675,12 +673,6 @@ namespace azurecopycommand
                                 }
                             }
                         }
-
-                        // if no destination blob name given, then just use the original
-                        //if (string.IsNullOrWhiteSpace(destBlobName))
-                        //{
-                        //    destBlobName = inputBlob.DisplayName;
-                        //}
 
                         outputHandler.WriteBlob(destContainerName, destBlobName, inputBlob, ConfigHelper.ParallelFactor, ConfigHelper.ChunkSizeInMB);
                     }
