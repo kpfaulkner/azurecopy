@@ -683,6 +683,11 @@ namespace azurecopycommand
                         //}
 
                         outputHandler.WriteBlob(destContainerName, destBlobName, inputBlob, ConfigHelper.ParallelFactor, ConfigHelper.ChunkSizeInMB);
+
+                        if (inputBlob.BlobSavedToFile)
+                        {
+                            if (File.Exists(inputBlob.FilePath)) File.Delete(inputBlob.FilePath);
+                        }
                     }
                 }
             }
