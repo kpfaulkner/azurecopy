@@ -293,7 +293,7 @@ namespace azurecopycommand
                             break;
 
                         case MonitorBlobCopyFlag:
-                            ConfigHelper.MonitorBlobCopy = true;
+                            ConfigHelper.MonitorBlobCopy = false;
                             break;
 
                         case BlobCopyFlag:
