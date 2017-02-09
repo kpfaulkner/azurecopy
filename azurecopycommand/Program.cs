@@ -594,7 +594,7 @@ namespace azurecopycommand
 
 
 
-        static void DoNormalCopy()
+        static void DoNormalCopy(bool debugMode)
         {
 
             IBlobHandler inputHandler = GetHandler(_inputUrlType, _inputUrl);
@@ -608,7 +608,7 @@ namespace azurecopycommand
 
                 if (ConfigHelper.UseBlobCopy)
                 {
-                    AzureBlobCopyHandler.StartCopyList(sourceBlobList, _outputUrl, _destinationBlobType);
+                    AzureBlobCopyHandler.StartCopyList(sourceBlobList, _outputUrl, _destinationBlobType, debugMode);
                 }
                 else
                 {
@@ -792,7 +792,7 @@ namespace azurecopycommand
 
                 case Action.NormalCopy:
                 case Action.BlobCopy:
-                    DoNormalCopy();
+                    DoNormalCopy(debugMode);
                     break;
 
                 default:

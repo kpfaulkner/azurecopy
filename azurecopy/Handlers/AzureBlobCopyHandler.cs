@@ -104,7 +104,7 @@ namespace azurecopy
         /// <param name="origBlobList"></param>
         /// <param name="destinationUrl"></param>
         /// <param name="destBlobType"></param>
-        public static void StartCopyList(IEnumerable<BasicBlobContainer> origBlobList, string destinationUrl, DestinationBlobType destBlobType)
+        public static void StartCopyList(IEnumerable<BasicBlobContainer> origBlobList, string destinationUrl, DestinationBlobType destBlobType, bool debugMode)
         {
             var blobCopyDataList = new List<BlobCopyData>();
 
@@ -113,10 +113,21 @@ namespace azurecopy
             // break into batches
             foreach (var blob in origBlobList)
             {
-                Console.WriteLine("Copy blob " + blob.DisplayName);
-                var bcd = AzureBlobCopyHandler.StartCopy(blob, destinationUrl, destBlobType);
-                Console.WriteLine("BlobCopy ID " + bcd.CopyID);
-                blobCopyDataList.Add(bcd);
+                try
+                {
+                    Console.WriteLine("Copy blob " + blob.DisplayName);
+                    var bcd = AzureBlobCopyHandler.StartCopy(blob, destinationUrl, destBlobType);
+                    Console.WriteLine("BlobCopy ID " + bcd.CopyID);
+                    blobCopyDataList.Add(bcd);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Unable to start copying " + blob.DisplayName);
+                    if (debugMode)
+                    {
+                        Console.WriteLine("Exception " + ex.ToString());
+                    }
+                }
 
                 count++;
 
