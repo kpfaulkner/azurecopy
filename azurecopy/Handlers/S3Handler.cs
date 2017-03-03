@@ -101,6 +101,19 @@ namespace azurecopy
             return string.Join("/",sp.Skip(4));
         }
 
+        /// <summary>
+        /// Does blob exists in container
+        /// </summary>
+        /// <param name="containerName"></param>
+        /// <param name="blobName"></param>
+        /// <returns></returns>
+        public bool DoesBlobExists(string containerName, string blobName)
+        {
+            var exists = false;
+
+            return exists;
+        }
+
         // override configuration. 
         public void OverrideConfiguration( Dictionary<string,string> configuration)
         {

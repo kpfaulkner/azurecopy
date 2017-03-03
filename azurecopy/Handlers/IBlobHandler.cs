@@ -34,6 +34,14 @@ namespace azurecopy
     public interface IBlobHandler
     {
         /// <summary>
+        /// Does blob exists in container
+        /// </summary>
+        /// <param name="containerName"></param>
+        /// <param name="blobName"></param>
+        /// <returns></returns>
+        bool DoesBlobExists(string containerName, string blobName);
+       
+        /// <summary>
         /// Make container/directory (depending on platform).
         /// </summary>
         /// <param name="container"></param>

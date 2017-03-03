@@ -33,6 +33,19 @@ namespace azurecopy
         }
 
         /// <summary>
+        /// Does blob exists in container
+        /// </summary>
+        /// <param name="containerName"></param>
+        /// <param name="blobName"></param>
+        /// <returns></returns>
+        public bool DoesBlobExists(string containerName, string blobName)
+        {
+            var exists = false;
+
+            return exists;
+        }
+
+        /// <summary>
         /// Move blob
         /// </summary>
         /// <param name="originContainer"></param>

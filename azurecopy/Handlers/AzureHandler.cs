@@ -70,6 +70,30 @@ namespace azurecopy
         }
 
         /// <summary>
+        /// Does blob exists in container
+        /// </summary>
+        /// <param name="containerName"></param>
+        /// <param name="blobName"></param>
+        /// <returns></returns>
+        public bool DoesBlobExists(string containerName, string blobName)
+        {
+            var exists = false;
+            var container = client.GetContainerReference(containerName);
+            try
+            {
+                var blobRef = container.GetBlobReferenceFromServer(blobName);
+                exists = blobRef.Exists();
+            }
+            catch( Exception ex)
+            {
+                // so exists method throws an exception when blob doesn't exist. Even though its supposed to return a bool indicating?
+                // DUH!
+            }
+
+            return exists;
+        }
+
+        /// <summary>
         /// Make new Azure container. 
         /// Assumption being last part of url is the new container.
         /// </summary>

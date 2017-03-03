@@ -85,6 +85,7 @@ namespace azurecopycommand
                     -mc <full url> : Make container/folder/directory.
                     -configonedrive : Steps through configuring of OneDrive and saves config file with new data.
                     -configdropbox : Steps through configuring of Dropbox and saves config file with new data.
+                    -skip: Skip blob if blob with same name exists at destination. Currently only valid when target is Azure Blob Storage.
            
                 Note: Remember when local file system is destination/output do NOT end the directory with a \
                       When destination is Onedrive, use the url format  one://directory/file";
@@ -107,6 +108,7 @@ namespace azurecopycommand
         const string RetryAttemptDelayInSecondsFlag = "-rd";
         const string MaxRetryAttemptsFlag = "-mr";
         const string MakeContainerFlag = "-mc";
+        const string SkipFlag = "-skip";
 
         // only makes sense for azure destination.
         const string DestBlobType = "-destblobtype";
@@ -160,6 +162,7 @@ namespace azurecopycommand
         static bool _listContainer = false;
         static bool _makeContainer = false;
         static bool DebugMode = false;
+        static bool skip = false;
 
         // destination blob...  can only assign if source is NOT azure and destination IS azure.
         static DestinationBlobType _destinationBlobType = DestinationBlobType.Unknown;
@@ -333,6 +336,9 @@ namespace azurecopycommand
 
                             break;
 
+                      case SkipFlag:
+                            skip = true;
+                            break;
 
                         case SharepointUsernameFlag:
                         case SharepointUsernameShortFlag:
@@ -600,6 +606,13 @@ namespace azurecopycommand
             IBlobHandler inputHandler = GetHandler(_inputUrlType, _inputUrl);
             IBlobHandler outputHandler = GetHandler(_outputUrlType, _outputUrl);
 
+            // can only use skip when destination is Azure (simply because I haven't coded other options yet).
+            if (_outputUrlType != UrlType.Azure && skip)
+            {
+                Console.WriteLine("-skip option only valid when destination is Azure blob storage. This will change soon.");
+                return;
+            }
+
             if (inputHandler != null && outputHandler != null)
             {
                 // handle multiple files.
@@ -621,10 +634,58 @@ namespace azurecopycommand
                         }
 
                         var sourceContainer = inputHandler.GetContainerNameFromUrl(_inputUrl);
+                        
 
+                        // write blob
+                        var destContainerName = outputHandler.GetContainerNameFromUrl(_outputUrl);
+                        var destBlobName = outputHandler.GetBlobNameFromUrl(_outputUrl);
+
+                        // take the inputBlob name and remove the default prefix.
+
+                        if (!string.IsNullOrEmpty(blob.BlobPrefix))
+                        {
+                            destBlobName += blob.Name.Substring(blob.BlobPrefix.Length);
+                        }
+                        else
+                        {
+                            // if destBlobName ends with / then its a prefix.
+                            // if it does not, then its an absolute blob name (ie when the blob was copied then it was also being renamed).
+                            if (destBlobName.EndsWith("/"))
+                            {
+                                destBlobName += blob.Name;
+                            }
+                            else
+                            {
+                                // if destBlobName is empty then take it from blob.
+                                // else it appears we were told the name to use so leave it.
+                                if (string.IsNullOrWhiteSpace(destBlobName))
+                                {
+                                    destBlobName = blob.Name;
+                                }
+                                else
+                                {
+                                    // leave it.
+                                }
+                            }
+                        }
+
+                        if (skip)
+                        {
+                            // check if destination blob exists.
+                            // if it does, then dont even bother reading the blob and just continue to the next one.
+
+                            var alreadyExists = outputHandler.DoesBlobExists(destContainerName, destBlobName);
+                            if (alreadyExists)
+                            {
+                                Console.WriteLine("Skipping " + blob.Url);
+                                continue;
+                            }
+                        }
+
+                        Console.WriteLine(string.Format("Copying blob to {0}", _outputUrl));
+                        
                         // read blob
                         var inputBlob = inputHandler.ReadBlob(sourceContainer, blob.Name, fileName);
-
                         // if blob is marked with type "Unknown" then set it to what was passed in on command line.
                         // if nothing was passed in, then default to block?
                         if (inputBlob.BlobType == DestinationBlobType.Unknown)
@@ -636,41 +697,6 @@ namespace azurecopycommand
                             else
                             {
                                 inputBlob.BlobType = DestinationBlobType.Block;
-                            }
-                        }
-
-                        Console.WriteLine(string.Format("Copying blob to {0}", _outputUrl));
-
-                        // write blob
-                        var destContainerName = outputHandler.GetContainerNameFromUrl(_outputUrl);
-                        var destBlobName = outputHandler.GetBlobNameFromUrl(_outputUrl);
-
-                        // take the inputBlob name and remove the default prefix.
-
-                        if (!string.IsNullOrEmpty(blob.BlobPrefix))
-                        {
-                            destBlobName += inputBlob.Name.Substring(blob.BlobPrefix.Length);
-                        }
-                        else
-                        {
-                            // if destBlobName ends with / then its a prefix.
-                            // if it does not, then its an absolute blob name (ie when the blob was copied then it was also being renamed).
-                            if (destBlobName.EndsWith("/"))
-                            {
-                                destBlobName += inputBlob.Name;
-                            }
-                            else
-                            {
-                                // if destBlobName is empty then take it from blob.
-                                // else it appears we were told the name to use so leave it.
-                                if (string.IsNullOrWhiteSpace(destBlobName))
-                                {
-                                    destBlobName = inputBlob.Name;
-                                }
-                                else
-                                {
-                                    // leave it.
-                                }
                             }
                         }
 
