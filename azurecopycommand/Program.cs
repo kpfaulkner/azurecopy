@@ -85,7 +85,7 @@ namespace azurecopycommand
                     -mc <full url> : Make container/folder/directory.
                     -configonedrive : Steps through configuring of OneDrive and saves config file with new data.
                     -configdropbox : Steps through configuring of Dropbox and saves config file with new data.
-                    -skip: Skip blob if blob with same name exists at destination. Currently only valid when target is Azure Blob Storage.
+                    -skip: Skip blob if blob with same name exists at destination. Currently only valid when target is Azure Blob Storage or Dropbox.
            
                 Note: Remember when local file system is destination/output do NOT end the directory with a \
                       When destination is Onedrive, use the url format  one://directory/file";
@@ -607,9 +607,9 @@ namespace azurecopycommand
             IBlobHandler outputHandler = GetHandler(_outputUrlType, _outputUrl);
 
             // can only use skip when destination is Azure (simply because I haven't coded other options yet).
-            if (_outputUrlType != UrlType.Azure && skip)
+            if ( !(_outputUrlType == UrlType.Azure || _outputUrlType == UrlType.Dropbox) && skip)
             {
-                Console.WriteLine("-skip option only valid when destination is Azure blob storage. This will change soon.");
+                Console.WriteLine("-skip option only valid when destination is Azure blob storage or Dropbox. This will change soon.");
                 return;
             }
 
@@ -621,7 +621,7 @@ namespace azurecopycommand
 
                 if (ConfigHelper.UseBlobCopy)
                 {
-                    AzureBlobCopyHandler.StartCopyList(sourceBlobList, _outputUrl, _destinationBlobType, debugMode);
+                    AzureBlobCopyHandler.StartCopyList(sourceBlobList, _outputUrl, _destinationBlobType, debugMode, skip);
                 }
                 else
                 {

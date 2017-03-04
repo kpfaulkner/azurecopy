@@ -104,7 +104,7 @@ namespace azurecopy
         /// <param name="origBlobList"></param>
         /// <param name="destinationUrl"></param>
         /// <param name="destBlobType"></param>
-        public static void StartCopyList(IEnumerable<BasicBlobContainer> origBlobList, string destinationUrl, DestinationBlobType destBlobType, bool debugMode)
+        public static void StartCopyList(IEnumerable<BasicBlobContainer> origBlobList, string destinationUrl, DestinationBlobType destBlobType, bool debugMode, bool skipIfExists)
         {
             var blobCopyDataList = new List<BlobCopyData>();
 
@@ -116,9 +116,12 @@ namespace azurecopy
                 try
                 {
                     Console.WriteLine("Copy blob " + blob.DisplayName);
-                    var bcd = AzureBlobCopyHandler.StartCopy(blob, destinationUrl, destBlobType);
-                    Console.WriteLine("BlobCopy ID " + bcd.CopyID);
-                    blobCopyDataList.Add(bcd);
+                    var bcd = AzureBlobCopyHandler.StartCopy(blob, destinationUrl, destBlobType, skipIfExists);
+                    if (bcd != null)
+                    {
+                        Console.WriteLine("BlobCopy ID " + bcd.CopyID);
+                        blobCopyDataList.Add(bcd);
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -159,7 +162,7 @@ namespace azurecopy
         // have destination location.
         // have original blob name and prefix
         // new name should be destination name + (blob.name - blob.prefix) 
-        public static BlobCopyData StartCopy(BasicBlobContainer origBlob, string DestinationUrl, DestinationBlobType destBlobType)
+        public static BlobCopyData StartCopy(BasicBlobContainer origBlob, string DestinationUrl, DestinationBlobType destBlobType, bool skipIfExists)
         {
             
             var client = AzureHelper.GetTargetCloudBlobClient(DestinationUrl);
@@ -201,7 +204,7 @@ namespace azurecopy
                     blobName = string.Format("{0}/{1}", destBlobPrefix, actualBlobName);
                 }
             }
-
+            
             // include unknown for now. Unsure.
             if (destBlobType == DestinationBlobType.Block || destBlobType == DestinationBlobType.Unknown)
             {
@@ -210,6 +213,19 @@ namespace azurecopy
             } else if (destBlobType == DestinationBlobType.Page)
             {
                 blob = container.GetPageBlobReference(blobName);
+            }
+
+            if (skipIfExists)
+            {
+                try
+                {
+                    blob.Exists();
+                }
+                catch(Exception )
+                {
+                    Console.WriteLine("Skipping {0}", url);
+                    return null;
+                }
             }
 
             if (blob != null)

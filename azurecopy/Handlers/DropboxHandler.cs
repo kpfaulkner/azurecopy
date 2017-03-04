@@ -71,6 +71,18 @@ namespace azurecopy
         {
             var exists = false;
 
+            // strip filesystem slashes...   replace with web based.
+            var fullPath = GenerateFullPath(containerName, blobName);
+            try
+            {
+                Console.WriteLine("full path {0}", fullPath);
+                var metaData = client.GetMetaData(fullPath, null, false, false);
+                exists = !metaData.Is_Deleted;
+            }
+            catch(Exception )
+            {
+                exists = false;
+            }
             return exists;
         }
 
