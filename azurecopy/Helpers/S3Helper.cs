@@ -74,7 +74,8 @@ namespace azurecopy.Utils
         /// <summary>
         /// Format URL into s3.amazonaws.com/bucketname regardless of format it comes in with.
         /// Not foolproof, but should handle the common cases.
-        /// FIXME: Will need to revisit.
+        /// 
+        /// Needs to handle situations where buckets have periods in them.  eg https://foo.bar.ken.s3.amazonaws.com should get converted to https://s3.amazonaws.com/foo.bar.ken
         /// </summary>
         /// <param name="url"></param>
         /// <returns></returns>
@@ -82,14 +83,15 @@ namespace azurecopy.Utils
         {
             var uri = new Uri(url);
             var sp = uri.DnsSafeHost.Split('.');
-
+            
             // is this dumb?
-            if (sp.Length == 4)
+            if (sp.Length >= 4)
             {
-                // assuming bucketname.s3.amazonaws.com 
-                // then reformat it.
-                var newHost = string.Join(".", sp.Skip(1));
-                var newUrl = string.Format("{0}://{1}/{2}{3}", uri.Scheme , newHost ,sp[0], uri.PathAndQuery);
+                // get last 3 segments of url. should be the equivalents of 's3', 'amazonaws' and 'com'. In theory.
+                var last3Segments = sp.Skip(sp.Count() - 3);
+                var newHost = string.Join(".", last3Segments);
+                var bucket = string.Join(".", sp.Take(sp.Count() - 3));
+                var newUrl = string.Format("{0}://{1}/{2}{3}", uri.Scheme , newHost ,bucket, uri.PathAndQuery);
 
                 return newUrl;
             }
