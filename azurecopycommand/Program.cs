@@ -72,12 +72,15 @@ namespace azurecopycommand
                     -ak | -azurekey : Azure account key.
                     -s3k | -s3accesskey : S3 access key.
                     -s3sk | -s3secretkey : S3 access key secret.
+                    -s3r | -s3region : S3 region.
                     -sak | -srcazurekey : input url Azure account key.
                     -ss3k | -srcs3accesskey : input url S3 access key.
                     -ss3sk | -srcs3secretkey : input url S3 access key secret.
+                    -ss3r | -ss3region : input S3 region.
                     -tak | -targetazurekey : output url Azure account key.
                     -ts3k | -targets3accesskey : output url S3 access key.
                     -ts3sk | -targets3secretkey : output url S3 access key secret.
+                    -ts3r | -ts3region : output S3 region.
                     -spu | -SharepointUsername : Sharepoint Online username
                     -spp | -SharepointPassword : Sharepoint Online password
                     -rd : Retry delay in seconds used when communicating with cloud storage environments.
@@ -117,28 +120,34 @@ namespace azurecopycommand
         const string AzureAccountKeyShortFlag = "-ak";
         const string AWSAccessKeyIDShortFlag = "-s3k";
         const string AWSSecretAccessKeyIDShortFlag = "-s3sk";
+        const string AWSRegionShortFlag = "-s3r";
 
         const string AzureAccountKeyFlag = "-azurekey";
         const string AWSAccessKeyIDFlag = "-s3accesskey";
         const string AWSSecretAccessKeyIDFlag = "-s3secretkey";
+        const string AWSRegionFlag = "-s3region";
 
         // source access keys
         const string SourceAzureAccountKeyShortFlag = "-sak";
         const string SourceAWSAccessKeyIDShortFlag = "-ss3k";
         const string SourceAWSSecretAccessKeyIDShortFlag = "-ss3sk";
+        const string SourceAWSRegionShortFlag = "-ss3r";
 
         const string SourceAzureAccountKeyFlag = "-srcazurekey";
         const string SourceAWSAccessKeyIDFlag = "-srcs3accesskey";
         const string SourceAWSSecretAccessKeyIDFlag = "-srcs3secretkey";
+        const string SourceAWSRegionFlag = "-srcs3region";
 
         // target access keys
         const string TargetAzureAccountKeyShortFlag = "-tak";
         const string TargetAWSAccessKeyIDShortFlag = "-ts3k";
         const string TargetAWSSecretAccessKeyIDShortFlag = "-ts3sk";
+        const string TargetAWSRegionShortFlag = "-ts3r";
 
         const string TargetAzureAccountKeyFlag = "-targetazurekey";
         const string TargetAWSAccessKeyIDFlag = "-targets3accesskey";
         const string TargetAWSSecretAccessKeyIDFlag = "-targets3secretkey";
+        const string TargetAWSRegionFlag = "-targets3region";
 
         // sharepoint
         const string SharepointUsernameShortFlag = "-spu";
@@ -353,8 +362,7 @@ namespace azurecopycommand
                             var password = GetArgument(args, i);
                             ConfigHelper.SharepointPassword = password;
                             break;
-
-
+                            
                         case AzureAccountKeyFlag:
                         case AzureAccountKeyShortFlag:
                             i++;
@@ -363,6 +371,33 @@ namespace azurecopycommand
                             ConfigHelper.SrcAzureAccountKey = azureKey;
                             ConfigHelper.TargetAzureAccountKey = azureKey;
                             break;
+
+                        case AWSRegionFlag:
+                        case AWSRegionShortFlag:
+                    
+                            i++;
+                            var region = GetArgument(args, i);
+                            ConfigHelper.AWSRegion = region;
+                            ConfigHelper.SrcAWSRegion = region;
+                            ConfigHelper.TargetAWSRegion = region;
+                            break;
+
+                        case SourceAWSRegionFlag:
+                        case SourceAWSRegionShortFlag:
+
+                            i++;
+                            var srcRegion = GetArgument(args, i);
+                            ConfigHelper.SrcAWSRegion = srcRegion;
+                            break;
+
+                        case TargetAWSRegionFlag:
+                        case TargetAWSRegionShortFlag:
+
+                            i++;
+                            var targetRegion = GetArgument(args, i);
+                            ConfigHelper.TargetAWSRegion = targetRegion;
+                            break;
+
 
                         case AWSAccessKeyIDFlag:
                         case AWSAccessKeyIDShortFlag:
