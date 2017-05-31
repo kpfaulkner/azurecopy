@@ -130,7 +130,6 @@ namespace azurecopy.Utils
         // Therefore use SourceAWS.
         public static string GeneratePreSignedUrl( string bucket, string key, int timeout=30 )
         {
-
             // set for 5 hours... just incase.
             GetPreSignedUrlRequest request = new GetPreSignedUrlRequest()
             {
