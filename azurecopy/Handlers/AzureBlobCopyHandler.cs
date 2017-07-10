@@ -115,7 +115,6 @@ namespace azurecopy
             {
                 try
                 {
-                    Console.WriteLine("Copy blob " + blob.DisplayName);
                     var bcd = AzureBlobCopyHandler.StartCopy(blob, destinationUrl, destBlobType, skipIfExists);
                     if (bcd != null)
                     {
@@ -164,7 +163,6 @@ namespace azurecopy
         // new name should be destination name + (blob.name - blob.prefix) 
         public static BlobCopyData StartCopy(BasicBlobContainer origBlob, string DestinationUrl, DestinationBlobType destBlobType, bool skipIfExists)
         {
-            
             var client = AzureHelper.GetTargetCloudBlobClient(DestinationUrl);
             var opt = client.GetServiceProperties();
 
@@ -185,23 +183,28 @@ namespace azurecopy
             {
                 blobWithoutPrefix = origBlob.Name.Substring(origBlob.BlobPrefix.Length);
             }
-
+            
             if (!string.IsNullOrWhiteSpace(blobWithoutPrefix))
             {
-                blobName = string.Format("{0}/{1}", destBlobPrefix, blobWithoutPrefix);
-            }
-            else
-            {
-                // need to get just filename. ie last element of /
-                var actualBlobName = origBlob.Name.Split('/').Last();
-
-                if (string.IsNullOrWhiteSpace(destBlobPrefix))
+                if (!string.IsNullOrWhiteSpace(destBlobPrefix))
                 {
-                    blobName = actualBlobName;
+                    blobName = string.Format("{0}/{1}", destBlobPrefix, blobWithoutPrefix);
                 }
                 else
                 {
-                    blobName = string.Format("{0}/{1}", destBlobPrefix, actualBlobName);
+                    blobName = blobWithoutPrefix;
+                }
+            
+            }
+            else
+            {                
+                if (string.IsNullOrWhiteSpace(destBlobPrefix))
+                {
+                    blobName = origBlob.Name;
+                }
+                else
+                {
+                    blobName = string.Format("{0}/{1}", destBlobPrefix, origBlob.Name);
                 }
             }
             
