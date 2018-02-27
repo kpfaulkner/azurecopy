@@ -62,6 +62,7 @@ namespace azurecopy.Utils
             rd["ap-southeast-2"] = Amazon.RegionEndpoint.APSoutheast2;
             rd["ap-northeast-1"] = Amazon.RegionEndpoint.APNortheast1;
             rd["eu-central-1"] = Amazon.RegionEndpoint.EUCentral1;
+            rd["ca-central-1"] = Amazon.RegionEndpoint.CACentral1;
             rd["eu-west-1"] = Amazon.RegionEndpoint.EUWest1;
             rd["sa-east-1"] = Amazon.RegionEndpoint.SAEast1;
             rd["eu-west-1"] = Amazon.RegionEndpoint.EUWest1;

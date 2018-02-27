@@ -93,6 +93,7 @@ namespace azurecopy
                 throw new NotImplementedException("Blobcopy against onedrive is not implemented yet");
             }
 
+            Console.WriteLine("shared url is {0}", url);
             return url;
 
         }

@@ -501,57 +501,63 @@ namespace azurecopy
                 chunkSize = length / parallelFactor;
             }
 
-            var numberOfBlocks = (length / chunkSize) + 1;
-            var blockIdList = new string[numberOfBlocks];
-            var chunkSizeList = new int[numberOfBlocks];
             var taskList = new List<Task>();
+            var blockIdList = new string[0];
 
-            var count = numberOfBlocks - 1;
-
-            // read the data...  spawn a task to launch... then wait for all.
-            while (count >= 0)
+            // chunksize is 0 if the blob is 0 in size. It really can happen (blob placeholder)
+            if (chunkSize > 0)
             {
-                while (count >= 0 && taskList.Count < parallelFactor)
-                {
-                    var index = (numberOfBlocks - count - 1);
-                    var chunkSizeToUpload = (int)Math.Min(chunkSize, length - (index * chunkSize));
+                var numberOfBlocks = (length / chunkSize) + 1;
+                blockIdList = new string[numberOfBlocks];
+                var chunkSizeList = new int[numberOfBlocks];            
+                var count = numberOfBlocks - 1;
 
-                    // only upload if we have data to give.
-                    // edge case where we already have uploaded all the data.
-                    if (chunkSizeToUpload > 0)
+                // read the data...  spawn a task to launch... then wait for all.
+                while (count >= 0)
+                {
+                    while (count >= 0 && taskList.Count < parallelFactor)
                     {
-                        chunkSizeList[index] = chunkSizeToUpload;
-                        var dataBuffer = new byte[chunkSizeToUpload];
-                        stream.Seek(index * chunkSize, SeekOrigin.Begin);
-                        stream.Read(dataBuffer, 0, chunkSizeToUpload);
+                        var index = (numberOfBlocks - count - 1);
+                        var chunkSizeToUpload = (int)Math.Min(chunkSize, length - (index * chunkSize));
 
-                        var t = Task.Factory.StartNew(() =>
+                        // only upload if we have data to give.
+                        // edge case where we already have uploaded all the data.
+                        if (chunkSizeToUpload > 0)
                         {
-                            var tempCount = index;
-                            var uploadSize = chunkSizeList[tempCount];
+                            chunkSizeList[index] = chunkSizeToUpload;
+                            var dataBuffer = new byte[chunkSizeToUpload];
+                            stream.Seek(index * chunkSize, SeekOrigin.Begin);
+                            stream.Read(dataBuffer, 0, chunkSizeToUpload);
 
-                            var newBuffer = new byte[uploadSize];
-                            Array.Copy(dataBuffer, newBuffer, dataBuffer.Length);
-
-                            var blockId = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
-
-                            using (var memStream = new MemoryStream(newBuffer, 0, uploadSize))
+                            var t = Task.Factory.StartNew(() =>
                             {
-                                blob.PutBlock(blockId, memStream, null);
-                            }
-                            blockIdList[tempCount] = blockId;
-                        });
-                        taskList.Add(t);
-                    }
-                    count--;
-                }
+                                var tempCount = index;
+                                var uploadSize = chunkSizeList[tempCount];
 
-                var waitedIndex = Task.WaitAny(taskList.ToArray());
-                if (waitedIndex >= 0)
-                {
-                    taskList.RemoveAt(waitedIndex);
+                                var newBuffer = new byte[uploadSize];
+                                Array.Copy(dataBuffer, newBuffer, dataBuffer.Length);
+
+                                var blockId = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
+
+                                using (var memStream = new MemoryStream(newBuffer, 0, uploadSize))
+                                {
+                                    blob.PutBlock(blockId, memStream, null);
+                                }
+                                blockIdList[tempCount] = blockId;
+                            });
+                            taskList.Add(t);
+                        }
+                        count--;
+                    }
+
+                    var waitedIndex = Task.WaitAny(taskList.ToArray());
+                    if (waitedIndex >= 0)
+                    {
+                        taskList.RemoveAt(waitedIndex);
+                    }
                 }
             }
+
             Task.WaitAll(taskList.ToArray());
             blob.PutBlockList(blockIdList.Where(t => t != null));
         }
