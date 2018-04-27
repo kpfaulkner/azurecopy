@@ -109,11 +109,25 @@ namespace azurecopy
         /// <returns></returns>
         public bool DoesBlobExists(string containerName, string blobName)
         {
+
             var exists = false;
+
+            try
+            {
+                using (IAmazonS3 client = S3Helper.GenerateS3Client(ConfigHelper.TargetAWSAccessKeyID, ConfigHelper.TargetAWSSecretAccessKeyID, containerName))
+                {  
+                    client.GetObject(containerName, blobName);
+                    exists = true;
+                }
+            }
+            catch
+            {
+
+            }
 
             return exists;
         }
-
+        
         // override configuration. 
         public void OverrideConfiguration( Dictionary<string,string> configuration)
         {
